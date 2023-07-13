@@ -1,16 +1,5 @@
 #include <iostream>
-#include "Names.hpp"
-
-using U64 = unsigned long long;
-
-class Pawn
-{
-private:
-    U64 pawns;
-
-public:
-
-};
+#include "names.hpp"
 
 int main() {
 
