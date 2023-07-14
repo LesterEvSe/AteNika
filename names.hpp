@@ -29,7 +29,6 @@ using u64 = unsigned long long;
  * 00100000
  */
 
-
 const u64 ROW8 = 18374686479671623680;
 const u64 ROW7 = 71776119061217280;
 const u64 ROW6 = 280375465082880;
