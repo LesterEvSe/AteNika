@@ -4,6 +4,13 @@
 #include <cstdint>
 
 using bitboard = uint64_t;
+static constexpr uint8_t DIM = 8;
+
+bitboard g_rows[DIM];
+bitboard g_invert_rows[DIM];
+
+bitboard g_cols[DIM];
+bitboard g_invert_cols[DIM];
 
 /** Arrangements for the presentation of the board (unsigned long long) */
 /**
@@ -18,37 +25,31 @@ using bitboard = uint64_t;
  * 1 |  0   1   2   3   4   5   6   7
  */
 
-// For example column C.
-// For the rows respectively also
-/*
- * 00100000
- * 00100000
- * 00100000
- * 00100000
- * 00100000
- * 00100000
- * 00100000
- * 00100000
- */
+// NEED TO DELETE LATER!!!
+void print(bitboard bb);
 
-const bitboard ROW8 = 18374686479671623680;
-const bitboard ROW7 = 71776119061217280;
-const bitboard ROW6 = 280375465082880;
-const bitboard ROW5 = 1095216660480;
-const bitboard ROW4 = 4278190080;
-const bitboard ROW3 = 16711680;
-const bitboard ROW2 = 65280;
-const bitboard ROW1 = 255;
+void set_rows_cols() {
+    bitboard row = 0, col = 0;
+    for (int i = 0; i < DIM; ++i) {
+        row |= bitboard(1) << i;
+        col |= bitboard(1) << (i * DIM);
+    }
 
-namespace Column {
-    const bitboard A = 72340172838076673;
-    const bitboard B = 144680345676153346;
-    const bitboard C = 289360691352306692;
-    const bitboard D = 578721382704613384;
-    const bitboard E = 1157442765409226768;
-    const bitboard F = 2314885530818453536;
-    const bitboard G = 4629771061636907072;
-    const bitboard H = 9259542123273814144;
+    for (int i = 0; i < DIM; ++i) {
+        g_rows[i] = row;
+        g_invert_rows[i] = ~row;
+
+        g_cols[i] = col;
+        g_invert_cols[i] = ~col;
+
+        row <<= DIM;
+        col <<= 1;
+    }
+
+    for (int i = 0; i < DIM; ++i) {
+        print(g_rows[i]);
+        print(g_cols[i]);
+    }
 }
 
 const bool BLACK = false;
