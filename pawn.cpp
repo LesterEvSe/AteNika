@@ -13,7 +13,7 @@ Pawn::Pawn(bool _color) {
     }
 }
 
-u64 Pawn::get_moves() {
+bitboard Pawn::get_moves() {
     switch (m_color) {
         case WHITE:
             return (m_piece << 8) | (m_piece & ROW2) << 16;
@@ -22,11 +22,11 @@ u64 Pawn::get_moves() {
     }
 }
 
-u64 Pawn::get_attack() {
+bitboard Pawn::get_attack() {
     switch (m_color) {
         case WHITE:
-            return (m_piece << 9) & (~Column::H) | (m_piece << 7) & (~Column::A);
+            return (m_piece << 9) & (~Column::A) | (m_piece << 7) & (~Column::H);
         default:
-            return (m_piece >> 9) & (~Column::A) | (m_piece >> 7) & (~Column::H);
+            return (m_piece >> 9) & (~Column::H) | (m_piece >> 7) & (~Column::A);
     }
 }

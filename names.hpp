@@ -1,7 +1,9 @@
 #ifndef CHESSAI_NAMES_HPP
 #define CHESSAI_NAMES_HPP
 
-using u64 = unsigned long long;
+#include <cstdint>
+
+using bitboard = uint64_t;
 
 /** Arrangements for the presentation of the board (unsigned long long) */
 /**
@@ -29,24 +31,24 @@ using u64 = unsigned long long;
  * 00100000
  */
 
-const u64 ROW8 = 18374686479671623680;
-const u64 ROW7 = 71776119061217280;
-const u64 ROW6 = 280375465082880;
-const u64 ROW5 = 1095216660480;
-const u64 ROW4 = 4278190080;
-const u64 ROW3 = 16711680;
-const u64 ROW2 = 65280;
-const u64 ROW1 = 255;
+const bitboard ROW8 = 18374686479671623680;
+const bitboard ROW7 = 71776119061217280;
+const bitboard ROW6 = 280375465082880;
+const bitboard ROW5 = 1095216660480;
+const bitboard ROW4 = 4278190080;
+const bitboard ROW3 = 16711680;
+const bitboard ROW2 = 65280;
+const bitboard ROW1 = 255;
 
 namespace Column {
-    const u64 A = 72340172838076673;
-    const u64 B = 144680345676153346;
-    const u64 C = 289360691352306692;
-    const u64 D = 578721382704613384;
-    const u64 E = 1157442765409226768;
-    const u64 F = 2314885530818453536;
-    const u64 G = 4629771061636907072;
-    const u64 H = 9259542123273814144;
+    const bitboard A = 72340172838076673;
+    const bitboard B = 144680345676153346;
+    const bitboard C = 289360691352306692;
+    const bitboard D = 578721382704613384;
+    const bitboard E = 1157442765409226768;
+    const bitboard F = 2314885530818453536;
+    const bitboard G = 4629771061636907072;
+    const bitboard H = 9259542123273814144;
 }
 
 const bool BLACK = false;
