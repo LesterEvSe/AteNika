@@ -73,9 +73,9 @@ Pieces::Pieces(const std::string& short_fen) {
         // an interesting feature of ascii letters,
         // xor 32 changes the letter from uppercase to lowercase and vice versa
 
-        uint8_t side = WHITE;
+        uint8_t side = BLACK;
         if (s < 'a') {
-            side = BLACK;
+            side = WHITE;
             s ^= 32;
         }
 
@@ -116,9 +116,32 @@ void Pieces::update_bitboards() {
     s_empty = ~s_all;
 }
 
-void Pieces::print() const {
-    for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 6; ++j)
-            ::print(s_pieces_bitboards[i][j]);
+std::ostream& operator<< (std::ostream& out, const Pieces& pieces) {
+    out << "   ";
+    for (char let = 'A'; let <= 'H'; ++let)
+        out << ' ' << let;
+    out << std::endl;
 
+    for (int8_t row = 7; row >= 0; --row) {
+        out << row+1 << " |";
+        for (uint8_t col = 0; col < DIM; ++col) {
+            if      (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::PAWN],   row * 8 + col)) out << " p";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::ROOK],   row * 8 + col)) out << " r";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::KNIGHT], row * 8 + col)) out << " n";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::BISHOP], row * 8 + col)) out << " b";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::KING],   row * 8 + col)) out << " k";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::QUEEN],  row * 8 + col)) out << " q";
+
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::PAWN],   row * 8 + col)) out << " P";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::ROOK],   row * 8 + col)) out << " R";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::KNIGHT], row * 8 + col)) out << " N";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::BISHOP], row * 8 + col)) out << " B";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::KING],   row * 8 + col)) out << " K";
+            else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::WHITE][Pieces::QUEEN],  row * 8 + col)) out << " Q";
+            else out << " -";
+        }
+        out << std::endl;
+    }
+    out << "--------------------\n\n";
+    return out;
 }

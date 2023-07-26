@@ -48,7 +48,7 @@ public:
     // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
     explicit Pieces(const std::string& short_fen);
     void update_bitboards();
-    void print() const;
+    friend std::ostream& operator<< (std::ostream& out, const Pieces& pieces);
 
     static constexpr uint8_t inverse(uint8_t side);
     static constexpr void set0(bitboard& field, uint8_t pos);

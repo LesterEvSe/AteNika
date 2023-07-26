@@ -8,7 +8,7 @@ int main() {
 
     std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     Pieces pieces = Pieces(str);
-    pieces.print();
+    std::cout << pieces << pieces;
 
 //    Piece::set0(temp, 4);
 //    board(temp);
