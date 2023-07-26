@@ -1,14 +1,15 @@
 #ifndef CHESSAI_PIECES_HPP
 #define CHESSAI_PIECES_HPP
 
-#include "names.hpp"
+#include "global.hpp"
 #include <bit> // for std::popcount
+#include <string>
 
-class Piece
+class Pieces
 {
-protected:
+private:
     // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
-    static constexpr const uint8_t BitScan[64] = {
+    static constexpr uint8_t BitScan[64] = {
        0, 47,  1, 56, 48, 27,  2, 60,
        57, 49, 41, 37, 28, 16,  3, 61,
        54, 58, 35, 52, 50, 42, 21, 44,
@@ -19,72 +20,44 @@ protected:
        13, 18,  8, 12,  7,  6,  5, 63
     };
 
+    // The top 18 bitboards to work
+
+    // all pieces, black and white (black pawns, white bishops ...)
+    bitboard s_pieces_bitboards[2][6]{};
+
+    // white and black pieces
+    bitboard s_side[2]{};
+    bitboard s_inverse_side[2]{};
+
+    // all the pieces on the board
+    bitboard s_all{};
+    bitboard s_empty{};
+
+    static constexpr uint8_t PAWN = 0;
+    static constexpr uint8_t ROOK = 1;
+    static constexpr uint8_t KNIGHT = 2;
+    static constexpr uint8_t BISHOP = 3;
+    static constexpr uint8_t KING = 4;
+    static constexpr uint8_t QUEEN = 5;
+
+    static constexpr uint8_t BLACK = 0;
+    static constexpr uint8_t WHITE = 1;
+
 public:
-    // for Debug
-    /**
-    friend std::ostream& operator<< (std::ostream& out, const Piece& piece) {
-        std::bitset<64> bits(piece.m_piece);
-        std::cout << "   ";
+    // using short FEN (Forsyth-Edwards Notation):
+    // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+    explicit Pieces(const std::string& short_fen);
+    void update_bitboards();
+    void print() const;
 
-        for (char let = 'A'; let <= 'H'; ++let)
-            std::cout << ' ' << let;
-        std::cout << std::endl;
+    static constexpr uint8_t inverse(uint8_t side);
+    static constexpr void set0(bitboard& field, uint8_t pos);
+    static constexpr void set1(bitboard& field, uint8_t pos);
+    static constexpr bool get(bitboard field, uint8_t pos);
+    static constexpr uint8_t count1(bitboard field);
 
-        for (int i = 0; i < 8; ++i) {
-            std::cout << i+1 << " |";
-            for (int j = 0; j < 8; ++j)
-                std::cout << ' ' << bits[8*i + j];
-            std::cout << std::endl;
-        }
-        std::cout << "\n--------------------\n\n";
-        return out;
-    }
-    */
-
-    static constexpr void set0(bitboard& field, uint8_t pos) {
-        field &= ~(bitboard(1) << pos);
-    }
-
-    static constexpr void set1(bitboard& field, uint8_t pos) {
-        field |= bitboard(1) << pos;
-    }
-
-    static constexpr bool get(bitboard field, uint8_t pos) {
-        return (field & bitboard(1) << pos);
-    }
-
-    static constexpr uint8_t count1(bitboard field) {
-        return std::popcount(field);
-    }
-
-   /**
-    * bitScanForward
-    * @author Kim Walisch (2012)
-    * @param bb bitboard to scan
-    * @return index (0..63) of least significant one bit
-    */
-    static constexpr uint8_t bsf(bitboard bb) {
-        return BitScan[((bb ^ (bb-1)) * bitboard(0x03f79d71b4cb0a89)) >> 58];
-    }
-
-   /**
-    * bitScanReverse
-    * @authors Kim Walisch, Mark Dickinson
-    * @param bb bitboard to scan
-    * @return index (0..63) of most significant one bit
-    */
-    static constexpr uint8_t bsr(bitboard bb) {
-        bb |= bb >> 1;
-        bb |= bb >> 2;
-        bb |= bb >> 4;
-        bb |= bb >> 8;
-        bb |= bb >> 16;
-        bb |= bb >> 32;
-        return BitScan[(bb * bitboard(0x03f79d71b4cb0a89)) >> 58];
-    }
-
+    static constexpr uint8_t bsf(bitboard bb);
+    static constexpr uint8_t bsr(bitboard bb);
 };
-
-
 
 #endif //CHESSAI_PIECES_HPP
