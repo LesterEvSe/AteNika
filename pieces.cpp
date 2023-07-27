@@ -1,26 +1,44 @@
 #include "pieces.hpp"
 #include <cctype> // for isdigit function
 
-uint8_t BitScan[64];
+bitboard Pieces::ROWS[DIM] {0};
+bitboard Pieces::INVERT_ROWS[DIM] {0};
 
+bitboard Pieces::COLS[DIM] {0};
+bitboard Pieces::INVERT_COLS[DIM] {0};
 
-constexpr uint8_t Pieces::inverse(uint8_t side) {
-    return !side;
+void Pieces::set_rows_cols() {
+    bitboard row = 0, col = 0;
+    for (int i = 0; i < DIM; ++i) {
+        row |= bitboard(1) << i;
+        col |= bitboard(1) << (i * DIM);
+    }
+
+    for (int i = 0; i < DIM; ++i) {
+        Pieces::ROWS[i] = row;
+        Pieces::INVERT_ROWS[i] = ~row;
+
+        Pieces::COLS[i] = col;
+        Pieces::INVERT_COLS[i] = ~col;
+
+        row <<= DIM;
+        col <<= 1;
+    }
 }
 
-constexpr void Pieces::set0(bitboard& field, uint8_t pos) {
+void Pieces::set0(bitboard& field, uint8_t pos) {
     field &= ~(bitboard(1) << pos);
 }
 
-constexpr void Pieces::set1(bitboard& field, uint8_t pos) {
+void Pieces::set1(bitboard& field, uint8_t pos) {
     field |= bitboard(1) << pos;
 }
 
-constexpr bool Pieces::get(bitboard field, uint8_t pos) {
+bool Pieces::get(bitboard field, uint8_t pos) {
     return (field & bitboard(1) << pos);
 }
 
-constexpr uint8_t Pieces::count1(bitboard field) {
+uint8_t Pieces::count1(bitboard field) {
     return std::popcount(field);
 }
 
@@ -30,7 +48,7 @@ constexpr uint8_t Pieces::count1(bitboard field) {
  * @param bb bitboard to scan
  * @return index (0..63) of least significant one bit
  */
-constexpr uint8_t Pieces::bsf(bitboard bb) {
+uint8_t Pieces::bsf(bitboard bb) {
     return BitScan[((bb ^ (bb - 1)) * bitboard(0x03f79d71b4cb0a89)) >> 58];
 }
 
@@ -40,7 +58,7 @@ constexpr uint8_t Pieces::bsf(bitboard bb) {
  * @param bb bitboard to scan
  * @return index (0..63) of most significant one bit
  */
-constexpr uint8_t Pieces::bsr(bitboard bb) {
+uint8_t Pieces::bsr(bitboard bb) {
     bb |= bb >> 1;
     bb |= bb >> 2;
     bb |= bb >> 4;
@@ -55,6 +73,7 @@ constexpr uint8_t Pieces::bsr(bitboard bb) {
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
 Pieces::Pieces(const std::string& short_fen) {
+    Pieces::set_rows_cols();
     uint8_t row = 7;
     uint8_t col = 0;
 
@@ -116,6 +135,14 @@ void Pieces::update_bitboards() {
     s_empty = ~s_all;
 }
 
+bool operator== (const Pieces& left, const Pieces& right) {
+    for (uint8_t i = 0; i < 2; ++i)
+        for (uint8_t j = 0; j < 6; ++j)
+            if (left.s_pieces_bitboards[i][j] != right.s_pieces_bitboards[i][j])
+                return false;
+    return true;
+}
+
 std::ostream& operator<< (std::ostream& out, const Pieces& pieces) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)
@@ -124,7 +151,7 @@ std::ostream& operator<< (std::ostream& out, const Pieces& pieces) {
 
     for (int8_t row = 7; row >= 0; --row) {
         out << row+1 << " |";
-        for (uint8_t col = 0; col < DIM; ++col) {
+        for (uint8_t col = 0; col < Pieces::DIM; ++col) {
             if      (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::PAWN],   row * 8 + col)) out << " p";
             else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::ROOK],   row * 8 + col)) out << " r";
             else if (Pieces::get(pieces.s_pieces_bitboards[Pieces::BLACK][Pieces::KNIGHT], row * 8 + col)) out << " n";

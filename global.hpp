@@ -5,14 +5,6 @@
 #include <iostream> // Maybe need to delete later
 
 using bitboard = uint64_t;
-static constexpr uint8_t DIM = 8;
-
-// Auxiliary bitboards
-extern bitboard g_rows[DIM];
-extern bitboard g_invert_rows[DIM];
-
-extern bitboard g_cols[DIM];
-extern bitboard g_invert_cols[DIM];
 
 /** Arrangements for the presentation of the board (unsigned long long) */
 /**
@@ -29,6 +21,5 @@ extern bitboard g_invert_cols[DIM];
 
 // For test, NEED TO DELETE LATER!!!
 void print(bitboard bb);
-void set_rows_cols();
 
 #endif //CHESSAI_GLOBAL_HPP

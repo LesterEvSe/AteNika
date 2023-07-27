@@ -2,6 +2,7 @@
 #define CHESSAI_PIECES_HPP
 
 #include "global.hpp"
+#include <array>
 #include <bit> // for std::popcount
 #include <string>
 
@@ -20,18 +21,31 @@ private:
        13, 18,  8, 12,  7,  6,  5, 63
     };
 
-    // The top 18 bitboards to work
+public:
+    static constexpr uint8_t DIM {8};
+private:
 
+    // Auxiliary bitboards
+    static bitboard ROWS[DIM];
+    static bitboard INVERT_ROWS[DIM];
+
+    static bitboard COLS[DIM];
+    static bitboard INVERT_COLS[DIM];
+
+    // MUST BE CALLED AT THE START!!!
+    static void set_rows_cols();
+
+    // The top 18 bitboards to work
     // all pieces, black and white (black pawns, white bishops ...)
-    bitboard s_pieces_bitboards[2][6]{};
+    bitboard s_pieces_bitboards[2][6] {0};
 
     // white and black pieces
-    bitboard s_side[2]{};
-    bitboard s_inverse_side[2]{};
+    bitboard s_side[2] {0};
+    bitboard s_inverse_side[2] {0};
 
     // all the pieces on the board
-    bitboard s_all{};
-    bitboard s_empty{};
+    bitboard s_all {0};
+    bitboard s_empty {0};
 
     static constexpr uint8_t PAWN = 0;
     static constexpr uint8_t ROOK = 1;
@@ -48,16 +62,16 @@ public:
     // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
     explicit Pieces(const std::string& short_fen);
     void update_bitboards();
+    friend bool operator== (const Pieces& left, const Pieces& right);
     friend std::ostream& operator<< (std::ostream& out, const Pieces& pieces);
 
-    static constexpr uint8_t inverse(uint8_t side);
-    static constexpr void set0(bitboard& field, uint8_t pos);
-    static constexpr void set1(bitboard& field, uint8_t pos);
-    static constexpr bool get(bitboard field, uint8_t pos);
-    static constexpr uint8_t count1(bitboard field);
+    static void set0(bitboard& field, uint8_t pos);
+    static void set1(bitboard& field, uint8_t pos);
+    static bool get(bitboard field, uint8_t pos);
+    static uint8_t count1(bitboard field);
 
-    static constexpr uint8_t bsf(bitboard bb);
-    static constexpr uint8_t bsr(bitboard bb);
+    static uint8_t bsf(bitboard bb);
+    static uint8_t bsr(bitboard bb);
 };
 
 #endif //CHESSAI_PIECES_HPP

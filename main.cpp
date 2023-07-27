@@ -3,16 +3,15 @@
 /** Hm.. Maybe switch to 'C' language..?
  *  About 18 bitboards, I can realize them with struct or class with methods*/
 int main() {
-    set_rows_cols();
     bitboard temp = 123'512;
 
     std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     Pieces pieces = Pieces(str);
-    std::cout << pieces << pieces;
+    // std::cout << pieces << pieces;
 
-//    Piece::set0(temp, 4);
-//    board(temp);
-//    std::cout << unsigned(Piece::bsf(temp)) << ' ' << unsigned(Piece::bsr(temp));
+//    Pieces::set0(temp, 4);
+//    print(temp);
+//    std::cout << unsigned(Pieces::bsf(temp)) << ' ' << unsigned(Pieces::bsr(temp));
 
     return 0;
 }
