@@ -1,12 +1,15 @@
 #include "pieces.hpp"
+#include <random>
+#include "ZobristHash.hpp"
 
-/** Hm.. Maybe switch to 'C' language..?
- *  About 18 bitboards, I can realize them with struct or class with methods*/
+
 int main() {
     bitboard temp = 123'512;
+//    ZobristHash hash = ZobristHash::get_instance();
+//    std::cout << hash(4, 1, 3);
 
     std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-    Pieces pieces = Pieces(str);
+    auto pieces = Pieces(str);
     // std::cout << pieces << pieces;
 
 //    Pieces::set0(temp, 4);

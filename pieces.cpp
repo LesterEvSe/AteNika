@@ -135,7 +135,7 @@ void Pieces::update_bitboards() {
     s_empty = ~s_all;
 }
 
-bool operator== (const Pieces& left, const Pieces& right) {
+bool operator==(const Pieces& left, const Pieces& right) {
     for (uint8_t i = 0; i < 2; ++i)
         for (uint8_t j = 0; j < 6; ++j)
             if (left.s_pieces_bitboards[i][j] != right.s_pieces_bitboards[i][j])
@@ -143,7 +143,7 @@ bool operator== (const Pieces& left, const Pieces& right) {
     return true;
 }
 
-std::ostream& operator<< (std::ostream& out, const Pieces& pieces) {
+std::ostream& operator<<(std::ostream& out, const Pieces& pieces) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)
         out << ' ' << let;

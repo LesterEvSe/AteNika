@@ -62,8 +62,8 @@ public:
     // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
     explicit Pieces(const std::string& short_fen);
     void update_bitboards();
-    friend bool operator== (const Pieces& left, const Pieces& right);
-    friend std::ostream& operator<< (std::ostream& out, const Pieces& pieces);
+    friend bool operator==(const Pieces& left, const Pieces& right);
+    friend std::ostream& operator<<(std::ostream& out, const Pieces& pieces);
 
     static void set0(bitboard& field, uint8_t pos);
     static void set1(bitboard& field, uint8_t pos);
