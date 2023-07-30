@@ -1,5 +1,7 @@
 #include "PosesHistory.hpp"
 
+std::unordered_map<uint64_t, uint8_t> PosesHistory::s_poses;
+
 void PosesHistory::clear() {
     s_poses.clear();
 }
