@@ -2,19 +2,15 @@
 #include <random>
 #include "ZobristHash.hpp"
 
-
 int main() {
+    ZobristHash::init();
     bitboard temp = 123'512;
-//    ZobristHash hash = ZobristHash::get_instance();
-//    std::cout << hash(4, 1, 3);
 
+//    std::cout << "lsb " << (unsigned) Pieces::lsb(temp) << std::endl;
+//    std::cout << "msb " << (unsigned) Pieces::msb(temp) << std::endl;
+
+    print(temp);
     std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-    auto pieces = Pieces(str);
-    // std::cout << pieces << pieces;
-
-//    Pieces::set0(temp, 4);
-//    print(temp);
-//    std::cout << unsigned(Pieces::bsf(temp)) << ' ' << unsigned(Pieces::bsr(temp));
 
     return 0;
 }
