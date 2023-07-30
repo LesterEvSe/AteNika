@@ -44,9 +44,9 @@ ZobristHash::ZobristHash(const Pieces &pieces, bool black_move,
             }
     }
 }
-bool operator==(const ZobristHash &left, const ZobristHash &right) {
-    return left.m_hash == right.m_hash;
-}
+
+bool operator==(const ZobristHash &left, const ZobristHash &right) { return left.m_hash == right.m_hash; }
+uint64_t ZobristHash::get_hash() const { return m_hash; };
 
 void ZobristHash::xor_piece(uint8_t board, uint8_t type, uint8_t side) {
     if (board > 63 || type > 5 || side > 1) return;

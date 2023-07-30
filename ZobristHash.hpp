@@ -23,7 +23,9 @@ public:
     static void init();
     ZobristHash(const Pieces &pieces, bool black_move,
                 bool ws_castling, bool wl_castling, bool bs_castling, bool bl_castling);
+
     friend bool operator==(const ZobristHash& left, const ZobristHash& right);
+    [[nodiscard]] uint64_t get_hash() const;
 
     // The results must not be ignored
     void xor_piece(uint8_t square, uint8_t side, uint8_t type);
