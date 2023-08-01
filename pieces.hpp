@@ -2,7 +2,7 @@
 #define CHESSAI_PIECES_HPP
 
 #include "global.hpp"
-#include "ZobristHash.hpp"
+#include "zobrist_hash.hpp"
 #include <string>
 
 class Pieces

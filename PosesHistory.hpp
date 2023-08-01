@@ -1,7 +1,7 @@
 #ifndef CHESSAI_POSESHISTORY_HPP
 #define CHESSAI_POSESHISTORY_HPP
 
-#include "ZobristHash.hpp"
+#include "zobrist_hash.hpp"
 #include <unordered_map>
 
 class PosesHistory {

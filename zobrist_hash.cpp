@@ -1,7 +1,7 @@
-#include "ZobristHash.hpp"
+#include "zobrist_hash.hpp"
 
-std::mt19937_64 ZobristHash::gen {seed};
-std::uniform_int_distribution<uint64_t> ZobristHash::dist;
+std::mt19937_64 ZobristHash::generator {seed};
+std::uniform_int_distribution<uint64_t> ZobristHash::distribution;
 uint64_t ZobristHash::CONSTANTS[64][6][2];
 uint64_t ZobristHash::BLACK_MOVE;
 uint64_t ZobristHash::WHITE_SHORT_CASTLING, ZobristHash::WHITE_LONG_CASTLING;
@@ -11,14 +11,14 @@ void ZobristHash::init() {
     for (auto &matrix : CONSTANTS)
         for (auto &array : matrix)
             for (auto &val : array)
-                val = dist(gen);
+                val = distribution(generator);
 
-    BLACK_MOVE = dist(gen);
-    WHITE_SHORT_CASTLING = dist(gen);
-    WHITE_LONG_CASTLING = dist(gen);
+    BLACK_MOVE = distribution(generator);
+    WHITE_SHORT_CASTLING = distribution(generator);
+    WHITE_LONG_CASTLING = distribution(generator);
 
-    BLACK_SHORT_CASTLING = dist(gen);
-    BLACK_LONG_CASTLING = dist(gen);
+    BLACK_SHORT_CASTLING = distribution(generator);
+    BLACK_LONG_CASTLING = distribution(generator);
 }
 
 

@@ -1,5 +1,5 @@
-#ifndef CHESSAI_ZOBRISTHASH_HPP
-#define CHESSAI_ZOBRISTHASH_HPP
+#ifndef CHESSAI_ZOBRIST_HASH_HPP
+#define CHESSAI_ZOBRIST_HASH_HPP
 
 #include "global.hpp"
 #include "pieces.hpp"
@@ -9,8 +9,8 @@ class Pieces;
 class ZobristHash {
 private:
     static constexpr uint64_t seed {1234};
-    static std::mt19937_64 gen;
-    static std::uniform_int_distribution<uint64_t> dist;
+    static std::mt19937_64 generator;
+    static std::uniform_int_distribution<uint64_t> distribution;
 
     static uint64_t CONSTANTS[64][6][2];
     static uint64_t BLACK_MOVE;
@@ -36,4 +36,4 @@ public:
     void xor_b_l_castling();
 };
 
-#endif //CHESSAI_ZOBRISTHASH_HPP
+#endif //CHESSAI_ZOBRIST_HASH_HPP
