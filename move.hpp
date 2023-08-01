@@ -7,7 +7,7 @@ enum class Flag : uint8_t {
     DEFAULT = 0,
 
     PAWN_LONG_MOVE = 1,
-    EN_PASSANT_CAPTURE = 2,
+    EN_PASSANT_CAPTURE = 2, // Taken on the pass, from the French.
 
     WS_CASTLING = 3,
     WL_CASTLING = 4,
@@ -22,16 +22,16 @@ enum class Flag : uint8_t {
 };
 
 struct Move {
-    uint8_t m_from;
-    uint8_t m_to;
+    uint8_t m_from {0};
+    uint8_t m_to {0};
 
-    uint8_t m_attacker_type;
-    uint8_t m_attacker_side;
+    uint8_t m_attacker_type {0};
+    uint8_t m_attacker_side {0};
 
-    uint8_t m_defender_type;
-    uint8_t m_defender_side;
+    uint8_t m_defender_type {0};
+    uint8_t m_defender_side {0};
 
-    Flag m_flag = Flag::DEFAULT;
+    Flag m_flag {Flag::DEFAULT};
 
 };
 

@@ -1,6 +1,5 @@
 #include "pieces.hpp"
-#include "zobrist_hash.hpp"
-#include "move.hpp"
+#include "ZobristHash.hpp"
 
 int main() {
     ZobristHash::init();

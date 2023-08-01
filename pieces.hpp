@@ -2,12 +2,13 @@
 #define CHESSAI_PIECES_HPP
 
 #include "global.hpp"
-#include "zobrist_hash.hpp"
+#include "ZobristHash.hpp"
 #include <string>
 
 class Pieces
 {
     friend class ZobristHash;
+    friend class Position;
 public:
     static constexpr uint8_t DIM {8};
 private:
@@ -23,16 +24,16 @@ private:
     static void init_rows_cols();
 
     // The top 18 bitboards to work
-    // all pieces, black and white (black pawns, white bishops ...)
-    bitboard pieces_bitboards[2][6] {0};
+    // m_all pieces, black and white (black pawns, white bishops ...)
+    bitboard m_pieces_bitboards[2][6] {0};
 
     // white and black pieces
-    bitboard side[2] {0};
+    bitboard m_side[2] {0};
     bitboard inverse_side[2] {0};
 
-    // all the pieces on the board
-    bitboard all {0};
-    bitboard empty {0};
+    // m_all the pieces on the board
+    bitboard m_all {0};
+    bitboard m_empty {0};
 
 public:
     // using short FEN (Forsyth-Edwards Notation):

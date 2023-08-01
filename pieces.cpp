@@ -57,12 +57,12 @@ Pieces::Pieces(const std::string& short_fen) {
 
         // (row << 3) == row * 8
         switch (s) {
-            case 'p' : set1(pieces_bitboards[curr_side][PAWN],   (row << 3) + col); break;
-            case 'r' : set1(pieces_bitboards[curr_side][ROOK],   (row << 3) + col); break;
-            case 'n' : set1(pieces_bitboards[curr_side][KNIGHT], (row << 3) + col); break;
-            case 'b' : set1(pieces_bitboards[curr_side][BISHOP], (row << 3) + col); break;
-            case 'k' : set1(pieces_bitboards[curr_side][KING],   (row << 3) + col); break;
-            case 'q' : set1(pieces_bitboards[curr_side][QUEEN],  (row << 3) + col); break;
+            case 'p' : set1(m_pieces_bitboards[curr_side][PAWN], (row << 3) + col); break;
+            case 'r' : set1(m_pieces_bitboards[curr_side][ROOK], (row << 3) + col); break;
+            case 'n' : set1(m_pieces_bitboards[curr_side][KNIGHT], (row << 3) + col); break;
+            case 'b' : set1(m_pieces_bitboards[curr_side][BISHOP], (row << 3) + col); break;
+            case 'k' : set1(m_pieces_bitboards[curr_side][KING], (row << 3) + col); break;
+            case 'q' : set1(m_pieces_bitboards[curr_side][QUEEN], (row << 3) + col); break;
             default : break;
         }
         ++col;
@@ -71,31 +71,31 @@ Pieces::Pieces(const std::string& short_fen) {
 }
 
 void Pieces::update_bitboards() {
-    side[BLACK] = pieces_bitboards[BLACK][PAWN] |
-                  pieces_bitboards[BLACK][ROOK] |
-                  pieces_bitboards[BLACK][KNIGHT] |
-                  pieces_bitboards[BLACK][BISHOP] |
-                  pieces_bitboards[BLACK][KING] |
-                  pieces_bitboards[BLACK][QUEEN];
+    m_side[BLACK] = m_pieces_bitboards[BLACK][PAWN] |
+                    m_pieces_bitboards[BLACK][ROOK] |
+                    m_pieces_bitboards[BLACK][KNIGHT] |
+                    m_pieces_bitboards[BLACK][BISHOP] |
+                    m_pieces_bitboards[BLACK][KING] |
+                    m_pieces_bitboards[BLACK][QUEEN];
 
-    side[WHITE] = pieces_bitboards[WHITE][PAWN] |
-                  pieces_bitboards[WHITE][ROOK] |
-                  pieces_bitboards[WHITE][KNIGHT] |
-                  pieces_bitboards[WHITE][BISHOP] |
-                  pieces_bitboards[WHITE][KING] |
-                  pieces_bitboards[WHITE][QUEEN];
+    m_side[WHITE] = m_pieces_bitboards[WHITE][PAWN] |
+                    m_pieces_bitboards[WHITE][ROOK] |
+                    m_pieces_bitboards[WHITE][KNIGHT] |
+                    m_pieces_bitboards[WHITE][BISHOP] |
+                    m_pieces_bitboards[WHITE][KING] |
+                    m_pieces_bitboards[WHITE][QUEEN];
 
-    inverse_side[BLACK] = ~side[BLACK];
-    inverse_side[WHITE] = ~side[WHITE];
+    inverse_side[BLACK] = ~m_side[BLACK];
+    inverse_side[WHITE] = ~m_side[WHITE];
 
-    all = side[BLACK] | side[WHITE];
-    empty = ~all;
+    m_all = m_side[BLACK] | m_side[WHITE];
+    m_empty = ~m_all;
 }
 
 bool operator==(const Pieces& left, const Pieces& right) {
     for (uint8_t i = 0; i < 2; ++i)
         for (uint8_t j = 0; j < 6; ++j)
-            if (left.pieces_bitboards[i][j] != right.pieces_bitboards[i][j])
+            if (left.m_pieces_bitboards[i][j] != right.m_pieces_bitboards[i][j])
                 return false;
     return true;
 }
@@ -109,19 +109,19 @@ std::ostream& operator<<(std::ostream& out, const Pieces& pieces) {
     for (int8_t row = 7; row >= 0; --row) {
         out << row+1 << " |";
         for (uint8_t col = 0; col < Pieces::DIM; ++col) {
-            if      (get_bit(pieces.pieces_bitboards[BLACK][PAWN], row * 8 + col)) out << " p";
-            else if (get_bit(pieces.pieces_bitboards[BLACK][ROOK], row * 8 + col)) out << " r";
-            else if (get_bit(pieces.pieces_bitboards[BLACK][KNIGHT], row * 8 + col)) out << " n";
-            else if (get_bit(pieces.pieces_bitboards[BLACK][BISHOP], row * 8 + col)) out << " b";
-            else if (get_bit(pieces.pieces_bitboards[BLACK][KING], row * 8 + col)) out << " k";
-            else if (get_bit(pieces.pieces_bitboards[BLACK][QUEEN], row * 8 + col)) out << " q";
+            if      (get_bit(pieces.m_pieces_bitboards[BLACK][PAWN], row * 8 + col)) out << " p";
+            else if (get_bit(pieces.m_pieces_bitboards[BLACK][ROOK], row * 8 + col)) out << " r";
+            else if (get_bit(pieces.m_pieces_bitboards[BLACK][KNIGHT], row * 8 + col)) out << " n";
+            else if (get_bit(pieces.m_pieces_bitboards[BLACK][BISHOP], row * 8 + col)) out << " b";
+            else if (get_bit(pieces.m_pieces_bitboards[BLACK][KING], row * 8 + col)) out << " k";
+            else if (get_bit(pieces.m_pieces_bitboards[BLACK][QUEEN], row * 8 + col)) out << " q";
 
-            else if (get_bit(pieces.pieces_bitboards[WHITE][PAWN], row * 8 + col)) out << " P";
-            else if (get_bit(pieces.pieces_bitboards[WHITE][ROOK], row * 8 + col)) out << " R";
-            else if (get_bit(pieces.pieces_bitboards[WHITE][KNIGHT], row * 8 + col)) out << " N";
-            else if (get_bit(pieces.pieces_bitboards[WHITE][BISHOP], row * 8 + col)) out << " B";
-            else if (get_bit(pieces.pieces_bitboards[WHITE][KING], row * 8 + col)) out << " K";
-            else if (get_bit(pieces.pieces_bitboards[WHITE][QUEEN], row * 8 + col)) out << " Q";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][PAWN], row * 8 + col)) out << " P";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][ROOK], row * 8 + col)) out << " R";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][KNIGHT], row * 8 + col)) out << " N";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][BISHOP], row * 8 + col)) out << " B";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][KING], row * 8 + col)) out << " K";
+            else if (get_bit(pieces.m_pieces_bitboards[WHITE][QUEEN], row * 8 + col)) out << " Q";
             else out << " -";
         }
         out << std::endl;

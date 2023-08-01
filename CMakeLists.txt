@@ -3,4 +3,4 @@ project(ChessAI)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ChessAI main.cpp zobrist_hash.cpp pieces.cpp global.cpp PosesHistory.cpp)
+add_executable(ChessAI main.cpp ZobristHash.cpp pieces.cpp global.cpp PosesHistory.cpp Position.cpp)

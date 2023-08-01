@@ -1,4 +1,4 @@
-#include "zobrist_hash.hpp"
+#include "ZobristHash.hpp"
 
 std::mt19937_64 ZobristHash::generator {seed};
 std::uniform_int_distribution<uint64_t> ZobristHash::distribution;
@@ -22,8 +22,8 @@ void ZobristHash::init() {
 }
 
 
-ZobristHash::ZobristHash(const Pieces &pieces, bool black_move,
-                         bool ws_castling, bool wl_castling, bool bs_castling, bool bl_castling)
+ZobristHash::ZobristHash(const Pieces &pieces, bool black_move, bool ws_castling,
+                         bool wl_castling, bool bs_castling, bool bl_castling)
 {
     if (black_move)  m_hash ^= BLACK_MOVE;
     if (ws_castling) m_hash ^= WHITE_SHORT_CASTLING;
@@ -33,12 +33,12 @@ ZobristHash::ZobristHash(const Pieces &pieces, bool black_move,
 
     uint8_t side;
     for (uint8_t board = 0; board < 64; ++board) {
-        if      (get_bit(pieces.side[BLACK], board)) side = BLACK;
-        else if (get_bit(pieces.side[WHITE], board)) side = WHITE;
+        if      (get_bit(pieces.m_side[BLACK], board)) side = BLACK;
+        else if (get_bit(pieces.m_side[WHITE], board)) side = WHITE;
         else continue;
 
         for (uint8_t type = 0; type < 6; ++type)
-            if (get_bit(pieces.pieces_bitboards[type][side], board)) {
+            if (get_bit(pieces.m_pieces_bitboards[type][side], board)) {
                 m_hash ^= CONSTANTS[board][type][side];
                 break;
             }
@@ -53,7 +53,7 @@ void ZobristHash::xor_piece(uint8_t board, uint8_t type, uint8_t side) {
     m_hash ^= CONSTANTS[board][type][side];
 }
 void ZobristHash::xor_move()         { m_hash ^= BLACK_MOVE;           }
-void ZobristHash::xor_w_s_castling() { m_hash ^= WHITE_SHORT_CASTLING; }
-void ZobristHash::xor_w_l_castling() { m_hash ^= WHITE_LONG_CASTLING;  }
-void ZobristHash::xor_b_s_castling() { m_hash ^= BLACK_SHORT_CASTLING; }
-void ZobristHash::xor_b_l_castling() { m_hash ^= BLACK_LONG_CASTLING;  }
+void ZobristHash::xor_ws_castling() { m_hash ^= WHITE_SHORT_CASTLING; }
+void ZobristHash::xor_wl_castling() { m_hash ^= WHITE_LONG_CASTLING;  }
+void ZobristHash::xor_bs_castling() { m_hash ^= BLACK_SHORT_CASTLING; }
+void ZobristHash::xor_bl_castling() { m_hash ^= BLACK_LONG_CASTLING;  }
