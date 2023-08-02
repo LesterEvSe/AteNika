@@ -1,4 +1,4 @@
-#include "pieces.hpp"
+#include "Pieces.hpp"
 #include "ZobristHash.hpp"
 
 int main() {
@@ -9,9 +9,9 @@ int main() {
 //    std::cout << "msb " << (unsigned) Pieces::msb(temp) << std::endl;
 
 //    print(temp);
-//    std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-//    auto pieces = Pieces(str);
-//    std::cout << pieces;
+    std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    auto pieces = Pieces(str);
+    std::cout << pieces;
 
     return 0;
 }

@@ -1,4 +1,4 @@
-#include "pieces.hpp"
+#include "Pieces.hpp"
 #include <cctype> // for isdigit function
 
 bitboard Pieces::ROWS[DIM] {0};

@@ -2,7 +2,7 @@
 #define CHESSAI_ZOBRISTHASH_HPP
 
 #include "global.hpp"
-#include "pieces.hpp"
+#include "Pieces.hpp"
 #include <random>
 
 class Pieces;

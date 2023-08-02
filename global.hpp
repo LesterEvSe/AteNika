@@ -41,6 +41,18 @@ static constexpr uint8_t BitScan[64] = {
  * 1 |  0   1   2   3   4   5   6   7
  */
 
+/**
+       A B C D E F G H
+   8 | r n b q k b n r
+   7 | p p p p p p p p
+   6 | - - - - - - - -
+   5 | - - - - - - - -
+   4 | - - - - - - - -
+   3 | - - - - - - - -
+   2 | P P P P P P P P
+   1 | R N B Q K B N R
+*/
+
 extern void set0(bitboard& field, uint8_t pos);
 extern void set1(bitboard& field, uint8_t pos);
 extern bool get_bit(bitboard field, uint8_t pos);
