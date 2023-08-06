@@ -1,23 +1,41 @@
-#ifndef CHESSAI_GLOBAL_HPP
-#define CHESSAI_GLOBAL_HPP
+#ifndef CHESSAI_BITBOARD_HPP
+#define CHESSAI_BITBOARD_HPP
 
 #include <cstdint>
 #include <iostream> // Maybe need to delete later
 
 using bitboard = uint64_t;
 
-static constexpr uint8_t PAWN   {0};
-static constexpr uint8_t ROOK   {1};
-static constexpr uint8_t KNIGHT {2};
-static constexpr uint8_t BISHOP {3};
-static constexpr uint8_t KING   {4};
-static constexpr uint8_t QUEEN  {5};
+constexpr bitboard colA = 0x0101010101010101;
+constexpr bitboard colB = colA << 1;
+constexpr bitboard colC = colA << 2;
+constexpr bitboard colD = colA << 3;
+constexpr bitboard colE = colA << 4;
+constexpr bitboard colF = colA << 5;
+constexpr bitboard colG = colA << 6;
+constexpr bitboard colH = colA << 7;
 
-static constexpr uint8_t BLACK  {0};
-static constexpr uint8_t WHITE  {1};
+constexpr bitboard line1 = 0xFF;
+constexpr bitboard line2 = line1 << (8 * 1);
+constexpr bitboard line3 = line1 << (8 * 2);
+constexpr bitboard line4 = line1 << (8 * 3);
+constexpr bitboard line5 = line1 << (8 * 4);
+constexpr bitboard line6 = line1 << (8 * 5);
+constexpr bitboard line7 = line1 << (8 * 6);
+constexpr bitboard line8 = line1 << (8 * 7);
+
+constexpr uint8_t PAWN   {0};
+constexpr uint8_t ROOK   {1};
+constexpr uint8_t KNIGHT {2};
+constexpr uint8_t BISHOP {3};
+constexpr uint8_t KING   {4};
+constexpr uint8_t QUEEN  {5};
+
+constexpr uint8_t BLACK  {0};
+constexpr uint8_t WHITE  {1};
 
 // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
-static constexpr uint8_t BitScan[64] = {
+constexpr uint8_t BitScan[64] = {
         0, 47,  1, 56, 48, 27,  2, 60,
         57, 49, 41, 37, 28, 16,  3, 61,
         54, 58, 35, 52, 50, 42, 21, 44,
@@ -77,4 +95,4 @@ extern uint8_t msb(bitboard bb);
 // For test, NEED TO DELETE LATER!!!
 void print(bitboard bb);
 
-#endif //CHESSAI_GLOBAL_HPP
+#endif //CHESSAI_BITBOARD_HPP

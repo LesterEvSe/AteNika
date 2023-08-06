@@ -1,37 +1,10 @@
 #include "Pieces.hpp"
 #include <cctype> // for isdigit function
 
-bitboard Pieces::ROWS[DIM] {0};
-bitboard Pieces::INVERT_ROWS[DIM] {0};
-
-bitboard Pieces::COLS[DIM] {0};
-bitboard Pieces::INVERT_COLS[DIM] {0};
-
-void Pieces::init_rows_cols() {
-    bitboard row = 0, col = 0;
-    for (int i = 0; i < DIM; ++i) {
-        row |= bitboard(1) << i;
-        col |= bitboard(1) << (i * DIM);
-    }
-
-    for (int i = 0; i < DIM; ++i) {
-        Pieces::ROWS[i] = row;
-        Pieces::INVERT_ROWS[i] = ~row;
-
-        Pieces::COLS[i] = col;
-        Pieces::INVERT_COLS[i] = ~col;
-
-        row <<= DIM;
-        col <<= 1;
-    }
-}
-
-
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
 Pieces::Pieces(const std::string& short_fen) {
-    Pieces::init_rows_cols();
     uint8_t row = 7;
     uint8_t col = 0;
 

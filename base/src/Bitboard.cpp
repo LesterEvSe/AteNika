@@ -1,4 +1,4 @@
-#include "global.hpp"
+#include "Bitboard.hpp"
 #include <bit> // for std::popcount
 
 void set0(bitboard& field, uint8_t pos)   { field &= ~(bitboard(1) << pos);      }

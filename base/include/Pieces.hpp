@@ -1,7 +1,7 @@
 #ifndef CHESSAI_PIECES_HPP
 #define CHESSAI_PIECES_HPP
 
-#include "global.hpp"
+#include "Bitboard.hpp"
 #include "ZobristHash.hpp"
 #include <string>
 
@@ -12,17 +12,6 @@ class Pieces
 public:
     static constexpr uint8_t DIM {8};
 private:
-
-    // Auxiliary bitboards
-    static bitboard ROWS[DIM];
-    static bitboard INVERT_ROWS[DIM];
-
-    static bitboard COLS[DIM];
-    static bitboard INVERT_COLS[DIM];
-
-    // MUST BE CALLED AT THE START!!!
-    static void init_rows_cols();
-
     // The top 18 bitboards to work
     // m_all pieces, black and white (black pawns, white bishops ...)
     bitboard m_pieces_bitboards[2][6] {0};

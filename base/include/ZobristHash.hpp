@@ -1,7 +1,7 @@
 #ifndef CHESSAI_ZOBRISTHASH_HPP
 #define CHESSAI_ZOBRISTHASH_HPP
 
-#include "global.hpp"
+#include "Bitboard.hpp"
 #include "Pieces.hpp"
 #include <random>
 
