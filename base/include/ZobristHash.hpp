@@ -12,6 +12,7 @@ private:
     static std::mt19937_64 generator;
     static std::uniform_int_distribution<uint64_t> distribution;
 
+    static bool called_init;
     static uint64_t CONSTANTS[64][6][2];
     static uint64_t BLACK_MOVE;
     static uint64_t WHITE_SHORT_CASTLING, WHITE_LONG_CASTLING;

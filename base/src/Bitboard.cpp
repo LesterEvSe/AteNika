@@ -19,7 +19,7 @@ uint8_t msb(bitboard bb) {
 
 
 // For test, NEED TO DELETE LATER!!!
-void print(bitboard bb) {
+void printbb(bitboard bb) {
     std::cout << "   ";
 
     for (char let = 'A'; let <= 'H'; ++let)

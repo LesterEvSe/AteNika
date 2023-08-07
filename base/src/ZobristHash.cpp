@@ -2,12 +2,17 @@
 
 std::mt19937_64 ZobristHash::generator {seed};
 std::uniform_int_distribution<uint64_t> ZobristHash::distribution;
+bool ZobristHash::called_init = false;
+
 uint64_t ZobristHash::CONSTANTS[64][6][2];
 uint64_t ZobristHash::BLACK_MOVE;
 uint64_t ZobristHash::WHITE_SHORT_CASTLING, ZobristHash::WHITE_LONG_CASTLING;
 uint64_t ZobristHash::BLACK_SHORT_CASTLING, ZobristHash::BLACK_LONG_CASTLING;
 
 void ZobristHash::init() {
+    if (called_init) return;
+    called_init = true;
+
     for (auto &matrix : CONSTANTS)
         for (auto &array : matrix)
             for (auto &val : array)
@@ -52,7 +57,7 @@ void ZobristHash::xor_piece(uint8_t board, uint8_t type, uint8_t side) {
     if (board > 63 || type > 5 || side > 1) return;
     m_hash ^= CONSTANTS[board][type][side];
 }
-void ZobristHash::xor_move()         { m_hash ^= BLACK_MOVE;           }
+void ZobristHash::xor_move()        { m_hash ^= BLACK_MOVE;           }
 void ZobristHash::xor_ws_castling() { m_hash ^= WHITE_SHORT_CASTLING; }
 void ZobristHash::xor_wl_castling() { m_hash ^= WHITE_LONG_CASTLING;  }
 void ZobristHash::xor_bs_castling() { m_hash ^= BLACK_SHORT_CASTLING; }

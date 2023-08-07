@@ -2,6 +2,7 @@
 #define CHESSAI_BITBOARD_HPP
 
 #include <cstdint>
+#include <array>
 #include <iostream> // Maybe need to delete later
 
 using bitboard = uint64_t;
@@ -35,7 +36,7 @@ constexpr uint8_t BLACK  {0};
 constexpr uint8_t WHITE  {1};
 
 // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
-constexpr uint8_t BitScan[64] = {
+constexpr std::array<uint8_t, 64> BitScan {
         0, 47,  1, 56, 48, 27,  2, 60,
         57, 49, 41, 37, 28, 16,  3, 61,
         54, 58, 35, 52, 50, 42, 21, 44,
@@ -93,6 +94,6 @@ extern uint8_t lsb(bitboard bb);
 extern uint8_t msb(bitboard bb);
 
 // For test, NEED TO DELETE LATER!!!
-void print(bitboard bb);
+void printbb(bitboard bb);
 
 #endif //CHESSAI_BITBOARD_HPP
