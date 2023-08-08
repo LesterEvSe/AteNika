@@ -8,9 +8,9 @@ static constexpr std::array<bitboard, 64> calculate_king_mask() {
     for (uint8_t i = 0; i < 64; ++i)
     {
         bitboard bit = bitboard(1) << i;
-        mask[i] = (bit << 7 | bit >> 1 | bit >> 9) & ~colH |
+        mask[i] = (bit << 7 | bit >> 1 | bit >> 9) & ~COL_H |
                   (bit << 8 | bit >> 8) |
-                  (bit << 9 | bit << 1 | bit >> 7) & ~colA;
+                  (bit << 9 | bit << 1 | bit >> 7) & ~COL_A;
     }
     return mask;
 }

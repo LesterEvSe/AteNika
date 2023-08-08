@@ -7,23 +7,23 @@
 
 using bitboard = uint64_t;
 
-constexpr bitboard colA = 0x0101010101010101;
-constexpr bitboard colB = colA << 1;
-constexpr bitboard colC = colA << 2;
-constexpr bitboard colD = colA << 3;
-constexpr bitboard colE = colA << 4;
-constexpr bitboard colF = colA << 5;
-constexpr bitboard colG = colA << 6;
-constexpr bitboard colH = colA << 7;
+constexpr bitboard COL_A = 0x0101010101010101ULL;
+constexpr bitboard COL_B = COL_A << 1;
+constexpr bitboard COL_C = COL_A << 2;
+constexpr bitboard COL_D = COL_A << 3;
+constexpr bitboard COL_E = COL_A << 4;
+constexpr bitboard COL_F = COL_A << 5;
+constexpr bitboard COL_G = COL_A << 6;
+constexpr bitboard COL_H = COL_A << 7;
 
-constexpr bitboard line1 = 0xFF;
-constexpr bitboard line2 = line1 << (8 * 1);
-constexpr bitboard line3 = line1 << (8 * 2);
-constexpr bitboard line4 = line1 << (8 * 3);
-constexpr bitboard line5 = line1 << (8 * 4);
-constexpr bitboard line6 = line1 << (8 * 5);
-constexpr bitboard line7 = line1 << (8 * 6);
-constexpr bitboard line8 = line1 << (8 * 7);
+constexpr bitboard ROW1 = 0xFFULL;
+constexpr bitboard ROW2 = ROW1 << (8 * 1);
+constexpr bitboard ROW3 = ROW1 << (8 * 2);
+constexpr bitboard ROW4 = ROW1 << (8 * 3);
+constexpr bitboard ROW5 = ROW1 << (8 * 4);
+constexpr bitboard ROW6 = ROW1 << (8 * 5);
+constexpr bitboard ROW7 = ROW1 << (8 * 6);
+constexpr bitboard ROW8 = ROW1 << (8 * 7);
 
 constexpr uint8_t PAWN   {0};
 constexpr uint8_t ROOK   {1};

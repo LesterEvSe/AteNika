@@ -18,14 +18,14 @@ set(SOURCES
     base/src/Bitboard.cpp
 )
 
-#set(HEADERS
-#    base/include/ZobristHash.hpp
-#        base/include/Bitboard.hpp
-#    base/include/Pieces.hpp
-#    base/include/PosesHistory.hpp
-#    base/include/Position.hpp
-#
-#    moves/include/Move.hpp
-#        moves/include/KingMask.hpp moves/include/KnightMask.hpp moves/include/BishopMask.hpp moves/include/RookMask.hpp moves/include/QueenMask.hpp)
+set(HEADERS
+    base/include/ZobristHash.hpp
+        base/include/Bitboard.hpp
+    base/include/Pieces.hpp
+    base/include/PosesHistory.hpp
+    base/include/Position.hpp
 
-add_executable(ChessAI main.cpp ${SOURCES})
+    moves/include/Move.hpp
+        moves/include/KingMask.hpp moves/include/KnightMask.hpp moves/include/BishopMask.hpp moves/include/RookMask.hpp moves/include/QueenMask.hpp moves/include/Rays.h)
+
+add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})
