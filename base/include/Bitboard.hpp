@@ -35,6 +35,9 @@ constexpr uint8_t QUEEN  {5};
 constexpr uint8_t BLACK  {0};
 constexpr uint8_t WHITE  {1};
 
+constexpr uint64_t ZERO {0};
+constexpr uint64_t ONE  {1};
+
 // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
 constexpr std::array<uint8_t, 64> BitScan {
         0, 47,  1, 56, 48, 27,  2, 60,

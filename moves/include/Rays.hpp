@@ -1,5 +1,5 @@
-#ifndef CHESSAI_RAYS_H
-#define CHESSAI_RAYS_H
+#ifndef CHESSAI_RAYS_HPP
+#define CHESSAI_RAYS_HPP
 
 #include "Bitboard.hpp"
 
@@ -39,10 +39,10 @@ static constexpr std::array<std::array<uint64_t, 8>, 64> calculate_rays() {
     std::array<std::array<uint64_t, 8>, 64> rays{};
 
     // Calculate Diagonals
-    uint64_t bitA1 = 1;
-    uint64_t bitH1 = 1 << 7;
-    uint64_t DIAG_A1_H8 = 0;
-    uint64_t DIAG_A8_H1 = 0;
+    uint64_t bitA1 = ONE;
+    uint64_t bitH1 = ONE << 7;
+    uint64_t DIAG_A1_H8 = ZERO;
+    uint64_t DIAG_A8_H1 = ZERO;
 
     for (uint8_t i = 0; i < 8; ++i) {
         DIAG_A1_H8 |= bitA1 << (9 * i);
@@ -51,11 +51,11 @@ static constexpr std::array<std::array<uint64_t, 8>, 64> calculate_rays() {
 
 
     uint64_t one, east, west;
-    for (uint8_t i = 40; i < 48; ++i) {
+    for (uint8_t i = 0; i < 64; ++i) {
         if (i % 8 == 0) {
-            one = uint64_t(1) << i;
+            one = ONE << i;
             east = ROW1 << i & ~one;
-            west = 0;
+            west = ZERO;
         }
 
         rays[i][NORTH] = (COL_A & ~ROW1) << i;
@@ -80,4 +80,4 @@ static constexpr std::array<std::array<uint64_t, 8>, 64> calculate_rays() {
 // 8 sides of a chess piece
 constexpr std::array<std::array<uint64_t, 8>, 64> Rays = calculate_rays();
 
-#endif //CHESSAI_RAYS_H
+#endif //CHESSAI_RAYS_HPP

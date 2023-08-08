@@ -1,8 +1,6 @@
 #include "Pieces.hpp"
 #include "ZobristHash.hpp"
 
-#include "Rays.h"
-
 int main() {
     ZobristHash::init();
     bitboard temp = 123'512;

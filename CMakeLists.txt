@@ -26,6 +26,6 @@ set(HEADERS
     base/include/Position.hpp
 
     moves/include/Move.hpp
-        moves/include/KingMask.hpp moves/include/KnightMask.hpp moves/include/BishopMask.hpp moves/include/RookMask.hpp moves/include/QueenMask.hpp moves/include/Rays.h)
+        moves/include/KingMask.hpp moves/include/KnightMask.hpp moves/include/BishopMask.hpp moves/include/RookMask.hpp moves/include/QueenMask.hpp moves/include/Rays.hpp)
 
 add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})

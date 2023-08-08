@@ -7,7 +7,7 @@ static constexpr std::array<bitboard, 64> calculate_knight_mask() {
     std::array<bitboard, 64> mask{};
     for (int i = 0; i < 64; ++i)
     {
-        bitboard bit = bitboard(1) << i;
+        bitboard bit = ONE << i;
 
         // lr - left and right shift
         bitboard lr1 = (bit >> 1) & ~COL_H | // left
