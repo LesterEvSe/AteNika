@@ -16,16 +16,20 @@ set(SOURCES
     base/src/PosesHistory.cpp
     base/src/Position.cpp
     base/src/Bitboard.cpp
-)
+        moves/src/SlAttacks.cpp)
 
 set(HEADERS
     base/include/ZobristHash.hpp
-        base/include/Bitboard.hpp
+    base/include/Bitboard.hpp
     base/include/Pieces.hpp
     base/include/PosesHistory.hpp
     base/include/Position.hpp
 
     moves/include/Move.hpp
-        moves/include/KingMask.hpp moves/include/KnightMask.hpp moves/include/BishopMask.hpp moves/include/RookMask.hpp moves/include/QueenMask.hpp moves/include/Rays.hpp)
+    moves/include/KingMask.hpp
+    moves/include/KnightMask.hpp
+    moves/include/BishopAttacks.hpp
+        moves/include/QueenMask.hpp
+        moves/include/SlAttacks.hpp moves/src/Rays.cpp moves/include/Rays.hpp)
 
 add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})

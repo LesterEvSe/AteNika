@@ -17,8 +17,7 @@ uint8_t msb(bitboard bb) {
     return BitScan[(bb * bitboard(0x03f79d71b4cb0a89)) >> 58];
 }
 
-
-// For test, NEED TO DELETE LATER!!!
+// For test, NEED TO DELETE LATER
 void printbb(bitboard bb) {
     std::cout << "   ";
 
