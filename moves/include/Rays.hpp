@@ -59,7 +59,7 @@ static constexpr std::array<std::array<uint64_t, 8>, 64> calculate_rays() {
         }
 
         rays[i][NORTH] = (COL_A & ~ROW1) << i;
-        rays[i][SOUTH] = (COL_H & ~ROW8) << (63 - i);
+        rays[i][SOUTH] = (COL_H & ~ROW8) >> (63 - i);
         rays[i][EAST]  = east;
         rays[i][WEST]  = west;
 
@@ -78,6 +78,7 @@ static constexpr std::array<std::array<uint64_t, 8>, 64> calculate_rays() {
 }
 
 // 8 sides of a chess piece
+// Rays[bit][side]
 constexpr std::array<std::array<uint64_t, 8>, 64> Rays = calculate_rays();
 
 #endif //CHESSAI_RAYS_HPP
