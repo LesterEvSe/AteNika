@@ -1,6 +1,6 @@
 #include "Pieces.hpp"
 #include "ZobristHash.hpp"
-#include "SlAttacks.hpp"
+#include "SlAttack.hpp"
 
 constexpr uint64_t RMagic[64] = {
         0x2080020500400f0ULL,
@@ -138,7 +138,8 @@ constexpr uint64_t BMagic[64] = {
 
 int main() {
     ZobristHash::init();
-    SlAttacks::init();
+    Rays::init();
+    SlAttack::init();
 //    bitboard temp = 123'520;
 //    printbb(temp);
 //    std::cout << (unsigned)lsb(temp) << ' ' << _popLsb(temp);
@@ -150,10 +151,10 @@ int main() {
 //    bitboard temp = dist(gen);
 
 /// TEST
-//    bitboard temp = 0x0004120843280816;
-//    uint8_t cell = 27;
-//    printbb(temp);
-//    printbb(SlAttacks::get_rook_attacks(cell, temp));
+    bitboard temp = 0x0004120843280816;
+    uint8_t cell = 27;
+    printbb(temp);
+    printbb(SlAttack::get_queen_attack(cell, temp));
 //
 //    unsigned long long row = ROW1 << (cell - (cell % 8));
 //    unsigned long long col = COL_A << cell % 8;
