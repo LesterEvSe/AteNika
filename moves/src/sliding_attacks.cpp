@@ -1,4 +1,4 @@
-#include "SlAttack.hpp"
+#include "sliding_attacks.hpp"
 
 bitboard SlAttack::RookMask[64];
 bitboard SlAttack::RookAttack[64][4096];

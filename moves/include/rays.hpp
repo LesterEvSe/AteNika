@@ -1,7 +1,7 @@
 #ifndef CHESSAI_RAYS_HPP
 #define CHESSAI_RAYS_HPP
 
-#include "Bitboard.hpp"
+#include "bitboard.hpp"
 
 enum Direction : uint8_t {
     NORTH = 0,

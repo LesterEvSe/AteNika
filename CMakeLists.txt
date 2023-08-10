@@ -11,24 +11,21 @@ include_directories(
 )
 
 set(SOURCES
-    base/src/ZobristHash.cpp
-    base/src/Pieces.cpp
-    base/src/PosesHistory.cpp
-    base/src/Position.cpp
-    base/src/Bitboard.cpp
-        moves/src/SlAttack.cpp)
+        base/src/zobrist_hash.cpp
+        base/src/pieces.cpp
+        base/src/poses_history.cpp
+        base/src/position.cpp
+        base/src/bitboard.cpp
+        moves/src/sliding_attacks.cpp)
 
 set(HEADERS
-    base/include/ZobristHash.hpp
-    base/include/Bitboard.hpp
-    base/include/Pieces.hpp
-    base/include/PosesHistory.hpp
-    base/include/Position.hpp
+        base/include/zobrist_hash.hpp
+        base/include/bitboard.hpp
+        base/include/pieces.hpp
+        base/include/poses_history.hpp
+        base/include/position.hpp
 
-    moves/include/Move.hpp
-    moves/include/KingMask.hpp
-    moves/include/KnightMask.hpp
-        moves/include/QueenMask.hpp
-        moves/include/SlAttack.hpp moves/src/Rays.cpp moves/include/Rays.hpp)
+        moves/include/move.hpp
+        moves/include/sliding_attacks.hpp moves/src/rays.cpp moves/include/rays.hpp moves/src/attacks.cpp moves/include/attacks.hpp)
 
 add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})

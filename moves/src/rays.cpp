@@ -1,4 +1,4 @@
-#include "Rays.hpp"
+#include "rays.hpp"
 
 uint64_t Rays::s_rays[8][64];
 

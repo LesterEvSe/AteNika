@@ -1,8 +1,8 @@
 #ifndef CHESSAI_PIECES_HPP
 #define CHESSAI_PIECES_HPP
 
-#include "Bitboard.hpp"
-#include "ZobristHash.hpp"
+#include "bitboard.hpp"
+#include "zobrist_hash.hpp"
 #include <string>
 
 class Pieces
@@ -18,7 +18,7 @@ private:
 
     // white and black pieces
     bitboard m_side[2] {0};
-    bitboard inverse_side[2] {0};
+    bitboard reverse_side[2] {0};
 
     // m_all the pieces on the board
     bitboard m_all {0};

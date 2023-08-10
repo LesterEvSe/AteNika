@@ -1,4 +1,4 @@
-#include "ZobristHash.hpp"
+#include "zobrist_hash.hpp"
 
 std::mt19937_64 ZobristHash::generator {seed};
 std::uniform_int_distribution<uint64_t> ZobristHash::distribution;

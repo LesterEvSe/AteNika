@@ -1,4 +1,4 @@
-#include "PosesHistory.hpp"
+#include "poses_history.hpp"
 
 void PosesHistory::clear() {
     m_poses.clear();

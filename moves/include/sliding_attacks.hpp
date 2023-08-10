@@ -1,7 +1,7 @@
-#ifndef CHESSAI_SLATTACK_HPP
-#define CHESSAI_SLATTACK_HPP
+#ifndef CHESSAI_SLIDING_ATTACKS_HPP
+#define CHESSAI_SLIDING_ATTACKS_HPP
 
-#include "Rays.hpp"
+#include "rays.hpp"
 
 class SlAttack {
 private:
@@ -86,5 +86,4 @@ public:
     static bitboard get_queen_attack(uint8_t cell, uint64_t blockers);
 };
 
-
-#endif //CHESSAI_SLATTACK_HPP
+#endif //CHESSAI_SLIDING_ATTACKS_HPP

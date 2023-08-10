@@ -1,8 +1,8 @@
-#ifndef CHESSAI_ZOBRISTHASH_HPP
-#define CHESSAI_ZOBRISTHASH_HPP
+#ifndef CHESSAI_ZOBRIST_HASH_HPP
+#define CHESSAI_ZOBRIST_HASH_HPP
 
-#include "Bitboard.hpp"
-#include "Pieces.hpp"
+#include "bitboard.hpp"
+#include "pieces.hpp"
 #include <random>
 
 class Pieces;
@@ -37,4 +37,4 @@ public:
     void xor_bl_castling();
 };
 
-#endif //CHESSAI_ZOBRISTHASH_HPP
+#endif //CHESSAI_ZOBRIST_HASH_HPP

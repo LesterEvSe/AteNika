@@ -1,4 +1,4 @@
-#include "Pieces.hpp"
+#include "pieces.hpp"
 #include <cctype> // for isdigit function
 
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR
@@ -58,8 +58,8 @@ void Pieces::update_bitboards() {
                     m_pieces_bitboards[WHITE][KING] |
                     m_pieces_bitboards[WHITE][QUEEN];
 
-    inverse_side[BLACK] = ~m_side[BLACK];
-    inverse_side[WHITE] = ~m_side[WHITE];
+    reverse_side[BLACK] = ~m_side[BLACK];
+    reverse_side[WHITE] = ~m_side[WHITE];
 
     m_all = m_side[BLACK] | m_side[WHITE];
     m_empty = ~m_all;

@@ -1,10 +1,10 @@
 #ifndef CHESSAI_POSITION_HPP
 #define CHESSAI_POSITION_HPP
 
-#include "Pieces.hpp"
-#include "ZobristHash.hpp"
-#include "PosesHistory.hpp"
-#include "Move.hpp"
+#include "pieces.hpp"
+#include "zobrist_hash.hpp"
+#include "poses_history.hpp"
+#include "move.hpp"
 
 class Position {
 private:
