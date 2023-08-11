@@ -14,7 +14,7 @@ int main() {
     bitboard temp = 0x0004120843280816;
     uint8_t cell = 28;
     printbb(temp);
-    printbb(SlAttack::get_queen_attack(cell, temp));
+    // printbb(SlAttack::get_queen_captures(cell, temp));
 
 //    std::string str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 //    auto pieces = Pieces(str);

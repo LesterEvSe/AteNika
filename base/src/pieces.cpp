@@ -58,8 +58,8 @@ void Pieces::update_bitboards() {
                     m_pieces_bitboards[WHITE][KING] |
                     m_pieces_bitboards[WHITE][QUEEN];
 
-    reverse_side[BLACK] = ~m_side[BLACK];
-    reverse_side[WHITE] = ~m_side[WHITE];
+    m_reverse_side[BLACK] = ~m_side[BLACK];
+    m_reverse_side[WHITE] = ~m_side[WHITE];
 
     m_all = m_side[BLACK] | m_side[WHITE];
     m_empty = ~m_all;

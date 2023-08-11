@@ -41,7 +41,7 @@ void Rays::calculate_rays() {
         s_rays[EAST][i] = east;
         s_rays[WEST][i] = west;
 
-        east = east << 1 & ~COL_A;
+        east = (east << 1) & ~COL_A;
         west |= one;
         one <<= 1;
 

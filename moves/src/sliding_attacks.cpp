@@ -122,18 +122,37 @@ void SlAttack::init() {
     init_bishop_table();
 }
 
-bitboard SlAttack::get_rook_attack(uint8_t cell, uint64_t blockers) {
+
+bitboard SlAttack::get_rook_moves(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side) {
     blockers &= RookMask[cell];
     uint64_t key = blockers * RookMagics[cell] >> (64 - RookBits[cell]);
-    return RookAttack[cell][key];
+    return RookAttack[cell][key] & pieces.m_reverse_side[side];
 }
 
-bitboard SlAttack::get_bishop_attack(uint8_t cell, uint64_t blockers) {
+bitboard SlAttack::get_rook_captures(const Pieces &pieces, uint8_t cell, uint64_t blockers, bool side) {
+    blockers &= RookMask[cell];
+    uint64_t key = blockers * RookMagics[cell] >> (64 - RookBits[cell]);
+    return RookAttack[cell][key] & pieces.m_side[get_reverse_side(side)];
+}
+
+
+bitboard SlAttack::get_bishop_moves(const Pieces &pieces, uint8_t cell, uint64_t blockers, bool side) {
     blockers &= BishopMask[cell];
     uint64_t key = blockers * BishopMagics[cell] >> (64 - BishopBits[cell]);
-    return BishopAttack[cell][key];
+    return BishopAttack[cell][key] & pieces.m_reverse_side[side];
 }
 
-bitboard SlAttack::get_queen_attack(uint8_t cell, uint64_t blockers) {
-    return get_rook_attack(cell, blockers) | get_bishop_attack(cell, blockers);
+bitboard SlAttack::get_bishop_captures(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side) {
+    blockers &= BishopMask[cell];
+    uint64_t key = blockers * BishopMagics[cell] >> (64 - BishopBits[cell]);
+    return BishopAttack[cell][key] & pieces.m_side[get_reverse_side(side)];
+}
+
+
+bitboard SlAttack::get_queen_moves(const Pieces &pieces, uint8_t cell, uint64_t blockers, bool side) {
+    return get_rook_moves(pieces, cell, blockers, side) | get_bishop_moves(pieces, cell, blockers, side);
+}
+
+bitboard SlAttack::get_queen_captures(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side) {
+    return get_rook_captures(pieces, cell, blockers, side) | get_bishop_captures(pieces, cell, blockers, side);
 }

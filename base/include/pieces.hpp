@@ -7,24 +7,21 @@
 
 class Pieces
 {
-    friend class ZobristHash;
-    friend class Position;
 public:
     static constexpr uint8_t DIM {8};
-private:
     // The top 18 bitboards to work
     // m_all pieces, black and white (black pawns, white bishops ...)
     bitboard m_pieces_bitboards[2][6] {0};
 
     // white and black pieces
     bitboard m_side[2] {0};
-    bitboard reverse_side[2] {0};
+    bitboard m_reverse_side[2] {0};
 
     // m_all the pieces on the board
     bitboard m_all {0};
     bitboard m_empty {0};
 
-public:
+
     // using short FEN (Forsyth-Edwards Notation):
     // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
     explicit Pieces(const std::string& short_fen);

@@ -33,7 +33,7 @@ struct Move {
     uint8_t m_defender_type {0};
     uint8_t m_defender_side {0};
 
-    Flag m_flag {Flag::DEFAULT};
+    Flag m_flag { Flag::DEFAULT };
 };
 
 

@@ -2,6 +2,7 @@
 #define CHESSAI_SLIDING_ATTACKS_HPP
 
 #include "rays.hpp"
+#include "pieces.hpp"
 
 class SlAttack {
 private:
@@ -81,9 +82,14 @@ private:
 
 public:
     static void init();
-    static bitboard get_rook_attack(uint8_t cell, uint64_t blockers);
-    static bitboard get_bishop_attack(uint8_t cell, uint64_t blockers);
-    static bitboard get_queen_attack(uint8_t cell, uint64_t blockers);
+    static bitboard get_rook_moves(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
+    static bitboard get_rook_captures(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
+
+    static bitboard get_bishop_moves(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
+    static bitboard get_bishop_captures(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
+
+    static bitboard get_queen_moves(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
+    static bitboard get_queen_captures(const Pieces& pieces, uint8_t cell, uint64_t blockers, bool side);
 };
 
 #endif //CHESSAI_SLIDING_ATTACKS_HPP

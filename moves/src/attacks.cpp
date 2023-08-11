@@ -32,10 +32,61 @@ void Attacks::init() {
     calculate_knight_attacks();
 }
 
-bitboard Attacks::get_king_attacks(uint8_t cell) {
-    return KingAttacks[cell];
+bitboard Attacks::get_king_moves(const Pieces &pieces, uint8_t cell, bool side) {
+    return KingAttacks[cell] & pieces.m_reverse_side[side];
 }
 
-bitboard Attacks::get_knight_attacks(uint8_t cell) {
-    return KnightAttacks[cell];
+bitboard Attacks::get_king_captures(const Pieces& pieces, uint8_t cell, bool side) {
+    return KingAttacks[cell] & pieces.m_side[get_reverse_side(side)];
+}
+
+bitboard Attacks::get_knight_moves(const Pieces &pieces, uint8_t cell, bool side) {
+    return KnightAttacks[cell] & pieces.m_reverse_side[side];
+}
+
+bitboard Attacks::get_knight_captures(const Pieces& pieces, uint8_t cell, bool side) {
+    return KnightAttacks[cell] & pieces.m_side[get_reverse_side(side)];
+}
+
+
+bitboard Attacks::get_white_pawn_default_moves(const Pieces& pieces) {
+    return pieces.m_pieces_bitboards[WHITE][PAWN] << 8 & pieces.m_empty;
+}
+bitboard Attacks::get_black_pawn_default_moves(const Pieces& pieces) {
+    return pieces.m_pieces_bitboards[BLACK][PAWN] >> 8 & pieces.m_empty;
+}
+
+bitboard Attacks::get_white_pawn_long_moves(const Pieces& pieces) {
+    bitboard default_white_moves = get_white_pawn_default_moves(pieces);
+    return (default_white_moves & ROW2) << 8 & pieces.m_empty;
+}
+bitboard Attacks::get_black_pawn_long_moves(const Pieces& pieces) {
+    bitboard default_black_moves = get_black_pawn_default_moves(pieces);
+    return (default_black_moves & ROW5) >> 8 & pieces.m_empty;
+}
+
+bitboard Attacks::get_white_pawn_left_captures(const Pieces& pieces, bool all_captures) {
+    bitboard mask = pieces.m_pieces_bitboards[WHITE][PAWN] << 7 & ~COL_H;
+    if (all_captures)
+        mask &= pieces.m_side[BLACK];
+    return mask;
+}
+bitboard Attacks::get_black_pawn_left_captures(const Pieces& pieces, bool all_captures) {
+    bitboard mask = pieces.m_pieces_bitboards[BLACK][PAWN] >> 9 & ~COL_H;
+    if (all_captures)
+        mask &= pieces.m_side[WHITE];
+    return mask;
+}
+
+bitboard Attacks::get_white_pawn_right_captures(const Pieces& pieces, bool all_captures) {
+    bitboard mask = pieces.m_pieces_bitboards[WHITE][PAWN] << 9 & ~COL_A;
+    if (all_captures)
+        mask &= pieces.m_side[BLACK];
+    return mask;
+}
+bitboard Attacks::get_black_pawn_right_captures(const Pieces& pieces, bool all_captures) {
+    bitboard mask = pieces.m_pieces_bitboards[BLACK][PAWN] << 7 & ~COL_A;
+    if (all_captures)
+        mask &= pieces.m_side[WHITE];
+    return mask;
 }

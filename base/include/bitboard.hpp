@@ -70,6 +70,7 @@ constexpr uint64_t ONE  {1};
 extern void set0(bitboard& field, uint8_t pos);
 extern void set1(bitboard& field, uint8_t pos);
 extern bool get_bit(bitboard field, uint8_t pos);
+extern bool get_reverse_side(bool side);
 extern uint8_t count1(bitboard field);
 
 /**
