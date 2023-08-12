@@ -34,6 +34,8 @@ public:
 
     static bitboard get_white_pawn_right_captures(const Pieces& pieces, bool all_captures);
     static bitboard get_black_pawn_right_captures(const Pieces& pieces, bool all_captures);
+
+//    static bool under_attack(const Pieces &pieces, uint8_t cell, bool side);
 };
 
 

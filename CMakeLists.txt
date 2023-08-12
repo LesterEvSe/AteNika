@@ -26,6 +26,6 @@ set(HEADERS
         base/include/position.hpp
 
         moves/include/move.hpp
-        moves/include/sliding_attacks.hpp moves/src/rays.cpp moves/include/rays.hpp moves/src/attacks.cpp moves/include/attacks.hpp)
+        moves/include/sliding_attacks.hpp moves/src/rays.cpp moves/include/rays.hpp moves/src/attacks.cpp moves/include/attacks.hpp moves/src/move_array.cpp moves/include/move_array.hpp)
 
 add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})

@@ -2,12 +2,15 @@
 #include "zobrist_hash.hpp"
 #include "attacks.hpp"
 #include "sliding_attacks.hpp"
+#include "move_array.hpp"
 
 int main() {
     ZobristHash::init();
     Rays::init();
     Attacks::init();
     SlAttack::init();
+
+    MoveArray movarr = MoveArray();
 
 
 /// TEST
