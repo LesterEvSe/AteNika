@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 project(ChessAI)
-
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories(
@@ -8,15 +7,13 @@ include_directories(
 )
 
 set(SOURCES
-        chess/board.cpp
-        chess/board.hpp
+    chess/board.cpp
+    chess/rays.cpp
 )
 
 set(HEADERS
-        chess/defs.hpp
-        chess/bitfunc.hpp
-        chess/board.cpp
-        chess/board.hpp
+    chess/defs.hpp
+    chess/bitfunc.hpp
 )
 
-add_executable(ChessAI main.cpp ${SOURCES} ${HEADERS})
+add_executable(AteNica main.cpp ${SOURCES} ${HEADERS})
