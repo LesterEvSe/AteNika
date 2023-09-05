@@ -45,6 +45,9 @@ void Board::update_bitboards() {
     m_all = m_side[WHITE] | m_side[BLACK];
 }
 
+Color Board::get_curr_player_move()     { return m_player_move; }
+Color Board::get_opponent_player_move() { return m_player_move == WHITE ? BLACK : WHITE; }
+
 std::ostream& operator<<(std::ostream& out, const Board& pieces) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)

@@ -9,6 +9,7 @@ include_directories(
 set(SOURCES
     chess/board.cpp
     chess/rays.cpp
+    chess/zobrist_hash.cpp
 )
 
 set(HEADERS
