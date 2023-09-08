@@ -22,7 +22,7 @@ private:
     uint64_t m_hash {ZERO};
 
 public:
-    void init();
+    static void init();
     ZobristHash(const Board& board);
 
     [[nodiscard]] uint64_t get_hash() const;

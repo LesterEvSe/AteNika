@@ -28,7 +28,33 @@ void ZobristHash::init() {
 }
 
 ZobristHash::ZobristHash(const Board &board) {
+    if (board.get_curr_player_move() == WHITE)
+        xor_move();
+    xor_en_passant(get_col(board.get_en_passant()));
 
+    if (board.get_white_qs_castle())
+        xor_qs_castle(WHITE);
+    if (board.get_white_ks_castle())
+        xor_ks_castle(WHITE);
+
+    if (board.get_black_qs_castle())
+        xor_qs_castle(BLACK);
+    if (board.get_black_ks_castle())
+        xor_ks_castle(BLACK);
+
+    static constexpr PieceType type[6] = { PAWN, ROOK, KNIGHT, BISHOP, KING, QUEEN };
+    for (uint8_t i = 0; i < 6; ++i) {
+        bitboard white_pieces = board.get_pieces(WHITE, type[i]);
+        bitboard black_pieces = board.get_pieces(BLACK, type[i]);
+
+        for (uint8_t j = 0; j < 64; ++j) {
+            uint64_t cell = ONE << j;
+            if (white_pieces & cell)
+                xor_piece(WHITE, type[i], j);
+            if (black_pieces & cell)
+                xor_piece(BLACK, type[i], j);
+        }
+    }
 }
 
 uint64_t ZobristHash::get_hash() const { return m_hash; }

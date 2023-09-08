@@ -45,8 +45,21 @@ void Board::update_bitboards() {
     m_all = m_side[WHITE] | m_side[BLACK];
 }
 
-Color Board::get_curr_player_move()     { return m_player_move; }
-Color Board::get_opponent_player_move() { return m_player_move == WHITE ? BLACK : WHITE; }
+Color Board::get_curr_player_move()     const { return m_player_move; }
+Color Board::get_opponent_player_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
+
+bitboard Board::get_pieces(Color color, PieceType piece) const { return m_pieces[color][piece]; }
+bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
+bitboard Board::get_all_pieces() const { return m_all;  }
+bitboard Board::get_free_cells() const { return ~m_all; }
+
+uint8_t Board::get_half_moves() const { return m_half_moves_counter; }
+uint8_t Board::get_en_passant() const { return m_en_passant; }
+
+bool Board::get_white_qs_castle() const { return m_castling_rights & 1; }
+bool Board::get_white_ks_castle() const { return m_castling_rights & 2; }
+bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
+bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 
 std::ostream& operator<<(std::ostream& out, const Board& pieces) {
     out << "   ";

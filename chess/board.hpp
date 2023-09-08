@@ -20,13 +20,28 @@ private:
 
     // The moves that can be brought back.
     // If > 50 moves, there will be a draw
-    uint8_t m_half_move_counter;
+    uint8_t m_half_moves_counter;
+
+    uint64_t m_en_passant;
+
+    // if white rook move, example 7 cell, we lose kingside castling.
+    // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
+    static constexpr uint64_t castling[64] = {
+            14, 15, 15, 15, 12, 15, 15, 13,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            11, 15, 15, 15, 3, 15, 15, 7
+    };
 
     // 4 bits
-    // 0 - white queenside
-    // 1 - white kingside
-    // 2 - black queenside
-    // 3 - black kingside
+    // 1 - white queenside
+    // 2 - white kingside
+    // 4 - black queenside
+    // 8 - black kingside
     uint8_t m_castling_rights;
 
 
@@ -36,11 +51,24 @@ public:
     Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     void update_bitboards();
 
-    Color get_curr_player_move();
-    Color get_opponent_player_move();
+    Color get_curr_player_move() const;
+    Color get_opponent_player_move() const;
+
+    bitboard get_pieces(Color color, PieceType piece) const;
+    bitboard get_side_pieces(Color color) const;
+    bitboard get_all_pieces() const;
+    bitboard get_free_cells() const;
+
+    uint8_t get_half_moves() const;
+    uint8_t get_en_passant() const;
+
+    bool get_white_qs_castle() const;
+    bool get_white_ks_castle() const;
+    bool get_black_qs_castle() const;
+    bool get_black_ks_castle() const;
+
 
     friend std::ostream& operator<<(std::ostream& out, const Board& board);
 };
-
 
 #endif //CHESSAI_BOARD_HPP
