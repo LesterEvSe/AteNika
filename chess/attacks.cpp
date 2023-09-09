@@ -1,4 +1,5 @@
 #include "attacks.hpp"
+#include "rays.hpp"
 #include "bitfunc.hpp"
 
 bitboard Attacks::_rook_mask[64];
@@ -14,8 +15,8 @@ bitboard Attacks::_king_attacks[64];
 void Attacks::init() {
     _init_rook_mask();
     _init_bishop_mask();
-    _init_rook_attacks();
-    _init_bishop_attacks();
+    _init_rook_attacks(); // using _rook_mask
+    _init_bishop_attacks(); // using _bishop_mask
 
     _init_pawn_attacks();
     _init_knight_attacks();
@@ -23,11 +24,21 @@ void Attacks::init() {
 }
 
 void Attacks::_init_rook_mask() {
-
+    for (uint8_t i = 0; i < 64; ++i) {
+        _rook_mask[i] = Rays::get_ray(Rays::Direction::NORTH, i) |
+                        Rays::get_ray(Rays::Direction::WEST,  i) |
+                        Rays::get_ray(Rays::Direction::SOUTH, i) |
+                        Rays::get_ray(Rays::Direction::EAST,  i);
+    }
 }
 
 void Attacks::_init_bishop_mask() {
-
+    for (uint8_t i = 0; i < 64; ++i) {
+        _bishop_mask[i] = Rays::get_ray(Rays::Direction::NORTH_EAST, i) |
+                          Rays::get_ray(Rays::Direction::SOUTH_EAST, i) |
+                          Rays::get_ray(Rays::Direction::SOUTH_WEST, i) |
+                          Rays::get_ray(Rays::Direction::NORTH_WEST, i);
+    }
 }
 
 void Attacks::_init_rook_attacks() {
@@ -72,6 +83,25 @@ void Attacks::_init_king_attacks() {
     }
 }
 
+bitboard Attacks::_get_rook_attacks(PieceType type, uint8_t cell, bitboard blockers) {
+    return 0;
+}
+
+bitboard Attacks::_get_bishop_attacks(PieceType type, uint8_t cell, bitboard blockers) {
+    return 0;
+}
+
+
+bitboard Attacks::get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers) {
+    switch (type) {
+        case BISHOP : return _get_bishop_attacks(type, cell, blockers);
+        case ROOK   : return _get_rook_attacks(type, cell, blockers);
+        case QUEEN  : return _get_bishop_attacks(type, cell, blockers) | _get_rook_attacks(type, cell, blockers);
+        default     : error("Unknown type of sliding piece");
+    }
+    // Won't get it here
+    return 0;
+}
 
 bitboard Attacks::get_non_sliding_attacks(Color color, PieceType type, uint8_t cell) {
     switch (type) {
@@ -80,7 +110,6 @@ bitboard Attacks::get_non_sliding_attacks(Color color, PieceType type, uint8_t c
         case KING   : return _king_attacks[cell];
         default     : error("Unknown type of non sliding piece");
     }
-
     // Won't get it here
     return 0;
 }

@@ -81,9 +81,12 @@ namespace Attacks {
     void _init_knight_attacks();
     void _init_king_attacks();
 
+    bitboard _get_rook_attacks(PieceType type, uint8_t cell, bitboard blockers);
+    bitboard _get_bishop_attacks(PieceType type, uint8_t cell, bitboard blockers);
 
     void init();
 
+    bitboard get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers);
     bitboard get_non_sliding_attacks(Color color, PieceType type, uint8_t cell);
 }
 
