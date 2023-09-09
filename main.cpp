@@ -1,12 +1,12 @@
 #include "rays.hpp"
+#include "attacks.hpp"
 #include "zobrist_hash.hpp"
 #include "board.hpp"
 
 int main() {
     Rays::init();
+    Attacks::init(); // Must be init after Rays
     ZobristHash::init();
 
-    Board board = Board();
-    std::cout << 0b1101;
     return 0;
 }

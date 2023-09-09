@@ -35,5 +35,4 @@ namespace Rays
     bitboard get_ray(Direction dir, uint8_t cell);
 }
 
-
 #endif //CHESSAI_RAYS_HPP

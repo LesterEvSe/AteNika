@@ -15,6 +15,8 @@ set(SOURCES
 set(HEADERS
     chess/defs.hpp
     chess/bitfunc.hpp
+        chess/attacks.cpp
+        chess/attacks.hpp
 )
 
 add_executable(AteNica main.cpp ${SOURCES} ${HEADERS})

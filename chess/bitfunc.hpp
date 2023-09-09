@@ -2,6 +2,7 @@
 #define CHESSAI_BITFUNC_HPP
 
 #include "defs.hpp"
+#include <string>
 
 /**
  * bitScanForward/LSB
@@ -41,6 +42,11 @@ inline uint8_t msb(bitboard bb) {
 
 inline uint8_t get_row(uint8_t cell) { return cell / 8; }
 inline uint8_t get_col(uint8_t cell) { return cell % 8; }
+
+inline void error(std::string msg) {
+    std::cerr << msg;
+    exit(1);
+}
 
 inline void printbb(bitboard bb) {
     std::cout << "   ";
