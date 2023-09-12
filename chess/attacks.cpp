@@ -23,6 +23,28 @@ void Attacks::init() {
     _init_king_attacks();
 }
 
+bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
+    return 0;
+}
+bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
+    return 0;
+}
+
+// convert from mask to blockers pieces
+bitboard Attacks::get_blockers(uint16_t index, bitboard mask) {
+    uint64_t blockers = ZERO;
+    uint8_t all = std::popcount(mask);
+
+    for (uint8_t i = 0; i < all; ++i) {
+        uint8_t pos = lsb(mask);
+        mask &= ~(ONE << pos);
+
+        if (index & (ONE << i))
+            blockers |= (ONE << pos);
+    }
+    return blockers;
+}
+
 void Attacks::_init_rook_mask() {
     for (uint8_t i = 0; i < 64; ++i) {
         _rook_mask[i] = Rays::get_ray(Rays::Direction::NORTH, i) |
@@ -42,11 +64,23 @@ void Attacks::_init_bishop_mask() {
 }
 
 void Attacks::_init_rook_attacks() {
+    for (uint8_t i = 0; i < 64; ++i)
+        for (uint16_t j = 0; j < ONE << _rook_bits[i]; ++j) {
+            bitboard blockers = get_blockers(j, _rook_mask[i]);
 
+            _rook_attacks[i][(blockers * _rook_magics[i]) >> (64 - _rook_bits[i])] =
+                    _calculate_rook_attacks(i, blockers);
+        }
 }
 
 void Attacks::_init_bishop_attacks() {
+    for (uint8_t i = 0; i < 64; ++i)
+        for (uint16_t j = 0; j < (ONE << _bishop_bits[i]); ++j) {
+            bitboard blockers = get_blockers(j, _bishop_mask[i]);
 
+            _bishop_attacks[i][(blockers * _bishop_magics[i]) >> (64 - _bishop_bits[i])] =
+                    _calculate_bishop_attacks(i, blockers);
+        }
 }
 
 void Attacks::_init_pawn_attacks() {

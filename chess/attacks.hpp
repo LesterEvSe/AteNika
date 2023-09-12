@@ -59,6 +59,8 @@ namespace Attacks {
             0x1000042304105ULL, 0x10008830412a00ULL, 0x2520081090008908ULL, 0x40102000a0a60140ULL,
     };
 
+    bitboard get_blockers(uint16_t index, bitboard mask);
+
     // 4096 = 2^(max element from _rook_bits array)
     extern bitboard _rook_mask[64];
     extern bitboard _rook_attacks[64][4096];
@@ -71,7 +73,8 @@ namespace Attacks {
     extern bitboard _knight_attacks[64];
     extern bitboard _king_attacks[64];
 
-
+    bitboard _calculate_rook_attacks(uint8_t cell, bitboard blockers);
+    bitboard _calculate_bishop_attacks(uint8_t cell, bitboard blockers);
     void _init_rook_mask();
     void _init_bishop_mask();
     void _init_rook_attacks();

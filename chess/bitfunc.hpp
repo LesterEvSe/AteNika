@@ -3,6 +3,7 @@
 
 #include "defs.hpp"
 #include <string>
+#include <bit> // for std::popcount
 
 /**
  * bitScanForward/LSB
@@ -42,8 +43,9 @@ inline uint8_t msb(bitboard bb) {
 
 inline uint8_t get_row(uint8_t cell) { return cell / 8; }
 inline uint8_t get_col(uint8_t cell) { return cell % 8; }
+inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
 
-inline void error(std::string msg) {
+inline void error(const std::string& msg) {
     std::cerr << msg;
     exit(1);
 }
