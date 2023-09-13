@@ -153,7 +153,7 @@ void Attacks::_init_knight_attacks() {
         bitboard lr1 = (piece >> 1) & ~FILE_H | // left
                        (piece << 1) & ~FILE_A; // right
         bitboard lr2 = (piece >> 2) & ~(FILE_G | FILE_H) |
-                       (piece << 2) & (FILE_A | FILE_B);
+                       (piece << 2) & ~(FILE_A | FILE_B);
         _knight_attacks[i] = lr1 << 16 | lr1 >> 16 | lr2 << 8 | lr2 >> 8;
     }
 }

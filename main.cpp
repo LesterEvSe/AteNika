@@ -9,11 +9,12 @@ int main() {
     ZobristHash::init();
 
     uint64_t mask = 6112432;
-    printbb(mask);
+    // printbb(mask);
 
     for (uint8_t i = 0; i < 64; ++i) {
         std::cout << (int)i << std::endl;
-        printbb(Attacks::get_non_sliding_attacks(WHITE, KNIGHT, i));
+        printbb(Attacks::_rook_mask[i]);
+        // printbb(Attacks::get_sliding_attacks(ROOK, i, 0));
     }
 
     return 0;
