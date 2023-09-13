@@ -66,7 +66,7 @@ namespace Attacks {
 
     // 512 = 2^(max element from _bishop_bits array)
     extern bitboard _bishop_mask[64];
-    extern bitboard _bishop_attacks[64][512];
+    extern bitboard _bishop_attacks[64][1024];
 
     extern bitboard _pawn_attacks[2][64];
     extern bitboard _knight_attacks[64];

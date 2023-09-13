@@ -6,7 +6,7 @@ bitboard Attacks::_rook_mask[64];
 bitboard Attacks::_rook_attacks[64][4096];
 
 bitboard Attacks::_bishop_mask[64];
-bitboard Attacks::_bishop_attacks[64][512];
+bitboard Attacks::_bishop_attacks[64][1024];
 
 bitboard Attacks::_pawn_attacks[2][64];
 bitboard Attacks::_knight_attacks[64];
@@ -21,6 +21,21 @@ void Attacks::init() {
     _init_pawn_attacks();
     _init_knight_attacks();
     _init_king_attacks();
+}
+
+// convert from mask to blockers pieces
+bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
+    uint64_t blockers = ZERO;
+    uint8_t all = std::popcount(mask);
+
+    for (uint8_t i = 0; i < all; ++i) {
+        uint8_t pos = lsb(mask);
+        mask &= ~(ONE << pos); // set0
+
+        if (index & (ONE << i))
+            blockers |= (ONE << pos);
+    }
+    return blockers;
 }
 
 bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
@@ -55,25 +70,25 @@ bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
 bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
     bitboard temp, attack = ZERO;
 
-    // NORTH_EAST
+    // NORTH EAST
     temp = Rays::get_ray(Rays::NORTH_EAST, cell);
     attack |= temp;
     if (temp & blockers)
         attack &= ~Rays::get_ray(Rays::NORTH_EAST, lsb(temp & blockers));
 
-    // SOUTH_EAST
+    // SOUTH EAST
     temp = Rays::get_ray(Rays::SOUTH_EAST, cell);
     attack |= temp;
     if (temp & blockers)
         attack &= ~Rays::get_ray(Rays::SOUTH_EAST, msb(temp & blockers));
 
-    // SOUTH_WEST
+    // SOUTH WEST
     temp = Rays::get_ray(Rays::SOUTH_WEST, cell);
     attack |= temp;
     if (temp & blockers)
         attack &= ~Rays::get_ray(Rays::SOUTH_WEST, msb(temp & blockers));
 
-    // NORTH_WEST
+    // NORTH WEST
     temp = Rays::get_ray(Rays::NORTH_WEST, cell);
     attack |= temp;
     if (temp & blockers)
@@ -81,42 +96,28 @@ bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
     return attack;
 }
 
-// convert from mask to blockers pieces
-bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
-    uint64_t blockers = ZERO;
-    uint8_t all = std::popcount(mask);
-
-    for (uint8_t i = 0; i < all; ++i) {
-        uint8_t pos = lsb(mask);
-        mask &= ~(ONE << pos);
-
-        if (index & (ONE << i))
-            blockers |= (ONE << pos);
-    }
-    return blockers;
-}
-
 void Attacks::_init_rook_mask() {
     for (uint8_t i = 0; i < 64; ++i) {
-        _rook_mask[i] = Rays::get_ray(Rays::Direction::NORTH, i) |
-                        Rays::get_ray(Rays::Direction::WEST,  i) |
-                        Rays::get_ray(Rays::Direction::SOUTH, i) |
-                        Rays::get_ray(Rays::Direction::EAST,  i);
+        _rook_mask[i] = (Rays::get_ray(Rays::Direction::NORTH, i) & ~RANK_8) |
+                        (Rays::get_ray(Rays::Direction::EAST,  i) & ~FILE_H) |
+                        (Rays::get_ray(Rays::Direction::SOUTH, i) & ~RANK_1) |
+                        (Rays::get_ray(Rays::Direction::WEST,  i) & ~FILE_A);
     }
 }
 
 void Attacks::_init_bishop_mask() {
+    bitboard invert_edges_mask = ~(RANK_1 | RANK_8 | FILE_A | FILE_H);
     for (uint8_t i = 0; i < 64; ++i) {
-        _bishop_mask[i] = Rays::get_ray(Rays::Direction::NORTH_EAST, i) |
-                          Rays::get_ray(Rays::Direction::SOUTH_EAST, i) |
-                          Rays::get_ray(Rays::Direction::SOUTH_WEST, i) |
-                          Rays::get_ray(Rays::Direction::NORTH_WEST, i);
+        _bishop_mask[i] = (Rays::get_ray(Rays::Direction::NORTH_EAST, i) |
+                           Rays::get_ray(Rays::Direction::SOUTH_EAST, i) |
+                           Rays::get_ray(Rays::Direction::SOUTH_WEST, i) |
+                           Rays::get_ray(Rays::Direction::NORTH_WEST, i)) & invert_edges_mask;
     }
 }
 
 void Attacks::_init_rook_attacks() {
     for (uint8_t i = 0; i < 64; ++i)
-        for (uint16_t j = 0; j < ONE << _rook_bits[i]; ++j) {
+        for (uint16_t j = 0; j < (ONE << _rook_bits[i]); ++j) {
             bitboard blockers = _get_blockers(j, _rook_mask[i]);
 
             _rook_attacks[i][(blockers * _rook_magics[i]) >> (64 - _rook_bits[i])] =
@@ -176,7 +177,7 @@ bitboard Attacks::_get_rook_attacks(uint8_t cell, bitboard blockers) {
 
 bitboard Attacks::_get_bishop_attacks(uint8_t cell, bitboard blockers) {
     blockers &= _bishop_mask[cell];
-    uint64_t key = (blockers * _rook_magics[cell]) >> (64 - _bishop_bits[cell]);
+    uint64_t key = (blockers * _bishop_magics[cell]) >> (64 - _bishop_bits[cell]);
     return _bishop_attacks[cell][key];
 }
 

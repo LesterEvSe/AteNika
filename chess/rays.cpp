@@ -36,7 +36,7 @@ void Rays::init()
             east = (RANK_1 << i) & ~FILE_A;
         }
 
-        _rays[NORTH][i] = FILE_A << (8 + i);
+        _rays[NORTH][i] = (FILE_A & ~RANK_1) << i;
         _rays[SOUTH][i] = (FILE_H & ~RANK_8) >> (63 - i);
         _rays[WEST][i] = west;
         _rays[EAST][i] = east;
