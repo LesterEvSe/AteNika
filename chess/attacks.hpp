@@ -4,7 +4,6 @@
 #include "defs.hpp"
 
 namespace Attacks {
-
     const uint8_t _rook_bits[64] = {
             12, 11, 11, 11, 11, 11, 11, 12,
             11, 10, 10, 10, 10, 10, 10, 11,
@@ -59,7 +58,7 @@ namespace Attacks {
             0x1000042304105ULL, 0x10008830412a00ULL, 0x2520081090008908ULL, 0x40102000a0a60140ULL,
     };
 
-    bitboard get_blockers(uint16_t index, bitboard mask);
+    bitboard _get_blockers(uint16_t index, bitboard mask);
 
     // 4096 = 2^(max element from _rook_bits array)
     extern bitboard _rook_mask[64];
@@ -84,11 +83,11 @@ namespace Attacks {
     void _init_knight_attacks();
     void _init_king_attacks();
 
-    bitboard _get_rook_attacks(PieceType type, uint8_t cell, bitboard blockers);
-    bitboard _get_bishop_attacks(PieceType type, uint8_t cell, bitboard blockers);
+    bitboard _get_rook_attacks(uint8_t cell, bitboard blockers);
+    bitboard _get_bishop_attacks(uint8_t cell, bitboard blockers);
+
 
     void init();
-
     bitboard get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers);
     bitboard get_non_sliding_attacks(Color color, PieceType type, uint8_t cell);
 }

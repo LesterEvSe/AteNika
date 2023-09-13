@@ -24,14 +24,65 @@ void Attacks::init() {
 }
 
 bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
-    return 0;
+    bitboard temp, attack = ZERO;
+
+    // NORTH
+    temp = Rays::get_ray(Rays::NORTH, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::NORTH, lsb(temp & blockers));
+
+    // EAST
+    temp = Rays::get_ray(Rays::EAST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::EAST, lsb(temp & blockers));
+
+    // SOUTH
+    temp = Rays::get_ray(Rays::SOUTH, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::SOUTH, msb(temp & blockers));
+
+    // WEST
+    temp = Rays::get_ray(Rays::WEST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::WEST, msb(temp & blockers));
+    return attack;
 }
+
 bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
-    return 0;
+    bitboard temp, attack = ZERO;
+
+    // NORTH_EAST
+    temp = Rays::get_ray(Rays::NORTH_EAST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::NORTH_EAST, lsb(temp & blockers));
+
+    // SOUTH_EAST
+    temp = Rays::get_ray(Rays::SOUTH_EAST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::SOUTH_EAST, msb(temp & blockers));
+
+    // SOUTH_WEST
+    temp = Rays::get_ray(Rays::SOUTH_WEST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::SOUTH_WEST, msb(temp & blockers));
+
+    // NORTH_WEST
+    temp = Rays::get_ray(Rays::NORTH_WEST, cell);
+    attack |= temp;
+    if (temp & blockers)
+        attack &= ~Rays::get_ray(Rays::NORTH_WEST, lsb(temp & blockers));
+    return attack;
 }
 
 // convert from mask to blockers pieces
-bitboard Attacks::get_blockers(uint16_t index, bitboard mask) {
+bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
     uint64_t blockers = ZERO;
     uint8_t all = std::popcount(mask);
 
@@ -66,7 +117,7 @@ void Attacks::_init_bishop_mask() {
 void Attacks::_init_rook_attacks() {
     for (uint8_t i = 0; i < 64; ++i)
         for (uint16_t j = 0; j < ONE << _rook_bits[i]; ++j) {
-            bitboard blockers = get_blockers(j, _rook_mask[i]);
+            bitboard blockers = _get_blockers(j, _rook_mask[i]);
 
             _rook_attacks[i][(blockers * _rook_magics[i]) >> (64 - _rook_bits[i])] =
                     _calculate_rook_attacks(i, blockers);
@@ -76,7 +127,7 @@ void Attacks::_init_rook_attacks() {
 void Attacks::_init_bishop_attacks() {
     for (uint8_t i = 0; i < 64; ++i)
         for (uint16_t j = 0; j < (ONE << _bishop_bits[i]); ++j) {
-            bitboard blockers = get_blockers(j, _bishop_mask[i]);
+            bitboard blockers = _get_blockers(j, _bishop_mask[i]);
 
             _bishop_attacks[i][(blockers * _bishop_magics[i]) >> (64 - _bishop_bits[i])] =
                     _calculate_bishop_attacks(i, blockers);
@@ -112,25 +163,29 @@ void Attacks::_init_king_attacks() {
         bitboard piece = ONE << i;
 
         _king_attacks[i] = ((piece << 7) | (piece >> 1) | (piece >> 9)) & ~FILE_H |
-                            (piece << 8) | (piece << 9) |
+                            (piece << 8) | (piece >> 8) |
                            ((piece << 9) | (piece << 1) | (piece >> 7)) & ~FILE_A;
     }
 }
 
-bitboard Attacks::_get_rook_attacks(PieceType type, uint8_t cell, bitboard blockers) {
-    return 0;
+bitboard Attacks::_get_rook_attacks(uint8_t cell, bitboard blockers) {
+    blockers &= _rook_mask[cell];
+    uint64_t key = (blockers * _rook_magics[cell]) >> (64 - _rook_bits[cell]);
+    return _rook_attacks[cell][key];
 }
 
-bitboard Attacks::_get_bishop_attacks(PieceType type, uint8_t cell, bitboard blockers) {
-    return 0;
+bitboard Attacks::_get_bishop_attacks(uint8_t cell, bitboard blockers) {
+    blockers &= _bishop_mask[cell];
+    uint64_t key = (blockers * _rook_magics[cell]) >> (64 - _bishop_bits[cell]);
+    return _bishop_attacks[cell][key];
 }
 
 
 bitboard Attacks::get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers) {
     switch (type) {
-        case BISHOP : return _get_bishop_attacks(type, cell, blockers);
-        case ROOK   : return _get_rook_attacks(type, cell, blockers);
-        case QUEEN  : return _get_bishop_attacks(type, cell, blockers) | _get_rook_attacks(type, cell, blockers);
+        case BISHOP : return _get_bishop_attacks(cell, blockers);
+        case ROOK   : return _get_rook_attacks(cell, blockers);
+        case QUEEN  : return _get_bishop_attacks(cell, blockers) | _get_rook_attacks(cell, blockers);
         default     : error("Unknown type of sliding piece");
     }
     // Won't get it here
