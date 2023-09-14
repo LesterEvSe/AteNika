@@ -6,7 +6,7 @@ bitboard Attacks::_rook_mask[64];
 bitboard Attacks::_rook_attacks[64][4096];
 
 bitboard Attacks::_bishop_mask[64];
-bitboard Attacks::_bishop_attacks[64][1024];
+bitboard Attacks::_bishop_attacks[64][512];
 
 bitboard Attacks::_pawn_attacks[2][64];
 bitboard Attacks::_knight_attacks[64];
@@ -169,37 +169,22 @@ void Attacks::_init_king_attacks() {
     }
 }
 
-bitboard Attacks::_get_rook_attacks(uint8_t cell, bitboard blockers) {
+bitboard Attacks::get_rook_attacks(uint8_t cell, bitboard blockers) {
     blockers &= _rook_mask[cell];
     uint64_t key = (blockers * _rook_magics[cell]) >> (64 - _rook_bits[cell]);
     return _rook_attacks[cell][key];
 }
 
-bitboard Attacks::_get_bishop_attacks(uint8_t cell, bitboard blockers) {
+bitboard Attacks::get_bishop_attacks(uint8_t cell, bitboard blockers) {
     blockers &= _bishop_mask[cell];
     uint64_t key = (blockers * _bishop_magics[cell]) >> (64 - _bishop_bits[cell]);
     return _bishop_attacks[cell][key];
 }
 
-
-bitboard Attacks::get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers) {
-    switch (type) {
-        case BISHOP : return _get_bishop_attacks(cell, blockers);
-        case ROOK   : return _get_rook_attacks(cell, blockers);
-        case QUEEN  : return _get_bishop_attacks(cell, blockers) | _get_rook_attacks(cell, blockers);
-        default     : error("Unknown type of sliding piece");
-    }
-    // Won't get it here
-    return 0;
+bitboard Attacks::get_queen_attacks(uint8_t cell, bitboard blockers) {
+    return get_rook_attacks(cell, blockers) | get_bishop_attacks(cell, blockers);
 }
 
-bitboard Attacks::get_non_sliding_attacks(Color color, PieceType type, uint8_t cell) {
-    switch (type) {
-        case PAWN   : return _pawn_attacks[color][cell];
-        case KNIGHT : return _knight_attacks[cell];
-        case KING   : return _king_attacks[cell];
-        default     : error("Unknown type of non sliding piece");
-    }
-    // Won't get it here
-    return 0;
-}
+bitboard Attacks::get_pawn_attacks(Color color, uint8_t cell) { return _pawn_attacks[color][cell]; }
+bitboard Attacks::get_knight_attacks(uint8_t cell)            { return _knight_attacks[cell];      }
+bitboard Attacks::get_king_attacks(uint8_t cell)              { return _king_attacks[cell];        }

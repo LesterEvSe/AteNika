@@ -66,7 +66,7 @@ namespace Attacks {
 
     // 512 = 2^(max element from _bishop_bits array)
     extern bitboard _bishop_mask[64];
-    extern bitboard _bishop_attacks[64][1024];
+    extern bitboard _bishop_attacks[64][512];
 
     extern bitboard _pawn_attacks[2][64];
     extern bitboard _knight_attacks[64];
@@ -83,13 +83,15 @@ namespace Attacks {
     void _init_knight_attacks();
     void _init_king_attacks();
 
-    bitboard _get_rook_attacks(uint8_t cell, bitboard blockers);
-    bitboard _get_bishop_attacks(uint8_t cell, bitboard blockers);
-
 
     void init();
-    bitboard get_sliding_attacks(PieceType type, uint8_t cell, bitboard blockers);
-    bitboard get_non_sliding_attacks(Color color, PieceType type, uint8_t cell);
+    bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
+    bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
+    bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
+
+    bitboard get_pawn_attacks(Color color, uint8_t cell);
+    bitboard get_knight_attacks(uint8_t cell);
+    bitboard get_king_attacks(uint8_t cell);
 }
 
 #endif //CHESSAI_ATTACKS_HPP

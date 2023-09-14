@@ -24,7 +24,7 @@ private:
 
     uint64_t m_en_passant;
 
-    // if white rook move, example 7 cell, we lose kingside castling.
+    // if white rook move, example 7 cell, we lose white kingside castling.
     // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
     static constexpr uint64_t castling[64] = {
             14, 15, 15, 15, 12, 15, 15, 13,
@@ -48,25 +48,28 @@ private:
 public:
     // using short FEN (Forsyth-Edwards Notation):
     // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-    Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     void update_bitboards();
 
-    Color get_curr_player_move() const;
-    Color get_opponent_player_move() const;
+    [[nodiscard]] Color get_curr_player_move() const;
+    [[nodiscard]] Color get_opponent_player_move() const;
 
-    bitboard get_pieces(Color color, PieceType piece) const;
-    bitboard get_side_pieces(Color color) const;
-    bitboard get_all_pieces() const;
-    bitboard get_free_cells() const;
+    [[nodiscard]] bitboard get_pieces(Color color, PieceType piece) const;
+    [[nodiscard]] bitboard get_side_pieces(Color color) const;
+    [[nodiscard]] bitboard get_all_pieces() const;
+    [[nodiscard]] bitboard get_free_cells() const;
 
-    uint8_t get_half_moves() const;
-    uint8_t get_en_passant() const;
+    [[nodiscard]] uint8_t get_half_moves() const;
+    [[nodiscard]] uint8_t get_en_passant() const;
 
-    bool get_white_qs_castle() const;
-    bool get_white_ks_castle() const;
-    bool get_black_qs_castle() const;
-    bool get_black_ks_castle() const;
+    [[nodiscard]] bool get_white_qs_castle() const;
+    [[nodiscard]] bool get_white_ks_castle() const;
+    [[nodiscard]] bool get_black_qs_castle() const;
+    [[nodiscard]] bool get_black_ks_castle() const;
 
+    // bool color_is_in_check?
+    // bool cell_under_attack. This two func maybe same?
+    // bitboard get_all_attack.
 
     friend std::ostream& operator<<(std::ostream& out, const Board& board);
 };
