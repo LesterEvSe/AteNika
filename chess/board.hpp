@@ -69,7 +69,8 @@ public:
 
     // bool color_is_in_check?
     // bool cell_under_attack. This two func maybe same?
-    // bitboard get_all_attack.
+    // bitboard get_all_moves (include captures, maybe :) )
+    // bitboard get_captures
 
     friend std::ostream& operator<<(std::ostream& out, const Board& board);
 };
