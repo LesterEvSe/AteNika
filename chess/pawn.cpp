@@ -1,8 +1,25 @@
 #include "pawn.hpp"
 
+bitboard Pawn::_pawn_attacks[2][64];
+
+void Pawn::init_pawn_attacks() {
+    // In the first and eighth rows, pawns turn into other pieces,
+    // so for them, we do not need to calculate attacks
+    for (uint8_t i = 8; i < 56; ++i) {
+        bitboard piece = ONE << i;
+
+        _pawn_attacks[WHITE][i] = (piece << 7) & ~FILE_H | (piece << 9) & ~FILE_A;
+        _pawn_attacks[BLACK][i] = (piece >> 7) & ~FILE_A | (piece >> 9) & ~FILE_H;
+    }
+}
+
+bitboard Pawn::get_pawn_attack(uint8_t cell, Color color) {
+    return _pawn_attacks[color][cell];
+}
+
 bitboard Pawn::get_moves(bitboard pawns, bitboard blockers, Color color) {
-    // If after the move pawn stayed on the 3th row for WHITE
-    // and 6th row for BLACK
+    // If after the move pawn stayed on the RANK_3 for WHITE
+    // and RANK_6 row for BLACK
     blockers = ~blockers;
     switch (color)
     {

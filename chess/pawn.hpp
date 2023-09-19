@@ -4,6 +4,10 @@
 #include "defs.hpp"
 
 namespace Pawn {
+    extern bitboard _pawn_attacks[2][64];
+
+    void init_pawn_attacks();
+    bitboard get_pawn_attack(uint8_t cell, Color color);
     bitboard get_moves(bitboard pawns, bitboard blockers, Color color);
 
     bitboard get_left_attacks(bitboard pawns, Color color);

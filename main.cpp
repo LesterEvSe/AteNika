@@ -4,7 +4,8 @@
 
 int main() {
     Rays::init();
-    Attacks::init(); // Must be init after Rays
+    Attacks::init(); // Must be init_pawn_attacks after Rays
+    Pawn::init_pawn_attacks();
     ZobristHash::init();
 
     bitboard blockers = 0x0004120843280816;
