@@ -62,12 +62,30 @@ bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 
 
-bool Board::in_check() {
-    return under_attack(lsb(m_pieces[get_curr_player_move()][KING]));
+bool Board::in_check() const {
+    bitboard pieces = get_pieces(get_curr_player_move(), KING);
+    uint8_t king_cell = lsb(pieces);
+    return under_attack(king_cell);
 }
 
-bool Board::under_attack(uint8_t cell) {
-    error("Not implemented");
+// This allows us not to go through absolutely all the pieces in order
+// to say whether some piece attack this cell or not.
+
+// Main idea. If on the current square there is for example a WHITE KNIGHT,
+// and it attacks BLACK KNIGHT, therefore the cell under attack.
+// TODO NEED TO TEST
+bool Board::under_attack(uint8_t cell) const {
+    Color opposite = get_opponent_player_move();
+    if (get_pieces(opposite, PAWN) & Pawn::get_attacks(cell, get_curr_player_move())) return true;
+    if (get_pieces(opposite, KNIGHT) & Attacks::get_knight_attacks(cell)) return true;
+
+    // Sliding Attacks
+    bitboard blockers = get_side_pieces(get_curr_player_move());
+    if ((get_pieces(opposite, ROOK) | get_pieces(opposite, QUEEN)) &
+        Attacks::get_rook_attacks(cell, blockers)) return true;
+
+    if ((get_pieces(opposite, BISHOP) | get_pieces(opposite, QUEEN)) &
+        Attacks::get_bishop_attacks(cell, blockers)) return true;
     return false;
 }
 

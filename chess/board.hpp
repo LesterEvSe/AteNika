@@ -72,8 +72,8 @@ public:
     [[nodiscard]] bool get_black_ks_castle() const;
 
     // King of the current player in danger
-    bool in_check();
-    bool under_attack(uint8_t cell);
+    [[nodiscard]] bool in_check() const;
+    [[nodiscard]] bool under_attack(uint8_t cell) const;
 
     bitboard gen_captures();
     bitboard gen_pseudo_legal_moves();

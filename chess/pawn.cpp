@@ -13,10 +13,6 @@ void Pawn::init_pawn_attacks() {
     }
 }
 
-bitboard Pawn::get_pawn_attack(uint8_t cell, Color color) {
-    return _pawn_attacks[color][cell];
-}
-
 bitboard Pawn::get_moves(bitboard pawns, bitboard blockers, Color color) {
     // If after the move pawn stayed on the RANK_3 for WHITE
     // and RANK_6 row for BLACK
@@ -32,6 +28,11 @@ bitboard Pawn::get_moves(bitboard pawns, bitboard blockers, Color color) {
             return one_step | ((one_step & RANK_6) >> 8) & blockers;
         }
     }
+}
+
+
+bitboard Pawn::get_attacks(uint8_t cell, Color color) {
+    return _pawn_attacks[color][cell];
 }
 
 bitboard Pawn::get_left_attacks(bitboard pawns, Color color) {

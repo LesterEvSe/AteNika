@@ -172,5 +172,5 @@ bitboard Attacks::get_queen_attacks(uint8_t cell, bitboard blockers) {
     return get_rook_attacks(cell, blockers) | get_bishop_attacks(cell, blockers);
 }
 
-bitboard Attacks::get_knight_attacks(uint8_t cell)            { return _knight_attacks[cell];      }
-bitboard Attacks::get_king_attacks(uint8_t cell)              { return _king_attacks[cell];        }
+bitboard Attacks::get_knight_attacks(uint8_t cell) { return _knight_attacks[cell]; }
+bitboard Attacks::get_king_attacks(uint8_t cell)   { return _king_attacks[cell];   }
