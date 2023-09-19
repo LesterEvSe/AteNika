@@ -10,13 +10,13 @@ set(SOURCES
     chess/board.cpp
     chess/rays.cpp
     chess/zobrist_hash.cpp
+    chess/attacks.cpp
+    chess/pawn.cpp
 )
 
 set(HEADERS
     chess/defs.hpp
     chess/bitfunc.hpp
-        chess/attacks.cpp
-        chess/attacks.hpp
 )
 
 add_executable(AteNica main.cpp ${SOURCES} ${HEADERS})

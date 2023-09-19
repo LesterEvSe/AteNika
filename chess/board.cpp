@@ -61,6 +61,16 @@ bool Board::get_white_ks_castle() const { return m_castling_rights & 2; }
 bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 
+
+bool Board::in_check() {
+    return under_attack(lsb(m_pieces[get_curr_player_move()][KING]));
+}
+
+bool Board::under_attack(uint8_t cell) {
+    error("Not implemented");
+    return false;
+}
+
 std::ostream& operator<<(std::ostream& out, const Board& pieces) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)

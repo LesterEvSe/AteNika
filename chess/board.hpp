@@ -1,9 +1,13 @@
 #ifndef CHESSAI_BOARD_HPP
 #define CHESSAI_BOARD_HPP
 
+#include <string> // For FEN
 #include "defs.hpp"
 #include "bitfunc.hpp"
-#include <string>
+
+#include "attacks.hpp"
+#include "pawn.hpp"
+
 
 class Board {
 private:
@@ -67,7 +71,14 @@ public:
     [[nodiscard]] bool get_black_qs_castle() const;
     [[nodiscard]] bool get_black_ks_castle() const;
 
-    // bool color_is_in_check?
+    // King of the current player in danger
+    bool in_check();
+    bool under_attack(uint8_t cell);
+
+    bitboard gen_captures();
+    bitboard gen_pseudo_legal_moves();
+    bitboard gen_legal_moves();
+
     // bool cell_under_attack. This two func maybe same?
     // bitboard get_all_moves (include captures, maybe :) )
     // bitboard get_captures

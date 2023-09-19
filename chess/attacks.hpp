@@ -68,7 +68,6 @@ namespace Attacks {
     extern bitboard _bishop_mask[64];
     extern bitboard _bishop_attacks[64][512];
 
-    extern bitboard _pawn_attacks[2][64];
     extern bitboard _knight_attacks[64];
     extern bitboard _king_attacks[64];
 
@@ -79,7 +78,6 @@ namespace Attacks {
     void _init_rook_attacks();
     void _init_bishop_attacks();
 
-    void _init_pawn_attacks();
     void _init_knight_attacks();
     void _init_king_attacks();
 
@@ -89,7 +87,6 @@ namespace Attacks {
     bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
     bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
 
-    bitboard get_pawn_attacks(Color color, uint8_t cell);
     bitboard get_knight_attacks(uint8_t cell);
     bitboard get_king_attacks(uint8_t cell);
 }

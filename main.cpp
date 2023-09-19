@@ -1,5 +1,4 @@
 #include "rays.hpp"
-#include "attacks.hpp"
 #include "zobrist_hash.hpp"
 #include "board.hpp"
 
@@ -8,11 +7,20 @@ int main() {
     Attacks::init(); // Must be init after Rays
     ZobristHash::init();
 
-    bitboard temp = 0x0004120843280816;
+    bitboard blockers = 0x0004120843280816;
     uint8_t cell = 28; // 4E
 
-    printbb(temp);
-    printbb(Attacks::get_queen_attacks(cell, temp)); // Accept
+    // Accept
+//    bitboard white_pawns = 0xFF00; //0x807F00;
+//    bitboard black_pawns = 0xBF400000000000;
+//    printbb(black_pawns);
+//
+//    printbb(blockers);
+//    printbb(Pawn::get_moves(black_pawns, blockers, BLACK));
+
+    // Accept
+//    printbb(blockers);
+//    printbb(Attacks::get_queen_attacks(cell, blockers));
 
     return 0;
 }
