@@ -2,8 +2,6 @@
 #define CHESSAI_DEFS_HPP
 
 #include <cstdint>
-#include <array>
-#include <iostream> // Maybe need to delete later
 
 /** Arrangements for the presentation of the board (uint64_t) */
 /**

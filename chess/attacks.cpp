@@ -1,6 +1,5 @@
 #include "attacks.hpp"
 #include "rays.hpp"
-#include "bitfunc.hpp"
 
 bitboard Attacks::_rook_mask[64];
 bitboard Attacks::_rook_attacks[64][4096];

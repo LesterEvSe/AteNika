@@ -1,7 +1,6 @@
 #ifndef CHESSAI_BOARD_HPP
 #define CHESSAI_BOARD_HPP
 
-#include <string> // For FEN
 #include "defs.hpp"
 #include "bitfunc.hpp"
 

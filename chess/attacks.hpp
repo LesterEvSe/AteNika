@@ -1,7 +1,7 @@
 #ifndef CHESSAI_ATTACKS_HPP
 #define CHESSAI_ATTACKS_HPP
 
-#include "defs.hpp"
+#include "bitfunc.hpp"
 
 namespace Attacks {
     const uint8_t _rook_bits[64] = {

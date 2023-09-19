@@ -2,6 +2,7 @@
 #define CHESSAI_BITFUNC_HPP
 
 #include "defs.hpp"
+#include <iostream> // for std::cerr
 #include <string>
 #include <bit> // for std::popcount
 
@@ -19,7 +20,7 @@
  */
 
 // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
-static constexpr std::array<uint64_t, 64> BitScan {
+static constexpr uint8_t BitScan[64] {
         0,  47,  1, 56, 48, 27,  2, 60,
         57, 49, 41, 37, 28, 16,  3, 61,
         54, 58, 35, 52, 50, 42, 21, 44,
@@ -46,7 +47,7 @@ inline uint8_t get_row(uint8_t cell) { return cell / 8; }
 inline uint8_t get_col(uint8_t cell) { return cell % 8; }
 inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
 
-inline void error(const std::string& msg) {
+inline void error(const std::string &msg) {
     std::cerr << msg;
     exit(1);
 }
