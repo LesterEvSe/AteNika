@@ -14,6 +14,8 @@ set(SOURCES
     chess/pawn.cpp
         chess/move_list.cpp
     chess/move.cpp
+        chess/uint96.cpp
+        chess/uint96.hpp
 )
 
 set(HEADERS

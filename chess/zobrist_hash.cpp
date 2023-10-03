@@ -1,31 +1,33 @@
 #include "zobrist_hash.hpp"
 #include "board.hpp"
 
-std::mt19937_64 ZobristHash::generator {PRNG};
-std::uniform_int_distribution<uint64_t> ZobristHash::distribution;
+std::mt19937_64 ZobristHash::gen64 {PRNG};
+std::mt19937 ZobristHash::gen32 {PRNG};
+std::uniform_int_distribution<uint64_t> ZobristHash::dist64;
+std::uniform_int_distribution<uint32_t> ZobristHash::dist32;
 
-uint64_t ZobristHash::PIECE_KEYS[2][6][64];
-uint64_t ZobristHash::EN_PASSANT_FILE[8];
-uint64_t ZobristHash::QS_CASTLE[2];
-uint64_t ZobristHash::KS_CASTLE[2];
-uint64_t ZobristHash::WHITE_MOVE;
+uint96 ZobristHash::PIECE_KEYS[2][6][64];
+uint96 ZobristHash::EN_PASSANT_FILE[8];
+uint96 ZobristHash::QS_CASTLE[2];
+uint96 ZobristHash::KS_CASTLE[2];
+uint96 ZobristHash::WHITE_MOVE;
 
 void ZobristHash::init() {
     for (uint8_t j = 0; j < 6; ++j)
         for (uint8_t k = 0; k < 64; ++k) {
-            PIECE_KEYS[BLACK][j][k] = distribution(generator);
-            PIECE_KEYS[WHITE][j][k] = distribution(generator);
+            PIECE_KEYS[BLACK][j][k] = {dist64(gen64), dist32(gen32)};
+            PIECE_KEYS[WHITE][j][k] = {dist64(gen64), dist32(gen32)};
         }
 
     for (uint8_t i = 0; i < 8; ++i)
-        EN_PASSANT_FILE[i] = distribution(generator);
+        EN_PASSANT_FILE[i] = {dist64(gen64), dist32(gen32)};
 
     for (uint8_t i = 0; i < 2; ++i) {
-        QS_CASTLE[i] = distribution(generator);
-        KS_CASTLE[i] = distribution(generator);
+        QS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
+        KS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
     }
 
-    WHITE_MOVE = distribution(generator);
+    WHITE_MOVE = {dist64(gen64), dist32(gen32)};
 }
 
 ZobristHash::ZobristHash(const Board &board) {
@@ -88,7 +90,7 @@ void ZobristHash::set_hash(const Board &board) {
     }
 }
 
-uint64_t ZobristHash::get_hash() const { return m_hash; }
+uint96 ZobristHash::get_hash() const { return m_hash; }
 
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
     return left.m_hash == right.m_hash;
