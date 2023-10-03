@@ -6,7 +6,7 @@
 
 #include "attacks.hpp"
 #include "pawn.hpp"
-
+#include "zobrist_hash.hpp"
 
 class Board {
 private:
@@ -23,9 +23,11 @@ private:
 
     // The moves that can be brought back.
     // If > 50 moves, there will be a draw
-    uint8_t m_half_moves_counter;
+    uint8_t m_half_moves_counter = 0;
 
-    uint64_t m_en_passant;
+    // bitboard, where player can move with a pawn.
+    // 0 If there is no such move
+    bitboard m_en_passant = 0;
 
     // if white rook move, example 7 cell, we lose white kingside castling.
     // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
@@ -37,7 +39,7 @@ private:
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
-            11, 15, 15, 15, 3, 15, 15, 7
+            11, 15, 15, 15, 3,  15, 15, 7
     };
 
     // 4 bits
@@ -47,6 +49,7 @@ private:
     // 8 - black kingside
     uint8_t m_castling_rights;
 
+    ZobristHash m_hash;
 
 public:
     // using short FEN (Forsyth-Edwards Notation):
@@ -74,9 +77,10 @@ public:
     [[nodiscard]] bool in_check() const;
     [[nodiscard]] bool under_attack(uint8_t cell) const;
 
-    bitboard gen_captures();
-    bitboard gen_pseudo_legal_moves();
-    bitboard gen_legal_moves();
+    // Maybe need to implement in Move class
+//    bitboard gen_captures();
+//    bitboard gen_pseudo_legal_moves();
+//    bitboard gen_legal_moves();
 
     // bool cell_under_attack. This two func maybe same?
     // bitboard get_all_moves (include captures, maybe :) )

@@ -26,8 +26,7 @@ bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
     uint8_t all = count_bits(mask);
 
     for (uint8_t i = 0; i < all; ++i) {
-        uint8_t pos = lsb(mask);
-        mask &= ~(ONE << pos); // set0
+        uint8_t pos = pop_lsb(mask);
 
         if (index & (ONE << i))
             blockers |= (ONE << pos);

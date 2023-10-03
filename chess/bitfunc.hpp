@@ -43,6 +43,12 @@ inline uint8_t msb(bitboard bb) {
     return BitScan[(bb * bitboard(0x03f79d71b4cb0a89)) >> 58];
 }
 
+inline uint8_t pop_lsb(bitboard &bb) {
+    uint8_t pos = lsb(bb);
+    bb &= ~(ONE << pos);
+    return pos;
+}
+
 inline uint8_t get_row(uint8_t cell) { return cell / 8; }
 inline uint8_t get_col(uint8_t cell) { return cell % 8; }
 inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }

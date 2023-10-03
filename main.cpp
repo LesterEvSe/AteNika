@@ -1,5 +1,4 @@
 #include "rays.hpp"
-#include "zobrist_hash.hpp"
 #include "board.hpp"
 
 int main() {
@@ -10,6 +9,7 @@ int main() {
 
     bitboard blockers = 0x0004120843280816;
     uint8_t cell = 28; // 4E
+
 
     // Accept
 //    bitboard white_pawns = 0xFF00; //0x807F00;

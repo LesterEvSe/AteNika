@@ -2,8 +2,9 @@
 #define CHESSAI_ZOBRIST_HASH_HPP
 
 #include "defs.hpp"
-#include "board.hpp"
 #include <random>
+
+class Board;
 
 class ZobristHash {
 private:
@@ -23,7 +24,9 @@ private:
 
 public:
     static void init();
-    ZobristHash(const Board& board);
+    ZobristHash() {}
+    ZobristHash(const Board &board);
+    void set_hash(const Board &board);
 
     [[nodiscard]] uint64_t get_hash() const;
     friend bool operator== (const ZobristHash& left, const ZobristHash& right);

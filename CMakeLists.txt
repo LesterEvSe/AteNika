@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(ChessAI)
+project(AteNica)
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories(
@@ -9,9 +9,11 @@ include_directories(
 set(SOURCES
     chess/board.cpp
     chess/rays.cpp
-    chess/zobrist_hash.cpp
+        chess/zobrist_hash.cpp
     chess/attacks.cpp
     chess/pawn.cpp
+        chess/move_list.cpp
+    chess/move.cpp
 )
 
 set(HEADERS
