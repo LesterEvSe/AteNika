@@ -24,7 +24,7 @@ private:
 
 public:
     static void init();
-    ZobristHash() {}
+    ZobristHash() = default;
     ZobristHash(const Board &board);
     void set_hash(const Board &board);
 

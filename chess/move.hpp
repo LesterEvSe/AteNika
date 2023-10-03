@@ -28,9 +28,10 @@ private:
         PieceType m_promotion_piece : 3;
     };
 
-    int32_t m_estimation;
+    int32_t m_evaluation;
 
 public:
+    Move() = default;
     Move(uint8_t from,
          uint8_t to,
          Flag flag = QUIET,
@@ -44,11 +45,10 @@ public:
         m_move_piece(move_piece),
         m_captured_piece(captured_piece),
         m_promotion_piece(promotion_piece),
-        m_estimation(0) {}
+        m_evaluation(0) {}
 
     // For quick sort in MoveList class
     friend bool operator< (const Move &left, const Move &right);
-    friend bool operator> (const Move &left, const Move &right);
 };
 
 #endif //CHESSAI_MOVE_HPP
