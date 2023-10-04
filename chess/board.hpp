@@ -5,7 +5,6 @@
 #include "bitfunc.hpp"
 
 #include "attacks.hpp"
-#include "pawn.hpp"
 #include "zobrist_hash.hpp"
 #include "move.hpp"
 
@@ -74,7 +73,7 @@ public:
 
     // King of the current player in danger
     [[nodiscard]] bool in_check(Color color) const;
-    [[nodiscard]] bool under_attack(uint8_t cell, Color color) const;
+    [[nodiscard]] bool under_attack(Color color, uint8_t cell) const;
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);

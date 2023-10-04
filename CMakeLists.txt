@@ -9,13 +9,11 @@ include_directories(
 set(SOURCES
     chess/board.cpp
     chess/rays.cpp
-        chess/zobrist_hash.cpp
+    chess/zobrist_hash.cpp
     chess/attacks.cpp
-    chess/pawn.cpp
-        chess/movepicker.cpp
+    chess/movepicker.cpp
     chess/move.cpp
-        chess/uint96.cpp
-        chess/uint96.hpp
+    chess/uint96.cpp
 )
 
 set(HEADERS

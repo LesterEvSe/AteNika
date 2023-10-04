@@ -67,7 +67,7 @@ bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 bool Board::in_check(Color color) const {
     bitboard pieces = get_pieces(color, KING);
     uint8_t king_cell = lsb(pieces);
-    return under_attack(king_cell, color);
+    return under_attack(color, king_cell);
 }
 
 // This allows us not to go through absolutely all the pieces in order
@@ -76,9 +76,9 @@ bool Board::in_check(Color color) const {
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
 // TODO NEED TO TEST
-bool Board::under_attack(uint8_t cell, Color color) const {
-    Color opposite = get_opponent_player_move();
-    if (get_pieces(opposite, PAWN) & Pawn::get_attacks(cell, color)) return true;
+bool Board::under_attack(Color color, uint8_t cell) const {
+    Color opposite = get_opposite_move(color);
+    if (get_pieces(opposite, PAWN) & Attacks::get_pawn_attacks(color, cell)) return true;
     if (get_pieces(opposite, KNIGHT) & Attacks::get_knight_attacks(cell)) return true;
 
     // Sliding Attacks

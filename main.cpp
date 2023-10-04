@@ -1,10 +1,11 @@
 #include "rays.hpp"
 #include "board.hpp"
+#include "movepicker.hpp"
 
 int main() {
     Rays::init();
     Attacks::init(); // Must be init_pawn_attacks after Rays
-    Pawn::init_pawn_attacks();
+    MovePicker::init();
     ZobristHash::init();
 
     bitboard blockers = 0x0004120843280816;

@@ -7,6 +7,7 @@ bitboard Attacks::_rook_attacks[64][4096];
 bitboard Attacks::_bishop_mask[64];
 bitboard Attacks::_bishop_attacks[64][512];
 
+bitboard Attacks::_pawn_attacks[2][64];
 bitboard Attacks::_knight_attacks[64];
 bitboard Attacks::_king_attacks[64];
 
@@ -16,6 +17,7 @@ void Attacks::init() {
     _init_rook_attacks(); // using _rook_mask
     _init_bishop_attacks(); // using _bishop_mask
 
+    _init_pawn_attacks();
     _init_knight_attacks();
     _init_king_attacks();
 }
@@ -131,6 +133,17 @@ void Attacks::_init_bishop_attacks() {
         }
 }
 
+void Attacks::_init_pawn_attacks() {
+    // In the first and eighth rows, pawns turn into other pieces,
+    // so for them, we do not need to calculate attacks
+    for (uint8_t i = 8; i < 56; ++i) {
+        bitboard piece = ONE << i;
+
+        _pawn_attacks[WHITE][i] = (piece << 7) & ~FILE_H | (piece << 9) & ~FILE_A;
+        _pawn_attacks[BLACK][i] = (piece >> 7) & ~FILE_A | (piece >> 9) & ~FILE_H;
+    }
+}
+
 void Attacks::_init_knight_attacks() {
     for (uint8_t i = 0; i < 64; ++i) {
         bitboard piece = ONE << i;
@@ -170,5 +183,6 @@ bitboard Attacks::get_queen_attacks(uint8_t cell, bitboard blockers) {
     return get_rook_attacks(cell, blockers) | get_bishop_attacks(cell, blockers);
 }
 
+bitboard Attacks::get_pawn_attacks(Color color, uint8_t cell) { return _pawn_attacks[color][cell]; }
 bitboard Attacks::get_knight_attacks(uint8_t cell) { return _knight_attacks[cell]; }
 bitboard Attacks::get_king_attacks(uint8_t cell)   { return _king_attacks[cell];   }

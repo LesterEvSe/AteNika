@@ -8,6 +8,7 @@
 
 inline uint8_t get_row(uint8_t cell) { return cell >> 3; }
 inline uint8_t get_col(uint8_t cell) { return cell & 7; }
+inline Color get_opposite_move(Color color) { return color == WHITE ? BLACK : WHITE; }
 
 inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
 inline void set0(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
