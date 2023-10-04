@@ -21,10 +21,12 @@ Board::Board(std::string short_fen) {
             case 'K' : m_pieces[WHITE][KING]   |= (ONE << pos); break;
             case 'Q' : m_pieces[WHITE][QUEEN]  |= (ONE << pos); break;
 
-            case '/' : pos -= 17; break; // Because we have increment at the end
+            case '/' : pos -= 17; break; // Because we have pos increment at the end
             default  : pos += static_cast<int8_t>(short_fen[i] - '1'); // Because of increment too
         }
+
     update_bitboards();
+    m_hash.set_hash(*this); // Order is important! Hash need after all initializations
 }
 
 void Board::update_bitboards() {
@@ -62,10 +64,10 @@ bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 
 
-bool Board::in_check() const {
-    bitboard pieces = get_pieces(get_curr_player_move(), KING);
+bool Board::in_check(Color color) const {
+    bitboard pieces = get_pieces(color, KING);
     uint8_t king_cell = lsb(pieces);
-    return under_attack(king_cell);
+    return under_attack(king_cell, color);
 }
 
 // This allows us not to go through absolutely all the pieces in order
@@ -74,19 +76,27 @@ bool Board::in_check() const {
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
 // TODO NEED TO TEST
-bool Board::under_attack(uint8_t cell) const {
+bool Board::under_attack(uint8_t cell, Color color) const {
     Color opposite = get_opponent_player_move();
-    if (get_pieces(opposite, PAWN) & Pawn::get_attacks(cell, get_curr_player_move())) return true;
+    if (get_pieces(opposite, PAWN) & Pawn::get_attacks(cell, color)) return true;
     if (get_pieces(opposite, KNIGHT) & Attacks::get_knight_attacks(cell)) return true;
 
     // Sliding Attacks
-    bitboard blockers = get_side_pieces(get_curr_player_move());
+    bitboard blockers = get_side_pieces(color);
     if ((get_pieces(opposite, ROOK) | get_pieces(opposite, QUEEN)) &
         Attacks::get_rook_attacks(cell, blockers)) return true;
 
     if ((get_pieces(opposite, BISHOP) | get_pieces(opposite, QUEEN)) &
         Attacks::get_bishop_attacks(cell, blockers)) return true;
     return false;
+}
+
+void Board::add_piece(uint8_t cell, PieceType piece, Color color) {
+
+}
+
+void Board::remove_piece(uint8_t cell, PieceType piece, Color color) {
+
 }
 
 std::ostream& operator<<(std::ostream& out, const Board& pieces) {

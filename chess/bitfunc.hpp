@@ -6,6 +6,13 @@
 #include <string>
 #include <bit> // for std::popcount
 
+inline uint8_t get_row(uint8_t cell) { return cell >> 3; }
+inline uint8_t get_col(uint8_t cell) { return cell & 7; }
+
+inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
+inline void set0(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
+inline void set1(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
+
 /**
  * bitScanForward/LSB
  * @author Kim Walisch (2012)
@@ -45,13 +52,9 @@ inline uint8_t msb(bitboard bb) {
 
 inline uint8_t pop_lsb(bitboard &bb) {
     uint8_t pos = lsb(bb);
-    bb &= ~(ONE << pos);
+    set0(bb, pos);
     return pos;
 }
-
-inline uint8_t get_row(uint8_t cell) { return cell / 8; }
-inline uint8_t get_col(uint8_t cell) { return cell % 8; }
-inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
 
 inline void error(const std::string &msg) {
     std::cerr << msg;
@@ -68,7 +71,7 @@ inline void printbb(bitboard bb) {
     for (int8_t i = 7; i >= 0; --i) {
         std::cout << i+1 << " |";
         for (uint8_t j = 0; j < 8; ++j)
-            std::cout << ' ' << bool(bb & (bitboard(1) << (i*8 + j)));
+            std::cout << ' ' << bool(bb & (ONE << (i*8 + j)));
         std::cout << std::endl;
     }
     std::cout << "\n--------------------\n\n";

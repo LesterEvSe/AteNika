@@ -7,6 +7,7 @@
 #include "attacks.hpp"
 #include "pawn.hpp"
 #include "zobrist_hash.hpp"
+#include "move.hpp"
 
 class Board {
 private:
@@ -23,7 +24,7 @@ private:
 
     // The moves that can be brought back.
     // If > 50 moves, there will be a draw
-    uint8_t m_half_moves_counter = 0;
+    uint8_t m_half_moves_counter {0};
 
     // bitboard, where player can move with a pawn.
     // 0 If there is no such move
@@ -43,11 +44,11 @@ private:
     };
 
     // 4 bits
-    // 1 - white queenside
-    // 2 - white kingside
-    // 4 - black queenside
-    // 8 - black kingside
-    uint8_t m_castling_rights;
+    // 0001 - white queenside
+    // 0010 - white kingside
+    // 0100 - black queenside
+    // 1000 - black kingside
+    uint8_t m_castling_rights {0b1111};
 
     ZobristHash m_hash;
 
@@ -74,8 +75,12 @@ public:
     [[nodiscard]] bool get_black_ks_castle() const;
 
     // King of the current player in danger
-    [[nodiscard]] bool in_check() const;
-    [[nodiscard]] bool under_attack(uint8_t cell) const;
+    [[nodiscard]] bool in_check(Color color) const;
+    [[nodiscard]] bool under_attack(uint8_t cell, Color color) const;
+
+    void add_piece(uint8_t cell, PieceType piece, Color color);
+    void remove_piece(uint8_t cell, PieceType piece, Color color);
+    void makemove(const Move &move);
 
     // Maybe need to implement in Move class
 //    bitboard gen_captures();
