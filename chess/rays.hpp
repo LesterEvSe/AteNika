@@ -23,13 +23,14 @@ namespace Rays
     *    S
     */
 
-    // 8 sides of a chess piece
-    extern bitboard _rays[8][64];
+    namespace hidden {
+        // 8 sides of a chess piece
+        extern bitboard _rays[8][64];
 
-    // The next 2 functions are auxiliary
-    bitboard _west_shift(bitboard diag, uint8_t num);
-    bitboard _east_shift(bitboard diag, uint8_t num);
-
+        // The next 2 functions are auxiliary
+        bitboard _west_shift(bitboard diag, uint8_t num);
+        bitboard _east_shift(bitboard diag, uint8_t num);
+    }
 
     void init();
     bitboard get_ray(Direction dir, uint8_t cell);

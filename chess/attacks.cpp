@@ -1,29 +1,29 @@
 #include "attacks.hpp"
 #include "rays.hpp"
 
-bitboard Attacks::_rook_mask[64];
-bitboard Attacks::_rook_attacks[64][4096];
+bitboard Attacks::hidden::_rook_mask[64];
+bitboard Attacks::hidden::_rook_attacks[64][4096];
 
-bitboard Attacks::_bishop_mask[64];
-bitboard Attacks::_bishop_attacks[64][512];
+bitboard Attacks::hidden::_bishop_mask[64];
+bitboard Attacks::hidden::_bishop_attacks[64][512];
 
-bitboard Attacks::_pawn_attacks[2][64];
-bitboard Attacks::_knight_attacks[64];
-bitboard Attacks::_king_attacks[64];
+bitboard Attacks::hidden::_pawn_attacks[2][64];
+bitboard Attacks::hidden::_knight_attacks[64];
+bitboard Attacks::hidden::_king_attacks[64];
 
 void Attacks::init() {
-    _init_rook_mask();
-    _init_bishop_mask();
-    _init_rook_attacks(); // using _rook_mask
-    _init_bishop_attacks(); // using _bishop_mask
+    hidden::_init_rook_mask();
+    hidden::_init_bishop_mask();
+    hidden::_init_rook_attacks(); // using _rook_mask
+    hidden::_init_bishop_attacks(); // using _bishop_mask
 
-    _init_pawn_attacks();
-    _init_knight_attacks();
-    _init_king_attacks();
+    hidden::_init_pawn_attacks();
+    hidden::_init_knight_attacks();
+    hidden::_init_king_attacks();
 }
 
 // convert from mask to blockers pieces
-bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
+bitboard Attacks::hidden::_get_blockers(uint16_t index, bitboard mask) {
     uint64_t blockers = ZERO;
     uint8_t all = count_bits(mask);
 
@@ -36,7 +36,7 @@ bitboard Attacks::_get_blockers(uint16_t index, bitboard mask) {
     return blockers;
 }
 
-bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
+bitboard Attacks::hidden::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
     bitboard temp, attack = ZERO;
 
     // NORTH
@@ -65,7 +65,7 @@ bitboard Attacks::_calculate_rook_attacks(uint8_t cell, bitboard blockers) {
     return attack;
 }
 
-bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
+bitboard Attacks::hidden::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
     bitboard temp, attack = ZERO;
 
     // NORTH EAST
@@ -94,7 +94,7 @@ bitboard Attacks::_calculate_bishop_attacks(uint8_t cell, bitboard blockers) {
     return attack;
 }
 
-void Attacks::_init_rook_mask() {
+void Attacks::hidden::_init_rook_mask() {
     for (uint8_t i = 0; i < 64; ++i) {
         _rook_mask[i] = (Rays::get_ray(Rays::Direction::NORTH, i) & ~RANK_8) |
                         (Rays::get_ray(Rays::Direction::EAST,  i) & ~FILE_H) |
@@ -103,7 +103,7 @@ void Attacks::_init_rook_mask() {
     }
 }
 
-void Attacks::_init_bishop_mask() {
+void Attacks::hidden::_init_bishop_mask() {
     bitboard invert_edges_mask = ~(RANK_1 | RANK_8 | FILE_A | FILE_H);
     for (uint8_t i = 0; i < 64; ++i) {
         _bishop_mask[i] = (Rays::get_ray(Rays::Direction::NORTH_EAST, i) |
@@ -113,7 +113,7 @@ void Attacks::_init_bishop_mask() {
     }
 }
 
-void Attacks::_init_rook_attacks() {
+void Attacks::hidden::_init_rook_attacks() {
     for (uint8_t i = 0; i < 64; ++i)
         for (uint16_t j = 0; j < (ONE << _rook_bits[i]); ++j) {
             bitboard blockers = _get_blockers(j, _rook_mask[i]);
@@ -123,7 +123,7 @@ void Attacks::_init_rook_attacks() {
         }
 }
 
-void Attacks::_init_bishop_attacks() {
+void Attacks::hidden::_init_bishop_attacks() {
     for (uint8_t i = 0; i < 64; ++i)
         for (uint16_t j = 0; j < (ONE << _bishop_bits[i]); ++j) {
             bitboard blockers = _get_blockers(j, _bishop_mask[i]);
@@ -133,7 +133,7 @@ void Attacks::_init_bishop_attacks() {
         }
 }
 
-void Attacks::_init_pawn_attacks() {
+void Attacks::hidden::_init_pawn_attacks() {
     // In the first and eighth rows, pawns turn into other pieces,
     // so for them, we do not need to calculate attacks
     for (uint8_t i = 8; i < 56; ++i) {
@@ -144,7 +144,7 @@ void Attacks::_init_pawn_attacks() {
     }
 }
 
-void Attacks::_init_knight_attacks() {
+void Attacks::hidden::_init_knight_attacks() {
     for (uint8_t i = 0; i < 64; ++i) {
         bitboard piece = ONE << i;
 
@@ -157,7 +157,7 @@ void Attacks::_init_knight_attacks() {
     }
 }
 
-void Attacks::_init_king_attacks() {
+void Attacks::hidden::_init_king_attacks() {
     for (uint8_t i = 0; i < 64; ++i) {
         bitboard piece = ONE << i;
 
@@ -168,21 +168,21 @@ void Attacks::_init_king_attacks() {
 }
 
 bitboard Attacks::get_rook_attacks(uint8_t cell, bitboard blockers) {
-    blockers &= _rook_mask[cell];
-    uint64_t key = (blockers * _rook_magics[cell]) >> (64 - _rook_bits[cell]);
-    return _rook_attacks[cell][key];
+    blockers &= hidden::_rook_mask[cell];
+    uint64_t key = (blockers * hidden::_rook_magics[cell]) >> (64 - hidden::_rook_bits[cell]);
+    return hidden::_rook_attacks[cell][key];
 }
 
 bitboard Attacks::get_bishop_attacks(uint8_t cell, bitboard blockers) {
-    blockers &= _bishop_mask[cell];
-    uint64_t key = (blockers * _bishop_magics[cell]) >> (64 - _bishop_bits[cell]);
-    return _bishop_attacks[cell][key];
+    blockers &= hidden::_bishop_mask[cell];
+    uint64_t key = (blockers * hidden::_bishop_magics[cell]) >> (64 - hidden::_bishop_bits[cell]);
+    return hidden::_bishop_attacks[cell][key];
 }
 
 bitboard Attacks::get_queen_attacks(uint8_t cell, bitboard blockers) {
     return get_rook_attacks(cell, blockers) | get_bishop_attacks(cell, blockers);
 }
 
-bitboard Attacks::get_pawn_attacks(Color color, uint8_t cell) { return _pawn_attacks[color][cell]; }
-bitboard Attacks::get_knight_attacks(uint8_t cell) { return _knight_attacks[cell]; }
-bitboard Attacks::get_king_attacks(uint8_t cell)   { return _king_attacks[cell];   }
+bitboard Attacks::get_pawn_attacks(Color color, uint8_t cell) { return hidden::_pawn_attacks[color][cell]; }
+bitboard Attacks::get_knight_attacks(uint8_t cell) { return hidden::_knight_attacks[cell]; }
+bitboard Attacks::get_king_attacks(uint8_t cell)   { return hidden::_king_attacks[cell];   }
