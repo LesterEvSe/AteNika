@@ -56,7 +56,7 @@ bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
 uint8_t Board::get_half_moves()   const { return m_half_moves_counter;  }
-uint8_t Board::get_en_passant()   const { return m_en_passant;          }
+uint8_t Board::get_en_passant()   const { return m_en_passant_file;     }
 
 bool Board::get_white_qs_castle() const { return m_castling_rights & 1; }
 bool Board::get_white_ks_castle() const { return m_castling_rights & 2; }
@@ -91,15 +91,21 @@ bool Board::under_attack(uint8_t cell, Color color) const {
     return false;
 }
 
-void Board::add_piece(uint8_t cell, PieceType piece, Color color) {
+void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
+    set1(m_pieces[color][piece], cell);
+    m_hash.xor_piece(color, piece, cell);
+}
+
+void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
+    set0(m_pieces[color][piece], cell);
+    m_hash.xor_piece(color, piece, cell);
+}
+
+void Board::makemove(const Move &move) {
 
 }
 
-void Board::remove_piece(uint8_t cell, PieceType piece, Color color) {
-
-}
-
-std::ostream& operator<<(std::ostream& out, const Board& pieces) {
+std::ostream& operator<<(std::ostream &out, const Board &pieces) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)
         out << ' ' << let;

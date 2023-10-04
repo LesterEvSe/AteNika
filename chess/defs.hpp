@@ -49,19 +49,20 @@ constexpr bitboard RANK_6 = RANK_1 << (8 * 5);
 constexpr bitboard RANK_7 = RANK_1 << (8 * 6);
 constexpr bitboard RANK_8 = RANK_1 << (8 * 7);
 
+// Order is important!
 enum PieceType : uint8_t {
-    PAWN   = 0,
-    ROOK   = 1,
-    KNIGHT = 2,
-    BISHOP = 3,
-    KING   = 4,
-    QUEEN  = 5,
-    NONE   = 6
+    PAWN,
+    ROOK,
+    KNIGHT,
+    BISHOP,
+    QUEEN,
+    KING,
+    NONE
 };
 
 enum Color : uint8_t {
-    BLACK = 0,
-    WHITE = 1
+    BLACK,
+    WHITE
 };
 
 constexpr uint64_t ZERO {0};

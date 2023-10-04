@@ -12,7 +12,7 @@ set(SOURCES
         chess/zobrist_hash.cpp
     chess/attacks.cpp
     chess/pawn.cpp
-        chess/move_list.cpp
+        chess/movepicker.cpp
     chess/move.cpp
         chess/uint96.cpp
         chess/uint96.hpp

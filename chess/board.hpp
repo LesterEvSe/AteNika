@@ -20,15 +20,13 @@ private:
     bitboard m_side[2] {0};
     bitboard m_all {0};
 
-    Color m_player_move = WHITE;
+    Color m_player_move {WHITE};
 
     // The moves that can be brought back.
     // If > 50 moves, there will be a draw
     uint8_t m_half_moves_counter {0};
 
-    // bitboard, where player can move with a pawn.
-    // 0 If there is no such move
-    bitboard m_en_passant = 0;
+    int8_t m_en_passant_file {-1};
 
     // if white rook move, example 7 cell, we lose white kingside castling.
     // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
@@ -78,20 +76,11 @@ public:
     [[nodiscard]] bool in_check(Color color) const;
     [[nodiscard]] bool under_attack(uint8_t cell, Color color) const;
 
-    void add_piece(uint8_t cell, PieceType piece, Color color);
-    void remove_piece(uint8_t cell, PieceType piece, Color color);
+    void add_piece(Color color, PieceType piece, uint8_t cell);
+    void remove_piece(Color color, PieceType piece, uint8_t cell);
     void makemove(const Move &move);
 
-    // Maybe need to implement in Move class
-//    bitboard gen_captures();
-//    bitboard gen_pseudo_legal_moves();
-//    bitboard gen_legal_moves();
-
-    // bool cell_under_attack. This two func maybe same?
-    // bitboard get_all_moves (include captures, maybe :) )
-    // bitboard get_captures
-
-    friend std::ostream& operator<<(std::ostream& out, const Board& board);
+    friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
 
 #endif //CHESSAI_BOARD_HPP

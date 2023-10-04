@@ -28,7 +28,7 @@ private:
         PieceType m_promotion_piece : 3;
     };
 
-    int32_t m_evaluation;
+    int32_t m_score;
 
 public:
     Move() = default;
@@ -45,10 +45,11 @@ public:
         m_move_piece(move_piece),
         m_captured_piece(captured_piece),
         m_promotion_piece(promotion_piece),
-        m_evaluation(0) {}
+        m_score(0) {}
 
-    // For quick sort in MoveList class
+    // For insertion sort in MovePicker class
     friend bool operator< (const Move &left, const Move &right);
+    [[nodiscard]] int32_t get_score() const;
 };
 
 #endif //CHESSAI_MOVE_HPP
