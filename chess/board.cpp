@@ -56,13 +56,28 @@ bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
 uint8_t Board::get_half_moves()   const { return m_half_moves_counter;  }
-uint8_t Board::get_en_passant()   const { return m_en_passant_file;     }
+uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
 
 bool Board::get_white_qs_castle() const { return m_castling_rights & 1; }
 bool Board::get_white_ks_castle() const { return m_castling_rights & 2; }
 bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
 
+
+PieceType Board::get_piece_at(Color color, uint8_t index) const {
+    bitboard field = ONE << index;
+
+    if (field & m_pieces[color][PAWN]) return PAWN;
+    if (field & m_pieces[color][KNIGHT]) return KNIGHT;
+    if (field & m_pieces[color][BISHOP]) return BISHOP;
+    if (field & m_pieces[color][ROOK]) return ROOK;
+    if (field & m_pieces[color][QUEEN]) return QUEEN;
+    if (field & m_pieces[color][KING]) return KING;
+
+    std::string col = color == WHITE ? "white" : "black";
+    error(col + " has not piece at " + std::to_string(index) + " cell");
+    return NONE; // Will never reach this line
+}
 
 bool Board::in_check(Color color) const {
     bitboard pieces = get_pieces(color, KING);

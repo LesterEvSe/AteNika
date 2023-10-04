@@ -10,7 +10,7 @@
 class Board {
 private:
 
-    // The top 14 bitboards to work
+    // The top 15 bitboards to work
     // m_all, black and white pieces (black pawns, white bishops ...)
     bitboard m_pieces[2][6] {0};
 
@@ -21,10 +21,11 @@ private:
     Color m_player_move {WHITE};
 
     // The moves that can be brought back.
-    // If > 50 moves, there will be a draw
+    // If >= 50 moves, there will be a draw
     uint8_t m_half_moves_counter {0};
 
-    int8_t m_en_passant_file {-1};
+    // En passant cell
+    uint8_t m_en_passant_cell {0};
 
     // if white rook move, example 7 cell, we lose white kingside castling.
     // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
@@ -69,6 +70,8 @@ public:
     [[nodiscard]] bool get_white_ks_castle() const;
     [[nodiscard]] bool get_black_qs_castle() const;
     [[nodiscard]] bool get_black_ks_castle() const;
+
+    [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
 
     // King of the current player in danger
     [[nodiscard]] bool in_check(Color color) const;
