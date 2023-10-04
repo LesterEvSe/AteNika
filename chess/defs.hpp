@@ -1,5 +1,5 @@
-#ifndef CHESSAI_DEFS_HPP
-#define CHESSAI_DEFS_HPP
+#ifndef ATENICA_DEFS_HPP
+#define ATENICA_DEFS_HPP
 
 #include <cstdint>
 
@@ -68,4 +68,4 @@ enum Color : uint8_t {
 constexpr uint64_t ZERO {0};
 constexpr uint64_t ONE  {1};
 
-#endif //CHESSAI_DEFS_HPP
+#endif //ATENICA_DEFS_HPP

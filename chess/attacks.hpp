@@ -1,5 +1,5 @@
-#ifndef CHESSAI_ATTACKS_HPP
-#define CHESSAI_ATTACKS_HPP
+#ifndef ATENICA_ATTACKS_HPP
+#define ATENICA_ATTACKS_HPP
 
 #include "bitfunc.hpp"
 
@@ -94,4 +94,4 @@ namespace Attacks {
     bitboard get_king_attacks(uint8_t cell);
 }
 
-#endif //CHESSAI_ATTACKS_HPP
+#endif //ATENICA_ATTACKS_HPP

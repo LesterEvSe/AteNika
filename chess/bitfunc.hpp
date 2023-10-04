@@ -1,5 +1,5 @@
-#ifndef CHESSAI_BITFUNC_HPP
-#define CHESSAI_BITFUNC_HPP
+#ifndef ATENICA_BITFUNC_HPP
+#define ATENICA_BITFUNC_HPP
 
 #include "defs.hpp"
 #include <iostream> // for std::cerr
@@ -78,4 +78,4 @@ inline void printbb(bitboard bb) {
     std::cout << "\n--------------------\n\n";
 }
 
-#endif //CHESSAI_BITFUNC_HPP
+#endif //ATENICA_BITFUNC_HPP

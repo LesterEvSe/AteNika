@@ -1,5 +1,5 @@
-#ifndef CHESSAI_BOARD_HPP
-#define CHESSAI_BOARD_HPP
+#ifndef ATENICA_BOARD_HPP
+#define ATENICA_BOARD_HPP
 
 #include "defs.hpp"
 #include "bitfunc.hpp"
@@ -29,7 +29,7 @@ private:
 
     // if white rook move, example 7 cell, we lose white kingside castling.
     // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
-    static constexpr uint64_t castling[64] = {
+    static constexpr uint8_t castling[64] = {
             14, 15, 15, 15, 12, 15, 15, 13,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
@@ -82,4 +82,4 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
 
-#endif //CHESSAI_BOARD_HPP
+#endif //ATENICA_BOARD_HPP

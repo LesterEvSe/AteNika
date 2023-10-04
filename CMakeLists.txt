@@ -7,6 +7,7 @@ include_directories(
 )
 
 set(SOURCES
+    chess/main.cpp
     chess/board.cpp
     chess/rays.cpp
     chess/zobrist_hash.cpp
@@ -14,6 +15,8 @@ set(SOURCES
     chess/movepicker.cpp
     chess/move.cpp
     chess/uint96.cpp
+        chess/movegen.cpp
+        chess/movegen.hpp
 )
 
 set(HEADERS
@@ -21,4 +24,4 @@ set(HEADERS
     chess/bitfunc.hpp
 )
 
-add_executable(AteNica main.cpp ${SOURCES} ${HEADERS})
+add_executable(AteNica ${SOURCES} ${HEADERS})

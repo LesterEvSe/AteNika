@@ -1,5 +1,5 @@
-#ifndef CHESSAI_MOVE_HPP
-#define CHESSAI_MOVE_HPP
+#ifndef ATENICA_MOVE_HPP
+#define ATENICA_MOVE_HPP
 
 #include "defs.hpp"
 
@@ -52,4 +52,4 @@ public:
     [[nodiscard]] int32_t get_score() const;
 };
 
-#endif //CHESSAI_MOVE_HPP
+#endif //ATENICA_MOVE_HPP

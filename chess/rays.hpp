@@ -1,5 +1,5 @@
-#ifndef CHESSAI_RAYS_HPP
-#define CHESSAI_RAYS_HPP
+#ifndef ATENICA_RAYS_HPP
+#define ATENICA_RAYS_HPP
 
 #include "defs.hpp"
 
@@ -35,4 +35,4 @@ namespace Rays
     bitboard get_ray(Direction dir, uint8_t cell);
 }
 
-#endif //CHESSAI_RAYS_HPP
+#endif //ATENICA_RAYS_HPP

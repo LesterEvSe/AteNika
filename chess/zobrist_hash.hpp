@@ -1,5 +1,5 @@
-#ifndef CHESSAI_ZOBRIST_HASH_HPP
-#define CHESSAI_ZOBRIST_HASH_HPP
+#ifndef ATENICA_ZOBRIST_HASH_HPP
+#define ATENICA_ZOBRIST_HASH_HPP
 
 #include "defs.hpp"
 #include "uint96.hpp"
@@ -43,4 +43,4 @@ public:
     void xor_move();
 };
 
-#endif //CHESSAI_ZOBRIST_HASH_HPP
+#endif //ATENICA_ZOBRIST_HASH_HPP
