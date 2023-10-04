@@ -3,7 +3,6 @@
 
 #include "defs.hpp"
 #include "bitfunc.hpp"
-
 #include "attacks.hpp"
 #include "zobrist_hash.hpp"
 #include "move.hpp"

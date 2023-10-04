@@ -8,7 +8,7 @@ public:
     enum Flag : uint8_t {
         QUIET = 0,
         CAPTURE = 1,
-        DOUBLE_PAWN_MOVE = 2,
+        LONG_PAWN_MOVE = 2,
         QSIDE_CASTLING = 3,
         KSIDE_CASTLING = 4,
         EN_PASSANT = 5,
@@ -34,15 +34,15 @@ public:
     Move() = default;
     Move(uint8_t from,
          uint8_t to,
+         PieceType move_piece,
          Flag flag = QUIET,
-         PieceType move_piece = NONE,
          PieceType captured_piece = NONE,
          PieceType promotion_piece = NONE
     ) :
         m_from(from),
         m_to(to),
-        m_flag(flag),
         m_move_piece(move_piece),
+        m_flag(flag),
         m_captured_piece(captured_piece),
         m_promotion_piece(promotion_piece),
         m_score(0) {}
