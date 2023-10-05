@@ -38,7 +38,7 @@ ZobristHash::ZobristHash(const Board &board) {
 void ZobristHash::set_hash(const Board &board) {
     if (board.get_curr_player_move() == WHITE)
         xor_move();
-    xor_en_passant(get_col(board.get_en_passant_cell()));
+    xor_en_passant(get_col(board.get_en_passant()));
 
     if (board.get_white_qs_castle())
         xor_qs_castle(WHITE);

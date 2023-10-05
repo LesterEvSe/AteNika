@@ -7,8 +7,8 @@
 namespace Movegen {
     namespace hidden {
         // helper private data, to avoid throwing them over function arguments
-        const Board *_board;
-        MovePicker *_move_picker;
+        extern const Board *_board;
+        extern MovePicker *_move_picker;
 
         void _gen_white_moves();
         void _gen_black_moves();

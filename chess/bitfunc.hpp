@@ -53,7 +53,7 @@ inline uint8_t msb(bitboard bb) {
 
 inline uint8_t pop_lsb(bitboard &bb) {
     uint8_t pos = lsb(bb);
-    set0(bb, pos);
+    bb &= bb - 1;
     return pos;
 }
 

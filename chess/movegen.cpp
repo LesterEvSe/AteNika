@@ -1,5 +1,8 @@
 #include "movegen.hpp"
 
+const Board *Movegen::hidden::_board;
+MovePicker *Movegen::hidden::_move_picker;
+
 void Movegen::gen_moves(const Board *board, MovePicker *move_picker) {
     hidden::_board = board;
     hidden::_move_picker = move_picker;
@@ -51,38 +54,43 @@ void Movegen::hidden::_gen_pawn_promotion(uint8_t from, uint8_t to, Move::Flag f
     _move_picker->emplace_back(Move(from, to, PAWN, flag, captured_piece, ROOK));
 }
 
-// TODO. We can divide moves to RANK_8 and other to get rid of the "if" block
 void Movegen::hidden::_gen_white_pawn_moves() {
     bitboard move = (_board->get_pieces(WHITE, PAWN) << 8) & _board->get_free_cells();
-    bitboard long_move = (move << 8) & _board->get_free_cells();
+    bitboard rank8 = move & RANK_8;
+    move &= ~RANK_8;
+    bitboard long_move = ((move & RANK_3) << 8) & _board->get_free_cells();
 
     while (move) {
         uint8_t cell = pop_lsb(move);
-
-        // TODO. Rewrite if block
-        if (cell < 56)
-            _move_picker->emplace_back(Move(cell - 8, cell, PAWN));
-        else // If RANK_8 for white
-            _gen_pawn_promotion(cell - 8, cell);
+        _move_picker->emplace_back(Move(cell - 8, cell, PAWN));
     }
 
-    while(long_move) {
+    while (rank8) {
+        uint8_t cell = pop_lsb(rank8);
+        _gen_pawn_promotion(cell - 8, cell);
+    }
+
+    while (long_move) {
         uint8_t cell = pop_lsb(long_move);
         _move_picker->emplace_back(Move(cell - 16, cell, PAWN, Move::LONG_PAWN_MOVE));
     }
 }
 void Movegen::hidden::_gen_black_pawn_moves() {
     bitboard move = (_board->get_pieces(BLACK, PAWN) >> 8) & _board->get_free_cells();
-    bitboard long_move = (move >> 8) & _board->get_free_cells();
+    bitboard rank1 = move & RANK_1; // Promotion rank
+    move &= ~RANK_1; // Non-promotion rank
+
+    // If we can make long move (move & RANK_6)
+    bitboard long_move = ((move & RANK_6) >> 8) & _board->get_free_cells();
 
     while (move) {
         uint8_t cell = pop_lsb(move);
+        _move_picker->emplace_back(Move(cell + 8, cell, PAWN));
+    }
 
-        // TODO. Rewrite if block
-        if (cell > 7)
-            _move_picker->emplace_back(Move(cell + 8, cell, PAWN));
-        else // If RANK_1 for black
-            _gen_pawn_promotion(cell + 8, cell);
+    while (rank1) {
+        uint8_t cell = pop_lsb(rank1);
+        _gen_pawn_promotion(cell + 8, cell);
     }
 
     while (long_move) {
@@ -91,19 +99,8 @@ void Movegen::hidden::_gen_black_pawn_moves() {
     }
 }
 
-/**
- *      A   B   C   D   E   F   G   H
- * 8 | 56  57  58  59  60  61  62  63
- * 7 | 48  49  50  51  52  53  54  55
- * 6 | 40  41  42  43  44  45  46  47
- * 5 | 32  33  34  35  36  37  38  39
- * 4 | 24  25  26  27  28  29  30  31
- * 3 | 16  17  18  19  20  21  22  23
- * 2 |  8   9  10  11  12  13  14  15
- * 1 |  0   1   2   3   4   5   6   7
- */
-
 void Movegen::hidden::_gen_white_left_pawn_captures() {
+    // ~FILE_H, because of 16 << 7 = 23. 16 is file A, 23 is file H, it is impossible move
     bitboard attacks = (_board->get_pieces(WHITE, PAWN) << 7) & ~FILE_H;
     uint8_t en_passant_cell = _board->get_en_passant();
 
@@ -111,12 +108,24 @@ void Movegen::hidden::_gen_white_left_pawn_captures() {
     // so if there is 0, it is definitely not en passant!
     // if en passant in cell 40, then we can take pawn on cell 32 from cell 33. So 40 - 7 = 33
     if (en_passant_cell)
-        _move_picker->emplace_back(Move(en_passant_cell-7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
+        _move_picker->emplace_back(Move(en_passant_cell - 7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     // If we can take some opponent pieces
     attacks &= _board->get_side_pieces(BLACK);
+    bitboard rank8 = attacks & RANK_8;
+    attacks &= ~RANK_8;
 
-    // TODO. Need to determine capture and promotion
+    while (attacks) {
+        uint8_t cell = pop_lsb(attacks);
+        PieceType piece = _board->get_piece_at(WHITE, cell);
+        _move_picker->emplace_back(Move(cell - 7, cell, PAWN, Move::CAPTURE, piece));
+    }
+
+    while (rank8) {
+        uint8_t cell = pop_lsb(rank8);
+        PieceType piece = _board->get_piece_at(WHITE, cell);
+        _gen_pawn_promotion(cell - 7, cell, Move::CAPTURE, piece);
+    }
 }
 void Movegen::hidden::_gen_black_left_pawn_captures() {
 

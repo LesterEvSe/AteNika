@@ -1,6 +1,6 @@
 #include "rays.hpp"
 #include "board.hpp"
-#include "movepicker.hpp"
+#include "movegen.hpp"
 
 int main() {
     Rays::init();
@@ -10,6 +10,7 @@ int main() {
 
     bitboard blockers = 0x0004120843280816;
     uint8_t cell = 28; // 4E
+
 
 
     // Accept
