@@ -24,7 +24,7 @@ namespace Rays
     */
 
     namespace hidden {
-        // 8 sides of a chess piece
+        // 8 sides of a src piece
         extern bitboard _rays[8][64];
 
         // The next 2 functions are auxiliary
