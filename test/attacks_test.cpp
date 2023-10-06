@@ -4,15 +4,9 @@
 
 class AttacksTestFixture : public testing::Test
 {
-protected:
-    bitboard white_pawns = 0xFF00; //0x807F00;
-    bitboard black_pawns = 0xBF400000000000;
-
-    bitboard blockers = 0x0004120843280816;
-    uint8_t cell = 28; // 4E
-
 public:
     static void SetUpTestCase() {
+        // Order is important
         Rays::init();
         Attacks::init();
     }
@@ -23,7 +17,10 @@ public:
 
 // Queen Attacks
 TEST_F(AttacksTestFixture, queen_in_the_center_of_empty_board) {
-    // Arrange & Act
+    // Arrange
+    uint8_t cell = 28; // 4E
+
+    // Act
     bitboard actual = Attacks::get_queen_attacks(cell, 0);
 
     // Assert
@@ -31,7 +28,11 @@ TEST_F(AttacksTestFixture, queen_in_the_center_of_empty_board) {
 }
 
 TEST_F(AttacksTestFixture, queen_with_blockers) {
-    // Arrange & Act
+    // Arrange
+    bitboard blockers = 0x0004120843280816;
+    uint8_t cell = 28; // 4E
+
+    // Act
     bitboard actual = Attacks::get_queen_attacks(cell, blockers);
 
     // Assert
@@ -40,7 +41,10 @@ TEST_F(AttacksTestFixture, queen_with_blockers) {
 
 // White Pawn
 TEST_F(AttacksTestFixture, white_pawn_on_the_left_edge) {
+    // Arrange & Act
     bitboard actual = Attacks::get_pawn_attacks(WHITE, 8);
+
+    // Assert
     ASSERT_EQ(0x020000, actual);
 }
 

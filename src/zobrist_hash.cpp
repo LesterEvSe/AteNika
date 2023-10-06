@@ -30,11 +30,6 @@ void ZobristHash::init() {
     WHITE_MOVE = {dist64(gen64), dist32(gen32)};
 }
 
-// TODO. Do we need it?
-ZobristHash::ZobristHash(const Board &board) {
-    set_hash(board);
-}
-
 void ZobristHash::set_hash(const Board &board) {
     if (board.get_curr_player_move() == WHITE)
         xor_move();
@@ -64,9 +59,6 @@ void ZobristHash::set_hash(const Board &board) {
         }
     }
 }
-
-// TODO. Do we need it?
-uint96 ZobristHash::get_hash() const { return m_hash; }
 
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
     return left.m_hash == right.m_hash;

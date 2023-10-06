@@ -18,18 +18,18 @@ private:
     bitboard m_side[2] {0};
     bitboard m_all {0};
 
-    Color m_player_move {WHITE};
+    Color m_player_move;
 
     // The moves that can be brought back.
     // If >= 50 moves, there will be a draw
-    uint8_t m_half_moves_counter {0};
+    uint8_t m_half_moves_counter;
 
     // En passant cell
-    uint8_t m_en_passant_cell {0};
+    uint8_t m_en_passant_cell;
 
-    // if white rook move, example 7 cell, we lose white kingside castling.
-    // So, m_castling_rights & castling[7] = 1111 & 1101 = 1101
-    static constexpr uint8_t castling[64] = {
+    // if white rook move, example 7 cell, we lose white kingside CASTLING.
+    // So, m_castling_rights & CASTLING[7] = 1111 & 1101 = 1101
+    static constexpr uint8_t CASTLING[64] = {
             14, 15, 15, 15, 12, 15, 15, 13,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
@@ -40,19 +40,25 @@ private:
             11, 15, 15, 15, 3,  15, 15, 7
     };
 
+    // Using the Fen order
+    //
     // 4 bits
-    // 0001 - white queenside
-    // 0010 - white kingside
-    // 0100 - black queenside
-    // 1000 - black kingside
-    uint8_t m_castling_rights {0b1111};
+    // 0001 - white kingside
+    // 0010 - white queenside
+    // 0100 - black kingside
+    // 1000 - black queenside
+    uint8_t m_castling_rights {0};
 
     ZobristHash m_hash;
 
 public:
-    // using short FEN (Forsyth-Edwards Notation):
-    // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    // using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
+    // 1. Pieces
+    // 2. White or black move
+    // 3. Castling rights
+    // 4. En passant cell
+    // 5. ply (half moves)
+    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
     void update_bitboards();
 
     [[nodiscard]] Color get_curr_player_move() const;
@@ -66,10 +72,10 @@ public:
     [[nodiscard]] uint8_t get_half_moves() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 
-    [[nodiscard]] bool get_white_qs_castle() const;
     [[nodiscard]] bool get_white_ks_castle() const;
-    [[nodiscard]] bool get_black_qs_castle() const;
+    [[nodiscard]] bool get_white_qs_castle() const;
     [[nodiscard]] bool get_black_ks_castle() const;
+    [[nodiscard]] bool get_black_qs_castle() const;
 
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
 

@@ -28,10 +28,7 @@ private:
 public:
     static void init();
     ZobristHash() = default;
-    ZobristHash(const Board &board);
     void set_hash(const Board &board);
-
-    [[nodiscard]] uint96 get_hash() const;
     friend bool operator== (const ZobristHash& left, const ZobristHash& right);
 
     void xor_piece(Color col, PieceType piece, uint8_t cell);

@@ -8,5 +8,8 @@ int main() {
     MovePicker::init();
     ZobristHash::init();
 
+    Board board = Board();
+    std::cout << board;
+
     return 0;
 }

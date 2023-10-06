@@ -24,17 +24,24 @@ add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 
 # Instruction for build the tests
+set(BUILD_TESTS TRUE)
+if (NOT BUILD_TESTS)
+    return()
+endif()
+
 execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# You just need to change the path to the google-test folder to run everything else
 set(GTEST_ROOT /home/${CURRENT_USER}/googletest-1.14.0)
 
 include_directories(${GTEST_ROOT}/googletest/include test)
 set(TEST_SOURCES
     test/attacks_test.cpp
+    test/board_test.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 
 enable_testing()
-
 target_link_libraries(AteNicaTest
     ${GTEST_ROOT}/build/lib/libgtest.a
     ${GTEST_ROOT}/build/lib/libgtest_main.a

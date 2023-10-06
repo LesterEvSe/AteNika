@@ -1,12 +1,17 @@
 #include "board.hpp"
+#include <sstream> // for std::istringstream in constructor
 
-// example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR
+// example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
 Board::Board(std::string short_fen) {
+    std::istringstream iss(short_fen);
+    std::string pieces;
+    iss >> pieces;
+
     int8_t pos = 56;
-    for (uint8_t i = 0; i < short_fen.size(); ++i, ++pos)
-        switch (short_fen[i]) {
+    for (uint16_t i = 0; i < pieces.size(); ++i, ++pos)
+        switch (pieces[i]) {
             case 'p' : m_pieces[BLACK][PAWN]   |= (ONE << pos); break;
             case 'r' : m_pieces[BLACK][ROOK]   |= (ONE << pos); break;
             case 'n' : m_pieces[BLACK][KNIGHT] |= (ONE << pos); break;
@@ -22,8 +27,35 @@ Board::Board(std::string short_fen) {
             case 'Q' : m_pieces[WHITE][QUEEN]  |= (ONE << pos); break;
 
             case '/' : pos -= 17; break; // Because we have pos increment at the end
-            default  : pos += static_cast<int8_t>(short_fen[i] - '1'); // Because of increment too
+            default  : pos += static_cast<int8_t>(pieces[i] - '1'); // Because of increment too
         }
+
+    char move;
+    iss >> move;
+    m_player_move = move == 'w' ? WHITE : BLACK;
+
+    std::string castling;
+    iss >> castling;
+    for (uint8_t i = 0; i < castling.size(); ++i)
+        switch (castling[i]) {
+            case 'K' : m_castling_rights |= 1; break;
+            case 'Q' : m_castling_rights |= 2; break;
+            case 'k' : m_castling_rights |= 4; break;
+            case 'q' : m_castling_rights |= 8; break;
+            default  : break;
+        }
+
+    std::string en_passant;
+    iss >> en_passant;
+    if (en_passant == "-")
+        m_en_passant_cell = ZERO;
+    else {
+        uint8_t file = en_passant[0] - 'a';
+        uint8_t rank = en_passant[1] - '1';
+        m_en_passant_cell = ONE << ((rank << 3) + file);
+    }
+
+    iss >> m_half_moves_counter;
 
     update_bitboards();
     m_hash.set_hash(*this); // Order is important! Hash need after all initializations
@@ -58,21 +90,21 @@ bitboard Board::get_free_cells()  const { return ~m_all; }
 uint8_t Board::get_half_moves()   const { return m_half_moves_counter;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
 
-bool Board::get_white_qs_castle() const { return m_castling_rights & 1; }
-bool Board::get_white_ks_castle() const { return m_castling_rights & 2; }
-bool Board::get_black_qs_castle() const { return m_castling_rights & 4; }
-bool Board::get_black_ks_castle() const { return m_castling_rights & 8; }
+bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
+bool Board::get_white_qs_castle() const { return m_castling_rights & 2; }
+bool Board::get_black_ks_castle() const { return m_castling_rights & 4; }
+bool Board::get_black_qs_castle() const { return m_castling_rights & 8; }
 
 
 PieceType Board::get_piece_at(Color color, uint8_t index) const {
     bitboard field = ONE << index;
 
-    if (field & m_pieces[color][PAWN]) return PAWN;
+    if (field & m_pieces[color][PAWN])   return PAWN;
     if (field & m_pieces[color][KNIGHT]) return KNIGHT;
     if (field & m_pieces[color][BISHOP]) return BISHOP;
-    if (field & m_pieces[color][ROOK]) return ROOK;
-    if (field & m_pieces[color][QUEEN]) return QUEEN;
-    if (field & m_pieces[color][KING]) return KING;
+    if (field & m_pieces[color][ROOK])   return ROOK;
+    if (field & m_pieces[color][QUEEN])  return QUEEN;
+    if (field & m_pieces[color][KING])   return KING;
 
     std::string col = color == WHITE ? "white" : "black";
     error(col + " has not piece at " + std::to_string(index) + " cell");
@@ -114,10 +146,6 @@ void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
     set0(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
-}
-
-void Board::makemove(const Move &move) {
-
 }
 
 std::ostream& operator<<(std::ostream &out, const Board &pieces) {
