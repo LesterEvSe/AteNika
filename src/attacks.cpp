@@ -134,9 +134,8 @@ void Attacks::hidden::_init_bishop_attacks() {
 }
 
 void Attacks::hidden::_init_pawn_attacks() {
-    // In the first and eighth rows, pawns turn into other pieces,
-    // so for them, we do not need to calculate attacks
-    for (uint8_t i = 8; i < 56; ++i) {
+    // We need all 8 rows, for under_attack method in Board class
+    for (uint8_t i = 0; i < 64; ++i) {
         bitboard piece = ONE << i;
 
         _pawn_attacks[WHITE][i] = (piece << 7) & ~FILE_H | (piece << 9) & ~FILE_A;

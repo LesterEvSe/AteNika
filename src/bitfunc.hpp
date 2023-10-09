@@ -57,6 +57,12 @@ inline uint8_t pop_lsb(bitboard &bb) {
     return pos;
 }
 
+inline uint8_t get_cell(std::string notation) {
+    uint8_t file = notation[0] - 'a';
+    uint8_t rank = notation[1] - '1';
+    return (rank << 3) + file;
+}
+
 inline void error(const std::string &msg) {
     std::cerr << msg;
     exit(1);

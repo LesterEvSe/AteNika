@@ -49,11 +49,8 @@ Board::Board(std::string short_fen) {
     iss >> en_passant;
     if (en_passant == "-")
         m_en_passant_cell = ZERO;
-    else {
-        uint8_t file = en_passant[0] - 'a';
-        uint8_t rank = en_passant[1] - '1';
-        m_en_passant_cell = ONE << ((rank << 3) + file);
-    }
+    else
+        m_en_passant_cell = ONE << get_cell(en_passant);
 
     iss >> m_half_moves_counter;
 
@@ -122,18 +119,18 @@ bool Board::in_check(Color color) const {
 
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
-// TODO NEED TO TEST
-bool Board::under_attack(Color color, uint8_t cell) const {
-    Color opposite = get_opposite_move(color);
-    if (get_pieces(opposite, PAWN) & Attacks::get_pawn_attacks(color, cell)) return true;
-    if (get_pieces(opposite, KNIGHT) & Attacks::get_knight_attacks(cell)) return true;
+bool Board::under_attack(Color defender, uint8_t cell) const {
+    Color attacker = get_opposite_move(defender);
+    if (get_pieces(attacker, PAWN) & Attacks::get_pawn_attacks(defender, cell)) return true;
+    if (get_pieces(attacker, KNIGHT) & Attacks::get_knight_attacks(cell)) return true;
+    if (get_pieces(attacker, KING) & Attacks::get_king_attacks(cell)) return true;
 
     // Sliding Attacks
-    bitboard blockers = get_side_pieces(color);
-    if ((get_pieces(opposite, ROOK) | get_pieces(opposite, QUEEN)) &
+    bitboard blockers = get_all_pieces();
+    if ((get_pieces(attacker, ROOK) | get_pieces(attacker, QUEEN)) &
         Attacks::get_rook_attacks(cell, blockers)) return true;
 
-    if ((get_pieces(opposite, BISHOP) | get_pieces(opposite, QUEEN)) &
+    if ((get_pieces(attacker, BISHOP) | get_pieces(attacker, QUEEN)) &
         Attacks::get_bishop_attacks(cell, blockers)) return true;
     return false;
 }

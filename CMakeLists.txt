@@ -38,6 +38,7 @@ include_directories(${GTEST_ROOT}/googletest/include test)
 set(TEST_SOURCES
     test/attacks_test.cpp
     test/board_test.cpp
+        test/bitfunc_test.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

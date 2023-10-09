@@ -30,14 +30,14 @@ private:
     // if white rook move, example 7 cell, we lose white kingside CASTLING.
     // So, m_castling_rights & CASTLING[7] = 1111 & 1101 = 1101
     static constexpr uint8_t CASTLING[64] = {
-            14, 15, 15, 15, 12, 15, 15, 13,
+            13, 15, 15, 15, 12, 15, 15, 14,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
-            11, 15, 15, 15, 3,  15, 15, 7
+            7, 15, 15, 15, 3,  15, 15, 11
     };
 
     // Using the Fen order
@@ -81,7 +81,7 @@ public:
 
     // King of the current player in danger
     [[nodiscard]] bool in_check(Color color) const;
-    [[nodiscard]] bool under_attack(Color color, uint8_t cell) const;
+    [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
