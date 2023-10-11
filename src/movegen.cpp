@@ -117,13 +117,13 @@ void Movegen::hidden::_gen_white_left_pawn_captures() {
 
     while (attacks) {
         uint8_t cell = pop_lsb(attacks);
-        PieceType piece = _board->get_piece_at(WHITE, cell);
+        PieceType piece = _board->get_piece_at(BLACK, cell);
         _move_picker->emplace_back(Move(cell - 7, cell, PAWN, Move::CAPTURE, piece));
     }
 
     while (rank8) {
         uint8_t cell = pop_lsb(rank8);
-        PieceType piece = _board->get_piece_at(WHITE, cell);
+        PieceType piece = _board->get_piece_at(BLACK, cell);
         _gen_pawn_promotion(cell - 7, cell, Move::CAPTURE, piece);
     }
 }

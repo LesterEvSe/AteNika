@@ -13,13 +13,15 @@ private:
 
     // MVV - Most Valuable Victim
     // LVA - Least Valuable Attacker
-    static uint8_t m_mvv_lva[5][6];
+    static uint8_t m_mvv_lva[PSIZE-1][PSIZE];
 
 public:
     static void init();
 
     MovePicker() : m_size(0), m_curr_node(0), m_moves(Move()) {}
     [[nodiscard]] bool has_next() const;
+    [[nodiscard]] uint8_t get_moves() const;
+
     const Move &get_next(); // Using insertion sorting in place, O(n) at a time
     void emplace_back(const Move &move);
 };

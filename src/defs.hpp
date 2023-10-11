@@ -70,12 +70,14 @@ enum PieceType : uint8_t {
     KING,
     ROOK,
     QUEEN,
+    PSIZE,
     NONE // at the end
 };
 
 enum Color : uint8_t {
     BLACK,
-    WHITE
+    WHITE,
+    CSIZE
 };
 
 constexpr uint64_t ZERO {0};

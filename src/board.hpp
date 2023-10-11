@@ -12,10 +12,10 @@ private:
 
     // The top 15 bitboards to work
     // m_all, black and white pieces (black pawns, white bishops ...)
-    bitboard m_pieces[2][6] {0};
+    bitboard m_pieces[CSIZE][PSIZE] {0};
 
     // white and black, all pieces
-    bitboard m_side[2] {0};
+    bitboard m_side[CSIZE] {0};
     bitboard m_all {0};
 
     Color m_player_move;

@@ -104,7 +104,7 @@ PieceType Board::get_piece_at(Color color, uint8_t index) const {
     if (field & m_pieces[color][KING])   return KING;
 
     std::string col = color == WHITE ? "white" : "black";
-    error(col + " has not piece at " + std::to_string(index) + " cell");
+    error(col + " has not piece at " + FIELD[index] + " cell");
     return NONE; // Will never reach this line
 }
 

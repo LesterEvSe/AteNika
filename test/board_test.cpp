@@ -112,17 +112,16 @@ TEST_F(BoardTestFixture, black_queen_side_castle) {
 // get_piece_at(Color, uint8_t) method
 TEST_F(BoardTestFixture, TestExit) {
     // Arrange
-    std::string str = "white has not piece at 28 cell";
+    std::string str = "white has not piece at e4 cell";
 
     // testing::ExitedWithCode data type
     auto error = testing::ExitedWithCode(1);
 
-    // Act
     auto lambda = []() -> PieceType {
-        board.get_piece_at(WHITE, get_cell("e4"));
+        return board.get_piece_at(WHITE, get_cell("e4"));
     };
 
-    // Assert
+    // Act & Assert
     ASSERT_EXIT(lambda(), error, str);
 }
 

@@ -48,7 +48,7 @@ public:
         m_score(0) {}
 
     // For insertion sort in MovePicker class
-    friend bool operator< (const Move &left, const Move &right);
+    friend bool operator<(const Move &left, const Move &right);
     [[nodiscard]] int32_t get_score() const;
 };
 

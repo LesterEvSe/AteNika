@@ -6,14 +6,14 @@ std::mt19937 ZobristHash::gen32 {PRNG};
 std::uniform_int_distribution<uint64_t> ZobristHash::dist64;
 std::uniform_int_distribution<uint32_t> ZobristHash::dist32;
 
-uint96 ZobristHash::PIECE_KEYS[2][6][64];
+uint96 ZobristHash::PIECE_KEYS[CSIZE][PSIZE][64];
 uint96 ZobristHash::EN_PASSANT_FILE[8];
-uint96 ZobristHash::QS_CASTLE[2];
-uint96 ZobristHash::KS_CASTLE[2];
+uint96 ZobristHash::QS_CASTLE[CSIZE];
+uint96 ZobristHash::KS_CASTLE[CSIZE];
 uint96 ZobristHash::WHITE_MOVE;
 
 void ZobristHash::init() {
-    for (uint8_t j = 0; j < 6; ++j)
+    for (uint8_t j = 0; j < PSIZE; ++j)
         for (uint8_t k = 0; k < 64; ++k) {
             PIECE_KEYS[BLACK][j][k] = {dist64(gen64), dist32(gen32)};
             PIECE_KEYS[WHITE][j][k] = {dist64(gen64), dist32(gen32)};
@@ -22,7 +22,7 @@ void ZobristHash::init() {
     for (uint8_t i = 0; i < 8; ++i)
         EN_PASSANT_FILE[i] = {dist64(gen64), dist32(gen32)};
 
-    for (uint8_t i = 0; i < 2; ++i) {
+    for (uint8_t i = 0; i < CSIZE; ++i) {
         QS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
         KS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
     }
@@ -45,8 +45,8 @@ void ZobristHash::set_hash(const Board &board) {
     if (board.get_black_ks_castle())
         xor_ks_castle(BLACK);
 
-    static constexpr PieceType type[6] = { PAWN, ROOK, KNIGHT, BISHOP, KING, QUEEN };
-    for (uint8_t i = 0; i < 6; ++i) {
+    static constexpr PieceType type[PSIZE] = { PAWN, ROOK, KNIGHT, BISHOP, KING, QUEEN };
+    for (uint8_t i = 0; i < PSIZE; ++i) {
         bitboard white_pieces = board.get_pieces(WHITE, type[i]);
         bitboard black_pieces = board.get_pieces(BLACK, type[i]);
 
