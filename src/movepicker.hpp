@@ -1,15 +1,12 @@
-#ifndef CHESSAI_MOVE_LIST_HPP
-#define CHESSAI_MOVE_LIST_HPP
+#ifndef ATENICA_MOVEPICKER_HPP
+#define ATENICA_MOVEPICKER_HPP
 
-#include "move.hpp"
+#include "move_list.hpp"
 
 class MovePicker {
 private:
-    uint8_t m_size;
+    MoveList &m_move_list;
     uint8_t m_curr_node; // First unpicked move
-
-    // This is the position with the max number of moves a player can have
-    Move m_moves[218];
 
     // MVV - Most Valuable Victim
     // LVA - Least Valuable Attacker
@@ -18,13 +15,9 @@ private:
 public:
     static void init();
 
-    MovePicker() : m_size(0), m_curr_node(0), m_moves(Move()) {}
+    explicit MovePicker(MoveList *move_list) : m_move_list(*move_list), m_curr_node(0) {}
     [[nodiscard]] bool has_next() const;
-    [[nodiscard]] const Move *get_moves() const;
-
     const Move &get_next(); // Using insertion sorting in place, O(n) at a time
-    void emplace_back(const Move &move);
 };
 
-
-#endif //CHESSAI_MOVE_LIST_HPP
+#endif //ATENICA_MOVEPICKER_HPP

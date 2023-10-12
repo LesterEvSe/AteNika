@@ -15,7 +15,7 @@ public:
     }
 };
 
-Board BoardTestFixture::board = Board("rnbqk2r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 0");
+Board BoardTestFixture::board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 0");
 
 // Check get_pieces method for pawns
 TEST_F(BoardTestFixture, white_pawns_position) {
@@ -79,12 +79,12 @@ TEST_F(BoardTestFixture, empty_cell_under_attack_of_black_queen) {
 }
 
 TEST_F(BoardTestFixture, black_king_in_check) {
-    bool actual = board.in_check(BLACK);
-    ASSERT_TRUE(actual);
+    bool actual = board.king_in_check(BLACK);
+    ASSERT_FALSE(actual);
 }
 
 TEST_F(BoardTestFixture, white_king_in_check) {
-    bool actual = board.in_check(WHITE);
+    bool actual = board.king_in_check(WHITE);
     ASSERT_TRUE(actual);
 }
 

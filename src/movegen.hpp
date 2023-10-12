@@ -2,45 +2,53 @@
 #define ATENICA_MOVEGEN_HPP
 
 #include "board.hpp"
-#include "movepicker.hpp"
+#include "move_list.hpp"
 
-namespace Movegen {
-    namespace hidden {
-        // helper private data, to avoid throwing them over function arguments
-        extern const Board *_board;
-        extern MovePicker *_move_picker;
+class Movegen
+{
+private:
+    // Because we need to make and unmake moves
+    Board &m_board;
+    MoveList m_moves;
+    MoveList m_legal_moves;
 
-        void _gen_white_moves();
-        void _gen_black_moves();
+    void gen_white_moves();
+    void gen_black_moves();
 
-        void _gen_white_pawn_moves_and_captures();
-        void _gen_black_pawn_moves_and_captures();
+    void gen_white_pawn_moves_and_captures();
+    void gen_black_pawn_moves_and_captures();
 
-        void _gen_pawn_promotion(uint8_t from, uint8_t to, Move::Flag flag = Move::QUIET, PieceType captured_piece = NONE);
-        void _gen_white_pawn_moves();
-        void _gen_black_pawn_moves();
+    void gen_pawn_promotion(uint8_t from, uint8_t to, Move::Flag flag = Move::QUIET, PieceType captured_piece = NONE);
+    void gen_white_pawn_moves();
+    void gen_black_pawn_moves();
 
-        void _gen_white_left_pawn_captures();
-        void _gen_black_left_pawn_captures();
-        void _gen_white_right_pawn_captures();
-        void _gen_black_right_pawn_captures();
+    void gen_white_left_pawn_captures();
+    void gen_black_left_pawn_captures();
+    void gen_white_right_pawn_captures();
+    void gen_black_right_pawn_captures();
 
-        void _gen_white_king_moves();
-        void _gen_black_king_moves();
+    void gen_white_king_moves();
+    void gen_black_king_moves();
 
-        void _gen_white_knight_moves();
-        void _gen_black_knight_moves();
+    void gen_white_knight_moves();
+    void gen_black_knight_moves();
 
-        void _gen_white_rook_moves();
-        void _gen_black_rook_moves();
+    void gen_white_rook_moves();
+    void gen_black_rook_moves();
 
-        void _gen_white_bishop_moves();
-        void _gen_black_bishop_moves();
+    void gen_white_bishop_moves();
+    void gen_black_bishop_moves();
 
-        void _gen_white_queen_moves();
-        void _gen_black_queen_moves();
-    }
-    void gen_moves(const Board *board, MovePicker *move_picker);
-}
+    void gen_white_queen_moves();
+    void gen_black_queen_moves();
+
+    void gen_moves();
+    void gen_legal_moves();
+
+public:
+    explicit Movegen(Board &board);
+    MoveList &get_moves();
+    MoveList &get_legal_moves();
+};
 
 #endif //ATENICA_MOVEGEN_HPP

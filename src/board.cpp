@@ -52,7 +52,7 @@ Board::Board(std::string short_fen) {
     else
         m_en_passant_cell = ONE << get_cell(en_passant);
 
-    iss >> m_half_moves_counter;
+    iss >> m_ply;
 
     update_bitboards();
     m_hash.set_hash(*this); // Order is important! Hash need after all initializations
@@ -76,15 +76,15 @@ void Board::update_bitboards() {
     m_all = m_side[WHITE] | m_side[BLACK];
 }
 
-Color Board::get_curr_player_move()     const { return m_player_move; }
-Color Board::get_opponent_player_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
+Color Board::get_curr_color()     const { return m_player_move; }
+Color Board::get_opponent_color() const { return m_player_move == WHITE ? BLACK : WHITE; }
 
 bitboard Board::get_pieces(Color color, PieceType piece) const { return m_pieces[color][piece]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
-uint8_t Board::get_half_moves()   const { return m_half_moves_counter;  }
+uint8_t Board::get_ply()          const { return m_ply;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
@@ -108,7 +108,7 @@ PieceType Board::get_piece_at(Color color, uint8_t index) const {
     return NONE; // Will never reach this line
 }
 
-bool Board::in_check(Color color) const {
+bool Board::king_in_check(Color color) const {
     bitboard pieces = get_pieces(color, KING);
     uint8_t king_cell = lsb(pieces);
     return under_attack(color, king_cell);
@@ -143,6 +143,16 @@ void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
     set0(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
+}
+
+
+// TODO code make and unmake methods
+void Board::make(const Move &move) {
+
+}
+
+void Board::unmake(const Move &move) {
+
 }
 
 std::ostream& operator<<(std::ostream &out, const Board &pieces) {

@@ -13,14 +13,11 @@
 class PerftFixture : public testing::Test
 {
 protected:
-    MovePicker m_move_picker;
-
     int64_t perft(Board &board, int depth) {
-
+        return 0;
     }
 
 public:
-    PerftFixture() = default;
     static void SetUpTestCase() {
         Rays::init();
         Attacks::init();

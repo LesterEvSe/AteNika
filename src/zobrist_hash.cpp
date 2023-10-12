@@ -31,7 +31,7 @@ void ZobristHash::init() {
 }
 
 void ZobristHash::set_hash(const Board &board) {
-    if (board.get_curr_player_move() == WHITE)
+    if (board.get_curr_color() == WHITE)
         xor_move();
     xor_en_passant(get_col(board.get_en_passant()));
 

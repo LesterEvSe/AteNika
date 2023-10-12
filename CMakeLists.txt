@@ -13,7 +13,7 @@ set(PROJECT_SOURCES
     src/rays.cpp
     src/uint96.cpp
     src/zobrist_hash.cpp
-    src/MoveList.cpp
+    src/move_list.cpp
 )
 
 set(PROJECT_HEADERS

@@ -1,6 +1,6 @@
 #include "rays.hpp"
 #include "board.hpp"
-#include "movegen.hpp"
+#include "movepicker.hpp"
 
 int main() {
     Rays::init();

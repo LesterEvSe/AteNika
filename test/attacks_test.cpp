@@ -60,7 +60,7 @@ TEST_F(AttacksTestFixture, white_pawn_in_the_center) {
 
 TEST_F(AttacksTestFixture, white_pawn_in_the_first_rank) {
     bitboard actual = Attacks::get_pawn_attacks(WHITE, 4);
-    ASSERT_EQ(0, actual);
+    ASSERT_EQ(0x2800, actual);
 }
 
 // Black Pawn
@@ -81,7 +81,7 @@ TEST_F(AttacksTestFixture, black_pawn_in_the_center) {
 
 TEST_F(AttacksTestFixture, black_pawn_in_the_first_rank) {
     bitboard actual = Attacks::get_pawn_attacks(BLACK, 59);
-    ASSERT_EQ(0, actual);
+    ASSERT_EQ(0x14000000000000, actual);
 }
 
 // King

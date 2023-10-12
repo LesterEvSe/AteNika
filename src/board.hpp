@@ -9,7 +9,7 @@
 
 class Board {
 private:
-
+    // enums CSIZE and PSIZE in defs.hpp
     // The top 15 bitboards to work
     // m_all, black and white pieces (black pawns, white bishops ...)
     bitboard m_pieces[CSIZE][PSIZE] {0};
@@ -20,11 +20,11 @@ private:
 
     Color m_player_move;
 
+    // ply is half move
     // The moves that can be brought back.
     // If >= 50 moves, there will be a draw
-    uint8_t m_half_moves_counter;
+    uint8_t m_ply;
 
-    // En passant cell
     uint8_t m_en_passant_cell;
 
     // if white rook move, example 7 cell, we lose white kingside CASTLING.
@@ -61,15 +61,15 @@ public:
     explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
     void update_bitboards();
 
-    [[nodiscard]] Color get_curr_player_move() const;
-    [[nodiscard]] Color get_opponent_player_move() const;
+    [[nodiscard]] Color get_curr_color() const;
+    [[nodiscard]] Color get_opponent_color() const;
 
     [[nodiscard]] bitboard get_pieces(Color color, PieceType piece) const;
     [[nodiscard]] bitboard get_side_pieces(Color color) const;
     [[nodiscard]] bitboard get_all_pieces() const;
     [[nodiscard]] bitboard get_free_cells() const;
 
-    [[nodiscard]] uint8_t get_half_moves() const;
+    [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 
     [[nodiscard]] bool get_white_ks_castle() const;
@@ -78,16 +78,14 @@ public:
     [[nodiscard]] bool get_black_qs_castle() const;
 
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
-
-    // King in danger
-    [[nodiscard]] bool in_check(Color color) const;
+    [[nodiscard]] bool king_in_check(Color color) const;
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
 
-    void make_move(const Move &move);
-    void unmake_move(const Move &move);
+    void make(const Move &move);
+    void unmake(const Move &move);
 
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
