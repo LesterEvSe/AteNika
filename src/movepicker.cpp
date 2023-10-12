@@ -17,8 +17,8 @@ bool MovePicker::has_next() const {
     return m_curr_node < m_size;
 }
 
-uint8_t MovePicker::get_moves() const {
-    return m_size;
+const Move *MovePicker::get_moves() const {
+    return m_moves;
 }
 
 const Move &MovePicker::get_next() {

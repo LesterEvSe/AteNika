@@ -20,7 +20,7 @@ public:
 
     MovePicker() : m_size(0), m_curr_node(0), m_moves(Move()) {}
     [[nodiscard]] bool has_next() const;
-    [[nodiscard]] uint8_t get_moves() const;
+    [[nodiscard]] const Move *get_moves() const;
 
     const Move &get_next(); // Using insertion sorting in place, O(n) at a time
     void emplace_back(const Move &move);

@@ -13,6 +13,7 @@ set(PROJECT_SOURCES
     src/rays.cpp
     src/uint96.cpp
     src/zobrist_hash.cpp
+    src/MoveList.cpp
 )
 
 set(PROJECT_HEADERS
@@ -39,7 +40,7 @@ set(TEST_SOURCES
     test/attacks_test.cpp
     test/board_test.cpp
     test/bitfunc_test.cpp
-    test/movegen_test.cpp
+    test/perft.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

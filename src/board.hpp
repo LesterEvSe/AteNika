@@ -79,13 +79,15 @@ public:
 
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
 
-    // King of the current player in danger
+    // King in danger
     [[nodiscard]] bool in_check(Color color) const;
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
-    void makemove(const Move &move);
+
+    void make_move(const Move &move);
+    void unmake_move(const Move &move);
 
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
