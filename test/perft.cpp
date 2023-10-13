@@ -8,13 +8,27 @@
  * position fen (fen_pos)
  * go perft (depth)
  */
+
 // https://www.chessprogramming.org/Perft_Results for position
 // Perft - PERFomance Test, move path enumeration
 class PerftFixture : public testing::Test
 {
 protected:
-    int64_t perft(Board &board, int depth) {
-        return 0;
+    static int64_t perft(Board &board, int depth) {
+        MoveList move_list = Movegen(board).get_legal_moves();
+
+        // In order not to constantly subtract 1,
+        // when calling the function
+        if (depth-- == 1)
+            return move_list.size();
+
+        int64_t legal_moves = 0;
+        for (uint8_t i = 0; i < move_list.size(); ++i) {
+            board.make(move_list[i]);
+            legal_moves += perft(board, depth);
+            board.unmake(move_list[i]);
+        }
+        return legal_moves;
     }
 
 public:
@@ -24,45 +38,186 @@ public:
     }
 };
 
-// TODO Recode everything to perft method
-//TEST_F(PerftFixture, max_possible_moves_in_position_1) {
-//    // Arrange
-//    Board board = Board("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0");
-//
-//    // Act
-//    Movegen::gen_moves(&board, &m_move_picker);
-//    uint8_t actual = m_move_picker.get_moves();
-//
-//    // Assert
-//    ASSERT_EQ(218, actual);
-//}
-//
-//TEST_F(PerftFixture, max_possible_moves_in_position_2) {
-//    // Arrange
-//    Board board = Board("3Q4/1Q4Q1/4Q3/2Q4R/Q4Q2/3Q4/1Q4Rp/1K1BBNNk w - - 0");
-//
-//    // Act
-//    Movegen::gen_moves(&board, &m_move_picker);
-//    uint8_t actual = m_move_picker.get_moves();
-//
-//    // Assert
-//    ASSERT_EQ(218, actual);
-//}
-//
-//TEST_F(PerftFixture, check_en_passant_for_black) {
-//    Board board = Board("rnbqkbnr/pppp1ppp/8/8/4pP2/8/PPPPP1PP/RNBQKBNR b KQkq f3 0");
-//
-//    Movegen::gen_moves(&board, &m_move_picker);
-//    uint8_t actual = m_move_picker.get_moves();
-//
-//    ASSERT_EQ(30, actual);
-//}
-//
-//TEST_F(PerftFixture, start_position) {
-//    Board board = Board();
-//
-//    Movegen::gen_moves(&board, &m_move_picker);
-//    uint8_t actual = m_move_picker.get_moves();
-//
-//    ASSERT_EQ(20, actual);
-//}
+TEST_F(PerftFixture, max_possible_moves_in_position_1) {
+    // Arrange
+    Board board = Board("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - - 0");
+
+    // Act
+    int64_t actual = perft(board, 1);
+
+    // Assert
+    ASSERT_EQ(218, actual);
+}
+
+TEST_F(PerftFixture, max_possible_moves_in_position_2) {
+    Board board = Board("3Q4/1Q4Q1/4Q3/2Q4R/Q4Q2/3Q4/1Q4Rp/1K1BBNNk w - - 0");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(218, actual);
+}
+
+TEST_F(PerftFixture, check_en_passant_for_black) {
+    Board board = Board("rnbqkbnr/pppp1ppp/8/8/4pP2/8/PPPPP1PP/RNBQKBNR b KQkq f3 0");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(30, actual);
+}
+
+// chessprogramming wiki tests: https://www.chessprogramming.org/Perft_Results
+TEST_F(PerftFixture, start_position) {
+    Board board = Board();
+    int64_t actual = perft(board, 3);
+    ASSERT_EQ(8902, actual); // Probably more if only Quite moves are counted here
+}
+
+TEST_F(PerftFixture, trouble_position_5) {
+    Board board = Board("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1");
+    const uint8_t size = 4;
+    uint64_t actual[size];
+    uint64_t expect[] = {44, 1'486, 62'379, 2'103'487, 89'941'194};
+
+    for (uint8_t i = 0; i < size; ++i)
+        actual[i] = perft(board, i+1);
+
+    for (uint8_t i = 0; i < size; ++i)
+        ASSERT_EQ(expect[i], actual[i]);
+}
+
+TEST_F(PerftFixture, trouble_position_6) {
+    Board board = Board("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0");
+    const uint8_t size = 4;
+    uint64_t actual[size];
+    uint64_t expect[] = {46, 2'079, 89'890, 3'894'594 };
+
+    for (uint8_t i = 0; i < size; ++i)
+        actual[i] = perft(board, i+1);
+
+    for (uint8_t i = 0; i < size; ++i)
+        ASSERT_EQ(expect[i], actual[i]);
+}
+
+// The tests are taken from
+// https://gist.github.com/peterellisjones/8c46c28141c162d1d8a0f0badbc9cff9?permalink_comment_id=3775288
+TEST_F(PerftFixture, github_test_1) {
+    Board board = Board("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(8, actual);
+}
+
+TEST_F(PerftFixture, github_test_2) {
+    Board board = Board("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(8, actual);
+}
+
+TEST_F(PerftFixture, github_test_3) {
+    Board board = Board("r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 2");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(19, actual);
+}
+
+TEST_F(PerftFixture, github_test_4) {
+    Board board = Board("r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQkq - 3");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(5, actual);
+}
+
+TEST_F(PerftFixture, github_test_5) {
+    Board board = Board("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 3");
+    int64_t actual = perft(board,1 );
+    ASSERT_EQ(44, actual);
+}
+
+TEST_F(PerftFixture, github_test_6) {
+    Board board = Board("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(39, actual);
+}
+
+TEST_F(PerftFixture, github_test_7) {
+    Board board = Board("2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5");
+    int64_t actual = perft(board, 1);
+    ASSERT_EQ(9, actual);
+}
+
+TEST_F(PerftFixture, github_test_8) {
+    Board board = Board("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(1'134'888, actual);
+}
+
+TEST_F(PerftFixture, github_test_9) {
+    Board board = Board("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(1'015'133, actual);
+}
+
+TEST_F(PerftFixture, github_test_10) {
+    Board board = Board("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(1'440'467, actual);
+}
+
+TEST_F(PerftFixture, github_test_11) {
+    Board board = Board("5k2/8/8/8/8/8/8/4K2R w K - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(661'072, actual);
+}
+
+TEST_F(PerftFixture, github_test_12) {
+    Board board = Board("3k4/8/8/8/8/8/8/R3K3 w Q - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(803'711, actual);
+}
+
+TEST_F(PerftFixture, github_test_13) {
+    Board board = Board("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0");
+    int64_t actual = perft(board, 4);
+    ASSERT_EQ(1'274'206, actual);
+}
+
+TEST_F(PerftFixture, github_test_14) {
+    Board board = Board("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0");
+    int64_t actual = perft(board, 4);
+    ASSERT_EQ(1'720'476, actual);
+}
+
+TEST_F(PerftFixture, github_test_15) {
+    Board board = Board("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(3'821'001, actual);
+}
+
+TEST_F(PerftFixture, github_test_16) {
+    Board board = Board("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0");
+    int64_t actual = perft(board, 5);
+    ASSERT_EQ(1'004'658, actual);
+}
+
+TEST_F(PerftFixture, github_test_17) {
+    Board board = Board("4k3/1P6/8/8/8/8/K7/8 w - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(217'342, actual);
+}
+
+TEST_F(PerftFixture, github_test_18) {
+    Board board = Board("8/P1k5/K7/8/8/8/8/8 w - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(92'683, actual);
+}
+
+TEST_F(PerftFixture, github_test_19) {
+    Board board = Board("K1k5/8/P7/8/8/8/8/8 w - - 0");
+    int64_t actual = perft(board, 6);
+    ASSERT_EQ(2'217, actual);
+}
+
+TEST_F(PerftFixture, github_test_20) {
+    Board board = Board("8/k1P5/8/1K6/8/8/8/8 w - - 0");
+    int64_t actual = perft(board, 7);
+    ASSERT_EQ(567'584, actual);
+}
+
+TEST_F(PerftFixture, github_test_21) {
+    Board board = Board("8/8/2k5/5q2/5n2/8/5K2/8 b - - 0");
+    int64_t actual = perft(board, 4);
+    ASSERT_EQ(23'527, actual);
+}

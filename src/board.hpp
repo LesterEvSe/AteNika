@@ -51,6 +51,9 @@ private:
 
     ZobristHash m_hash;
 
+    void add_piece(Color color, PieceType piece, uint8_t cell);
+    void remove_piece(Color color, PieceType piece, uint8_t cell);
+
 public:
     // using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
     // 1. Pieces
@@ -80,9 +83,6 @@ public:
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
     [[nodiscard]] bool king_in_check(Color color) const;
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
-
-    void add_piece(Color color, PieceType piece, uint8_t cell);
-    void remove_piece(Color color, PieceType piece, uint8_t cell);
 
     void make(const Move &move);
     void unmake(const Move &move);
