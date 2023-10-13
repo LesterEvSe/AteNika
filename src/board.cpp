@@ -146,15 +146,14 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 }
 
 
-// TODO code make and unmake methods
+// TODO code unmake method
 void Board::make(const Move &move) {
     // En passant is available on 1 move only
     m_en_passant_cell = 0;
     ++m_ply;
 
-    uint8_t from = move.get_from_cell();
     uint8_t to = move.get_to_cell();
-    remove_piece(m_player_move, move.get_move_piece(), from);
+    remove_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
     add_piece(m_player_move, move.get_move_piece(), to);
 
     switch (move.get_flag()) {
@@ -193,17 +192,20 @@ void Board::make(const Move &move) {
             add_piece(m_player_move, move.get_promotion_piece(), to);
             break;
         default: // Move::QUIET
-            m_ply = 0;
             break;
     }
 
+    if (move.get_move_piece() == PAWN || move.get_flag() != Move::QUIET)
+        m_ply = 0;
+
     update_bitboards();
     m_player_move = get_opponent_move();
-    m_castling_rights &= CASTLING[from] & CASTLING[to];
+    m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
     m_hash.xor_move();
 }
 
 void Board::unmake(const Move &move) {
+    m_en_passant_cell = 0;
 
 }
 
