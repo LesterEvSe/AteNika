@@ -76,8 +76,8 @@ void Board::update_bitboards() {
     m_all = m_side[WHITE] | m_side[BLACK];
 }
 
-Color Board::get_curr_color()     const { return m_player_move; }
-Color Board::get_opponent_color() const { return m_player_move == WHITE ? BLACK : WHITE; }
+Color Board::get_curr_move()     const { return m_player_move; }
+Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
 
 bitboard Board::get_pieces(Color color, PieceType piece) const { return m_pieces[color][piece]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
@@ -148,7 +148,59 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 
 // TODO code make and unmake methods
 void Board::make(const Move &move) {
+    // En passant is available on 1 move only
+    m_en_passant_cell = 0;
+    ++m_ply;
 
+    uint8_t from = move.get_from_cell();
+    uint8_t to = move.get_to_cell();
+    remove_piece(m_player_move, move.get_move_piece(), from);
+    add_piece(m_player_move, move.get_move_piece(), to);
+
+    switch (move.get_flag()) {
+        case Move::CAPTURE:
+            remove_piece(get_opponent_move(), move.get_captured_piece(), to);
+            break;
+        case Move::LONG_PAWN_MOVE:
+            m_en_passant_cell = (m_player_move == WHITE) ? to-8 : to+8;
+            break;
+        case Move::QSIDE_CASTLING: {
+            m_hash.xor_qs_castle(m_player_move);
+            uint8_t rook_cell = (m_player_move == WHITE) ? 0 : 56;
+
+            remove_piece(m_player_move, ROOK, rook_cell);
+            add_piece(m_player_move, ROOK, rook_cell + 3);
+            break;
+        }
+        case Move::KSIDE_CASTLING: {
+            m_hash.xor_ks_castle(m_player_move);
+            uint8_t rook_cell = (m_player_move == WHITE) ? 7 : 63;
+
+            remove_piece(m_player_move, ROOK, rook_cell);
+            add_piece(m_player_move, ROOK, rook_cell - 2);
+            break;
+        }
+        case Move::EN_PASSANT: {
+            uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
+            m_hash.xor_en_passant(get_col(captured_pawn));
+            remove_piece(get_opponent_move(), PAWN, captured_pawn);
+            break;
+        }
+        case Move::CAPTURE_PROMOTION: // Fall through to use PROMOTION code
+            remove_piece(get_opponent_move(), move.get_captured_piece(), to);
+        case Move::PROMOTION:
+            remove_piece(m_player_move, move.get_move_piece(), to);
+            add_piece(m_player_move, move.get_promotion_piece(), to);
+            break;
+        default: // Move::QUIET
+            m_ply = 0;
+            break;
+    }
+
+    update_bitboards();
+    m_player_move = get_opponent_move();
+    m_castling_rights &= CASTLING[from] & CASTLING[to];
+    m_hash.xor_move();
 }
 
 void Board::unmake(const Move &move) {

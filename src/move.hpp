@@ -47,9 +47,17 @@ public:
         m_promotion_piece(promotion_piece),
         m_score(0) {}
 
+    [[nodiscard]] uint8_t get_from_cell() const;
+    [[nodiscard]] uint8_t get_to_cell() const;
+    [[nodiscard]] Move::Flag get_flag() const;
+
+    [[nodiscard]] PieceType get_move_piece() const;
+    [[nodiscard]] PieceType get_captured_piece() const;
+    [[nodiscard]] PieceType get_promotion_piece() const;
+    [[nodiscard]] int32_t get_score() const;
+
     // For insertion sort in MovePicker class
     friend bool operator<(const Move &left, const Move &right);
-    [[nodiscard]] int32_t get_score() const;
 };
 
 #endif //ATENICA_MOVE_HPP

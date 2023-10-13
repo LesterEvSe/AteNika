@@ -13,7 +13,7 @@ MoveList &Movegen::get_legal_moves() {
 }
 
 void Movegen::gen_moves() {
-    if (m_board.get_curr_color() == WHITE)
+    if (m_board.get_curr_move() == WHITE)
         gen_white_moves();
     else
         gen_black_moves();
@@ -24,7 +24,7 @@ void Movegen::gen_legal_moves() {
     for (uint8_t i = 0; i < m_moves.size(); ++i) {
         m_board.make(m_moves[i]);
 
-        if (!m_board.king_in_check(m_board.get_opponent_color()))
+        if (!m_board.king_in_check(m_board.get_opponent_move()))
             m_legal_moves.emplace_back(m_moves[i]);
         m_board.unmake(m_moves[i]);
     }

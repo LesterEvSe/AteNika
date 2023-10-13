@@ -64,8 +64,8 @@ public:
     explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
     void update_bitboards();
 
-    [[nodiscard]] Color get_curr_color() const;
-    [[nodiscard]] Color get_opponent_color() const;
+    [[nodiscard]] Color get_curr_move() const;
+    [[nodiscard]] Color get_opponent_move() const;
 
     [[nodiscard]] bitboard get_pieces(Color color, PieceType piece) const;
     [[nodiscard]] bitboard get_side_pieces(Color color) const;
