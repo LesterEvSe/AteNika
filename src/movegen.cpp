@@ -117,10 +117,8 @@ void Movegen::gen_white_left_pawn_captures() {
     bitboard attacks = (m_board.get_pieces(WHITE, PAWN) << 7) & ~FILE_H;
     uint8_t en_passant_cell = m_board.get_en_passant();
 
-    // En passant exists only on the RANK 6 (for white),
-    // so if there is 0, it is definitely not en passant!
     // if en passant in cell 40, then we can take pawn on cell 32 from cell 33. So 40 - 7 = 33
-    if (en_passant_cell)
+    if (((ONE << en_passant_cell) & attacks))
         m_moves.emplace_back(Move(en_passant_cell - 7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     // If we can take some opponent pieces
@@ -141,13 +139,73 @@ void Movegen::gen_white_left_pawn_captures() {
     }
 }
 void Movegen::gen_black_left_pawn_captures() {
+    bitboard attacks = (m_board.get_pieces(BLACK, PAWN) >> 9) & ~FILE_H;
+    uint8_t en_passant_cell = m_board.get_en_passant();
 
+    if (((ONE << en_passant_cell) & attacks))
+        m_moves.emplace_back(Move(en_passant_cell + 9, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
+
+    attacks &= m_board.get_side_pieces(WHITE);
+    bitboard rank1 = attacks & RANK_1;
+    attacks &= ~RANK_1;
+
+    while (attacks) {
+        uint8_t cell = pop_lsb(attacks);
+        PieceType piece = m_board.get_piece_at(WHITE, cell);
+        m_moves.emplace_back(Move(cell + 9, cell, PAWN, Move::CAPTURE, piece));
+    }
+
+    while (rank1) {
+        uint8_t cell = pop_lsb(rank1);
+        PieceType piece = m_board.get_piece_at(WHITE, cell);
+        gen_pawn_promotion(cell + 9, cell, Move::CAPTURE, piece);
+    }
 }
 void Movegen::gen_white_right_pawn_captures() {
+    bitboard attacks = (m_board.get_pieces(WHITE, PAWN) << 9) & ~FILE_A;
+    uint8_t en_passant_cell = m_board.get_en_passant();
 
+    if (((ONE << en_passant_cell) & attacks))
+        m_moves.emplace_back(Move(en_passant_cell - 9, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
+
+    attacks &= m_board.get_side_pieces(BLACK);
+    bitboard rank8 = attacks & RANK_8;
+    attacks &= ~RANK_8;
+
+    while (attacks) {
+        uint8_t cell = pop_lsb(attacks);
+        PieceType piece = m_board.get_piece_at(BLACK, cell);
+        m_moves.emplace_back(Move(cell - 9, cell, PAWN, Move::CAPTURE, piece));
+    }
+
+    while (rank8) {
+        uint8_t cell = pop_lsb(rank8);
+        PieceType piece = m_board.get_piece_at(BLACK, cell);
+        gen_pawn_promotion(cell - 9, cell, Move::CAPTURE, piece);
+    }
 }
 void Movegen::gen_black_right_pawn_captures() {
+    bitboard attacks = (m_board.get_pieces(BLACK, PAWN) >> 7) & ~FILE_H;
+    uint8_t en_passant_cell = m_board.get_en_passant();
 
+    if (((ONE << en_passant_cell) & attacks))
+        m_moves.emplace_back(Move(en_passant_cell + 7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
+
+    attacks &= m_board.get_side_pieces(WHITE);
+    bitboard rank1 = attacks & RANK_1;
+    attacks &= ~RANK_1;
+
+    while (attacks) {
+        uint8_t cell = pop_lsb(attacks);
+        PieceType piece = m_board.get_piece_at(WHITE, cell);
+        m_moves.emplace_back(Move(cell + 7, cell, PAWN, Move::CAPTURE, piece));
+    }
+
+    while (rank1) {
+        uint8_t cell = pop_lsb(rank1);
+        PieceType piece = m_board.get_piece_at(WHITE, cell);
+        gen_pawn_promotion(cell + 7, cell, Move::CAPTURE, piece);
+    }
 }
 
 void Movegen::gen_white_king_moves() {
