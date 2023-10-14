@@ -85,7 +85,6 @@ public:
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void make(const Move &move);
-    void unmake(const Move &move);
 
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };

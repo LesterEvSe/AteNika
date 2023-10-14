@@ -1,6 +1,6 @@
 #include "movegen.hpp"
 
-Movegen::Movegen(Board &board) : m_board(board) {
+Movegen::Movegen(const Board &board) : m_board(board) {
     gen_moves();
 }
 
@@ -22,11 +22,11 @@ void Movegen::gen_moves() {
 
 void Movegen::gen_legal_moves() {
     for (uint8_t i = 0; i < m_moves.size(); ++i) {
-        m_board.make(m_moves[i]);
+        Board temp = m_board;
+        temp.make(m_moves[i]);
 
-        if (!m_board.king_in_check(m_board.get_opponent_move()))
+        if (!temp.king_in_check(m_board.get_opponent_move()))
             m_legal_moves.emplace_back(m_moves[i]);
-        m_board.unmake(m_moves[i]);
     }
 }
 

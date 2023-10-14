@@ -14,7 +14,7 @@
 class PerftFixture : public testing::Test
 {
 protected:
-    static int64_t perft(Board &board, int depth) {
+    static int64_t perft(const Board &board, int depth) {
         MoveList move_list = Movegen(board).get_legal_moves();
 
         // In order not to constantly subtract 1,
@@ -24,9 +24,9 @@ protected:
 
         int64_t legal_moves = 0;
         for (uint8_t i = 0; i < move_list.size(); ++i) {
-            board.make(move_list[i]);
+            Board temp = board;
+            temp.make(move_list[i]);
             legal_moves += perft(board, depth);
-            board.unmake(move_list[i]);
         }
         return legal_moves;
     }

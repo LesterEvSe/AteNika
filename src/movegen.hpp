@@ -8,7 +8,7 @@ class Movegen
 {
 private:
     // Because we need to make and unmake moves
-    Board &m_board;
+    const Board &m_board;
     MoveList m_moves;
     MoveList m_legal_moves;
 
@@ -46,7 +46,7 @@ private:
     void gen_legal_moves();
 
 public:
-    explicit Movegen(Board &board);
+    explicit Movegen(const Board &board);
     MoveList &get_moves();
     MoveList &get_legal_moves();
 };
