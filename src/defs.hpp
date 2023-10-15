@@ -69,14 +69,14 @@ enum PieceType : uint8_t {
     KING,
     ROOK,
     QUEEN,
-    PSIZE, // should be before end
+    PIECE_SIZE, // should be before end
     NONE // should be at the end
 };
 
 enum Color : uint8_t {
     BLACK,
     WHITE,
-    CSIZE // should be at the end
+    COLOR_SIZE // should be at the end
 };
 
 constexpr uint64_t ZERO {0};

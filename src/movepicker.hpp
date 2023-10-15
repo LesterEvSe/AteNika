@@ -10,7 +10,7 @@ private:
 
     // MVV - Most Valuable Victim
     // LVA - Least Valuable Attacker
-    static uint8_t m_mvv_lva[PSIZE-1][PSIZE];
+    static uint8_t m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
 public:
     static void init();

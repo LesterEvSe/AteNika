@@ -7,7 +7,7 @@ bitboard Attacks::hidden::_rook_attacks[64][4096];
 bitboard Attacks::hidden::_bishop_mask[64];
 bitboard Attacks::hidden::_bishop_attacks[64][512];
 
-bitboard Attacks::hidden::_pawn_attacks[CSIZE][64];
+bitboard Attacks::hidden::_pawn_attacks[COLOR_SIZE][64];
 bitboard Attacks::hidden::_knight_attacks[64];
 bitboard Attacks::hidden::_king_attacks[64];
 

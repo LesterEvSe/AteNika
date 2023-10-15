@@ -69,7 +69,7 @@ namespace Attacks {
         extern bitboard _bishop_mask[64];
         extern bitboard _bishop_attacks[64][512];
 
-        extern bitboard _pawn_attacks[CSIZE][64];
+        extern bitboard _pawn_attacks[COLOR_SIZE][64];
         extern bitboard _knight_attacks[64];
         extern bitboard _king_attacks[64];
 

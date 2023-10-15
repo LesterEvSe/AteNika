@@ -1,11 +1,11 @@
 #include <algorithm> // for std::swap
 #include "movepicker.hpp"
 
-uint8_t MovePicker::m_mvv_lva[PSIZE-1][PSIZE];
+uint8_t MovePicker::m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
 void MovePicker::init() {
-    PieceType MVV[PSIZE-1] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN };
-    PieceType LVA[PSIZE] = {KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN };
+    PieceType MVV[PIECE_SIZE - 1] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN };
+    PieceType LVA[PIECE_SIZE] = {KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN };
 
     uint8_t value = 0;
     for (PieceType victim : MVV)

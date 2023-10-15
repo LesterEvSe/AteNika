@@ -104,6 +104,7 @@ TEST_F(PerftFixture, github_test_1) {
 
 TEST_F(PerftFixture, github_test_2) {
     Board board = Board("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0");
+    std::cout << board;
     int64_t actual = perft(board, 1);
     ASSERT_EQ(8, actual);
 }

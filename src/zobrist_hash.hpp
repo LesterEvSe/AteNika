@@ -17,10 +17,10 @@ private:
     static std::uniform_int_distribution<uint32_t> dist32;
 
     // color, piece, cell
-    static uint96 PIECE_KEYS[CSIZE][PSIZE][64];
+    static uint96 PIECE_KEYS[COLOR_SIZE][PIECE_SIZE][64];
     static uint96 EN_PASSANT_FILE[8];
-    static uint96 QS_CASTLE[CSIZE];
-    static uint96 KS_CASTLE[CSIZE];
+    static uint96 QS_CASTLE[COLOR_SIZE];
+    static uint96 KS_CASTLE[COLOR_SIZE];
     static uint96 WHITE_MOVE;
 
     uint96 m_hash {ZERO};
