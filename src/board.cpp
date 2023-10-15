@@ -79,7 +79,7 @@ void Board::update_bitboards() {
 Color Board::get_curr_move()     const { return m_player_move; }
 Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
 
-bitboard Board::get_pieces(Color color, PieceType piece) const { return m_pieces[color][piece]; }
+bitboard Board::get_pieces(Color color, PieceType type) const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }

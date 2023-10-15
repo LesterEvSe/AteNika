@@ -12,6 +12,12 @@ private:
     MoveList m_moves;
     MoveList m_legal_moves;
 
+    void add_moves(uint8_t from, bitboard moves, PieceType piece);
+    void add_attacks(uint8_t from, bitboard attacks, PieceType move_piece, Color defender);
+
+    void gen_moves();
+    void gen_legal_moves();
+
     void gen_white_moves();
     void gen_black_moves();
 
@@ -41,9 +47,6 @@ private:
 
     void gen_white_queen_moves();
     void gen_black_queen_moves();
-
-    void gen_moves();
-    void gen_legal_moves();
 
 public:
     explicit Movegen(const Board &board);

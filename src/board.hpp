@@ -67,7 +67,7 @@ public:
     [[nodiscard]] Color get_curr_move() const;
     [[nodiscard]] Color get_opponent_move() const;
 
-    [[nodiscard]] bitboard get_pieces(Color color, PieceType piece) const;
+    [[nodiscard]] bitboard get_pieces(Color color, PieceType type) const;
     [[nodiscard]] bitboard get_side_pieces(Color color) const;
     [[nodiscard]] bitboard get_all_pieces() const;
     [[nodiscard]] bitboard get_free_cells() const;
