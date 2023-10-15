@@ -92,6 +92,50 @@ bool Board::get_white_qs_castle() const { return m_castling_rights & 2; }
 bool Board::get_black_ks_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_qs_castle() const { return m_castling_rights & 8; }
 
+bool Board::can_white_ks_castle() const {
+    if (!get_white_ks_castle())
+        return false;
+
+    static const bitboard empty_cells = (ONE << f1) | (ONE << g1);
+    if ((get_free_cells() & empty_cells) != empty_cells)
+        return false;
+
+    return !under_attack(WHITE, f1) && !under_attack(WHITE, g1);
+}
+
+bool Board::can_white_qs_castle() const {
+    if (!get_white_qs_castle())
+        return false;
+
+    static const bitboard empty_cells = (ONE << c1) | (ONE << d1);
+    if ((get_free_cells() & empty_cells) != empty_cells)
+        return false;
+
+    return !under_attack(WHITE, c1) && !under_attack(WHITE, d1);
+}
+
+bool Board::can_black_ks_castle() const {
+    if (!get_black_ks_castle())
+        return false;
+
+    static const bitboard empty_cells = (ONE << f8) | (ONE << g8);
+    if ((get_free_cells() & empty_cells) != empty_cells)
+        return false;
+
+    return !under_attack(BLACK, f8) && !under_attack(BLACK, g8);
+}
+
+bool Board::can_black_qs_castle() const {
+    if (!get_black_qs_castle())
+        return false;
+
+    static const bitboard empty_cells = (ONE << c8) | (ONE << d8);
+    if ((get_free_cells() & empty_cells) != empty_cells)
+        return false;
+
+    return !under_attack(BLACK, c8) && !under_attack(BLACK, d8);
+}
+
 
 PieceType Board::get_piece_at(Color color, uint8_t index) const {
     bitboard field = ONE << index;

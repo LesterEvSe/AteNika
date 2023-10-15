@@ -75,10 +75,17 @@ public:
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 
+    // ks - king side
+    // qs - queen side
     [[nodiscard]] bool get_white_ks_castle() const;
     [[nodiscard]] bool get_white_qs_castle() const;
     [[nodiscard]] bool get_black_ks_castle() const;
     [[nodiscard]] bool get_black_qs_castle() const;
+
+    [[nodiscard]] bool can_white_ks_castle() const;
+    [[nodiscard]] bool can_white_qs_castle() const;
+    [[nodiscard]] bool can_black_ks_castle() const;
+    [[nodiscard]] bool can_black_qs_castle() const;
 
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
     [[nodiscard]] bool king_in_check(Color color) const;
