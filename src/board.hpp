@@ -30,14 +30,14 @@ private:
     // if white rook move, example 7 cell, we lose white kingside CASTLING.
     // So, m_castling_rights & CASTLING[7] = 1111 & 1101 = 1101
     static constexpr uint8_t CASTLING[64] = {
-            13, 15, 15, 15, 3, 15, 15, 14,
+            13, 15, 15, 15, 12, 15, 15, 14,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
-            7, 15, 15, 15, 12,  15, 15, 11
+            7, 15, 15, 15, 3,  15, 15, 11
     };
 
     // Using the Fen order
