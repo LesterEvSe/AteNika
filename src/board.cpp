@@ -82,7 +82,7 @@ Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK :
 bitboard Board::get_pieces(Color color, PieceType type) const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
-bitboard Board::get_free_cells()  const { return ~m_all; }
+bitboard Board::get_free_cells()  const { return ~m_all; } // TODO maybe need separate field in this class
 
 uint8_t Board::get_ply()          const { return m_ply;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
@@ -107,7 +107,7 @@ bool Board::can_white_qs_castle() const {
     if (!get_white_qs_castle())
         return false;
 
-    static const bitboard empty_cells = (ONE << c1) | (ONE << d1);
+    static const bitboard empty_cells = (ONE << b1) | (ONE << c1) | (ONE << d1);
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
@@ -129,7 +129,7 @@ bool Board::can_black_qs_castle() const {
     if (!get_black_qs_castle())
         return false;
 
-    static const bitboard empty_cells = (ONE << c8) | (ONE << d8);
+    static const bitboard empty_cells = (ONE << b8) | (ONE << c8) | (ONE << d8);
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
