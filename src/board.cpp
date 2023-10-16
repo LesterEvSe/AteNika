@@ -50,7 +50,7 @@ Board::Board(std::string short_fen) {
     if (en_passant == "-")
         m_en_passant_cell = ZERO;
     else
-        m_en_passant_cell = ONE << get_cell(en_passant);
+        m_en_passant_cell = get_cell(en_passant);
 
     iss >> m_ply;
 
@@ -82,7 +82,7 @@ Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK :
 bitboard Board::get_pieces(Color color, PieceType type) const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
-bitboard Board::get_free_cells()  const { return ~m_all; } // TODO maybe need separate field in this class
+bitboard Board::get_free_cells()  const { return ~m_all; }
 
 uint8_t Board::get_ply()          const { return m_ply;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
@@ -100,7 +100,9 @@ bool Board::can_white_ks_castle() const {
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
-    return !under_attack(WHITE, f1) && !under_attack(WHITE, g1);
+    // e1 - white king cell before castling and moves
+    return !under_attack(WHITE, e1) &&
+        !under_attack(WHITE, f1) && !under_attack(WHITE, g1);
 }
 
 bool Board::can_white_qs_castle() const {
@@ -111,7 +113,8 @@ bool Board::can_white_qs_castle() const {
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
-    return !under_attack(WHITE, c1) && !under_attack(WHITE, d1);
+    return !under_attack(WHITE, e1) &&
+        !under_attack(WHITE, c1) && !under_attack(WHITE, d1);
 }
 
 bool Board::can_black_ks_castle() const {
@@ -122,7 +125,9 @@ bool Board::can_black_ks_castle() const {
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
-    return !under_attack(BLACK, f8) && !under_attack(BLACK, g8);
+    // e8 - black king cell before castling and moves
+    return !under_attack(BLACK, e8) &&
+        !under_attack(BLACK, f8) && !under_attack(BLACK, g8);
 }
 
 bool Board::can_black_qs_castle() const {
@@ -133,7 +138,8 @@ bool Board::can_black_qs_castle() const {
     if ((get_free_cells() & empty_cells) != empty_cells)
         return false;
 
-    return !under_attack(BLACK, c8) && !under_attack(BLACK, d8);
+    return !under_attack(BLACK, e8) &&
+        !under_attack(BLACK, c8) && !under_attack(BLACK, d8);
 }
 
 

@@ -225,9 +225,9 @@ void Movegen::gen_black_right_pawn_captures() {
 
 void Movegen::gen_white_king_moves() {
     uint8_t king_cell = lsb(m_board.get_pieces(WHITE, KING));
-    if (m_board.get_white_ks_castle())
+    if (m_board.can_white_ks_castle())
         m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
-    if (m_board.get_white_qs_castle())
+    if (m_board.can_white_qs_castle())
         m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
 
     bitboard moves = Attacks::get_king_attacks(king_cell);
@@ -239,9 +239,9 @@ void Movegen::gen_white_king_moves() {
 }
 void Movegen::gen_black_king_moves() {
     uint8_t king_cell = lsb(m_board.get_pieces(BLACK, KING));
-    if (m_board.get_black_ks_castle())
+    if (m_board.can_black_ks_castle())
         m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
-    if (m_board.get_black_qs_castle())
+    if (m_board.can_black_qs_castle())
         m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
 
     bitboard moves = Attacks::get_king_attacks(king_cell);
@@ -285,13 +285,12 @@ void Movegen::gen_black_knight_moves() {
 
 void Movegen::gen_white_rook_moves() {
     bitboard rooks = m_board.get_pieces(WHITE, ROOK);
-    bitboard blockers = m_board.get_all_pieces();
     bitboard free_cells = m_board.get_free_cells();
 
     while (rooks) {
         uint8_t cell = pop_lsb(rooks);
 
-        bitboard moves = Attacks::get_rook_attacks(cell, blockers);
+        bitboard moves = Attacks::get_rook_attacks(cell,  m_board.get_all_pieces());
         bitboard attacks = moves & m_board.get_side_pieces(BLACK);
         moves &= free_cells;
 
@@ -301,13 +300,12 @@ void Movegen::gen_white_rook_moves() {
 }
 void Movegen::gen_black_rook_moves() {
     bitboard rooks = m_board.get_pieces(BLACK, ROOK);
-    bitboard blockers = m_board.get_all_pieces();
     bitboard free_cells = m_board.get_free_cells();
 
     while (rooks) {
         uint8_t cell = pop_lsb(rooks);
 
-        bitboard moves = Attacks::get_rook_attacks(cell, blockers);
+        bitboard moves = Attacks::get_rook_attacks(cell,  m_board.get_all_pieces());
         bitboard attacks = moves & m_board.get_side_pieces(WHITE);
         moves &= free_cells;
 
@@ -318,13 +316,12 @@ void Movegen::gen_black_rook_moves() {
 
 void Movegen::gen_white_bishop_moves() {
     bitboard bishops = m_board.get_pieces(WHITE, BISHOP);
-    bitboard blockers = m_board.get_all_pieces();
     bitboard free_cells = m_board.get_free_cells();
 
     while (bishops) {
         uint8_t cell = pop_lsb(bishops);
 
-        bitboard moves = Attacks::get_bishop_attacks(cell, blockers);
+        bitboard moves = Attacks::get_bishop_attacks(cell,  m_board.get_all_pieces());
         bitboard attacks = moves & m_board.get_side_pieces(BLACK);
         moves &= free_cells;
 
@@ -335,13 +332,12 @@ void Movegen::gen_white_bishop_moves() {
 }
 void Movegen::gen_black_bishop_moves() {
     bitboard bishops = m_board.get_pieces(BLACK, BISHOP);
-    bitboard blockers = m_board.get_all_pieces();
     bitboard free_cells = m_board.get_free_cells();
 
     while (bishops) {
         uint8_t cell = pop_lsb(bishops);
 
-        bitboard moves = Attacks::get_bishop_attacks(cell, blockers);
+        bitboard moves = Attacks::get_bishop_attacks(cell,  m_board.get_all_pieces());
         bitboard attacks = moves & m_board.get_side_pieces(WHITE);
         moves &= free_cells;
 
@@ -351,26 +347,32 @@ void Movegen::gen_black_bishop_moves() {
 }
 
 void Movegen::gen_white_queen_moves() {
-    bitboard queen = m_board.get_pieces(WHITE, QUEEN);
-    if (!queen) return;
-    uint8_t cell = lsb(queen);
+    bitboard queens = m_board.get_pieces(WHITE, QUEEN);
+    bitboard free_cells = m_board.get_free_cells();
 
-    bitboard moves = Attacks::get_queen_attacks(cell, m_board.get_all_pieces());
-    bitboard attacks = moves & m_board.get_side_pieces(BLACK);
-    moves &= m_board.get_free_cells();
+    while (queens) {
+        uint8_t cell = pop_lsb(queens);
 
-    add_moves(cell, moves, QUEEN);
-    add_attacks(cell, attacks, QUEEN, BLACK);
+        bitboard moves = Attacks::get_queen_attacks(cell,  m_board.get_all_pieces());
+        bitboard attacks = moves & m_board.get_side_pieces(BLACK);
+        moves &= free_cells;
+
+        add_moves(cell, moves, QUEEN);
+        add_attacks(cell, attacks, QUEEN, BLACK);
+    }
 }
 void Movegen::gen_black_queen_moves() {
-    bitboard queen = m_board.get_pieces(BLACK, QUEEN);
-    if (!queen) return;
-    uint8_t cell = lsb(queen);
+    bitboard queens = m_board.get_pieces(BLACK, QUEEN);
+    bitboard free_cells = m_board.get_free_cells();
 
-    bitboard moves = Attacks::get_queen_attacks(cell, m_board.get_all_pieces());
-    bitboard attacks = moves & m_board.get_side_pieces(WHITE);
-    moves &= m_board.get_free_cells();
+    while (queens) {
+        uint8_t cell = pop_lsb(queens);
 
-    add_moves(cell, moves, QUEEN);
-    add_attacks(cell, attacks, QUEEN, WHITE);
+        bitboard moves = Attacks::get_queen_attacks(cell, m_board.get_all_pieces());
+        bitboard attacks = moves & m_board.get_side_pieces(WHITE);
+        moves &= free_cells;
+
+        add_moves(cell, moves, QUEEN);
+        add_attacks(cell, attacks, QUEEN, WHITE);
+    }
 }

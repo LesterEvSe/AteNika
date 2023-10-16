@@ -34,47 +34,47 @@ TEST_F(BoardTestFixture, black_pawns_position) {
 // Testing under_attack method
 TEST_F(BoardTestFixture, white_pawn_under_attack) {
     // under black knight attack
-    bool actual = board.under_attack(WHITE, get_cell("d7"));
+    bool actual = board.under_attack(WHITE, d7);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, black_pawn_under_attack) {
-    bool actual = board.under_attack(BLACK, get_cell("f7"));
+    bool actual = board.under_attack(BLACK, f7);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, empty_cell_under_attack_of_black_piece) {
-    bool actual = board.under_attack(WHITE, get_cell("f4"));
+    bool actual = board.under_attack(WHITE, f4);
     ASSERT_FALSE(actual);
 }
 
 TEST_F(BoardTestFixture, empty_cell_under_attack_of_black_king) {
-    bool actual = board.under_attack(BLACK, get_cell("h5"));
+    bool actual = board.under_attack(BLACK, h5);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, cell_under_attack_of_white_pawn) {
-    bool actual = board.under_attack(WHITE, get_cell("a3"));
+    bool actual = board.under_attack(WHITE, a3);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, cell_under_attack_of_white_rook) {
-    bool actual = board.under_attack(BLACK, 15); // h2 cell
+    bool actual = board.under_attack(BLACK, h2);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, cell_under_attack_of_black_rook) {
-    bool actual = board.under_attack(WHITE, get_cell("h7"));
+    bool actual = board.under_attack(WHITE, h7);
     ASSERT_TRUE(actual);
 }
 
 TEST_F(BoardTestFixture, empty_cell_under_attack_of_black) {
-    bool actual = board.under_attack(BLACK, get_cell("b4"));
+    bool actual = board.under_attack(BLACK, b4);
     ASSERT_FALSE(actual);
 }
 
 TEST_F(BoardTestFixture, empty_cell_under_attack_of_black_queen) {
-    bool actual = board.under_attack(WHITE, get_cell("a5"));
+    bool actual = board.under_attack(WHITE, a5);
     ASSERT_TRUE(actual);
 }
 
@@ -118,7 +118,7 @@ TEST_F(BoardTestFixture, TestExit) {
     auto error = testing::ExitedWithCode(1);
 
     auto lambda = []() -> PieceType {
-        return board.get_piece_at(WHITE, get_cell("e4"));
+        return board.get_piece_at(WHITE, e4);
     };
 
     // Act & Assert
@@ -126,11 +126,19 @@ TEST_F(BoardTestFixture, TestExit) {
 }
 
 TEST_F(BoardTestFixture, get_white_king) {
-    PieceType actual = board.get_piece_at(WHITE, get_cell("g5"));
+    PieceType actual = board.get_piece_at(WHITE, g5);
     ASSERT_EQ(KING, actual);
 }
 
 TEST_F(BoardTestFixture, get_black_bishop) {
-    PieceType actual = board.get_piece_at(BLACK, get_cell("e7"));
+    PieceType actual = board.get_piece_at(BLACK, e7);
     ASSERT_EQ(BISHOP, actual);
+}
+
+TEST_F(BoardTestFixture, en_passant) {
+    Board board = Board("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0");
+    std::cout << board;
+    uint8_t en_passant_cell = board.get_en_passant();
+
+    ASSERT_EQ(d3, en_passant_cell);
 }
