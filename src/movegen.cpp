@@ -132,8 +132,10 @@ void Movegen::gen_white_left_pawn_captures() {
     bitboard attacks = (m_board.get_pieces(WHITE, PAWN) << 7) & ~FILE_H;
     uint8_t en_passant_cell = m_board.get_en_passant();
 
+    // Checking the cel in advance. If en_passant does not exist (0)
+    // there will be no further check due to lazy calculations &&
     // if en passant in cell 40, then we can take pawn on cell 32 from cell 33. So 40 - 7 = 33
-    if (((ONE << en_passant_cell) & attacks))
+    if (en_passant_cell && (ONE << en_passant_cell) & attacks)
         m_moves.emplace_back(Move(en_passant_cell - 7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     // If we can take some opponent pieces
@@ -157,7 +159,7 @@ void Movegen::gen_black_left_pawn_captures() {
     bitboard attacks = (m_board.get_pieces(BLACK, PAWN) >> 9) & ~FILE_H;
     uint8_t en_passant_cell = m_board.get_en_passant();
 
-    if (((ONE << en_passant_cell) & attacks))
+    if (en_passant_cell && (ONE << en_passant_cell) & attacks)
         m_moves.emplace_back(Move(en_passant_cell + 9, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     attacks &= m_board.get_side_pieces(WHITE);
@@ -180,7 +182,7 @@ void Movegen::gen_white_right_pawn_captures() {
     bitboard attacks = (m_board.get_pieces(WHITE, PAWN) << 9) & ~FILE_A;
     uint8_t en_passant_cell = m_board.get_en_passant();
 
-    if (((ONE << en_passant_cell) & attacks))
+    if (en_passant_cell && (ONE << en_passant_cell) & attacks)
         m_moves.emplace_back(Move(en_passant_cell - 9, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     attacks &= m_board.get_side_pieces(BLACK);
@@ -200,10 +202,10 @@ void Movegen::gen_white_right_pawn_captures() {
     }
 }
 void Movegen::gen_black_right_pawn_captures() {
-    bitboard attacks = (m_board.get_pieces(BLACK, PAWN) >> 7) & ~FILE_H;
+    bitboard attacks = (m_board.get_pieces(BLACK, PAWN) >> 7) & ~FILE_A;
     uint8_t en_passant_cell = m_board.get_en_passant();
 
-    if (((ONE << en_passant_cell) & attacks))
+    if (en_passant_cell && (ONE << en_passant_cell) & attacks)
         m_moves.emplace_back(Move(en_passant_cell + 7, en_passant_cell, PAWN, Move::EN_PASSANT, PAWN));
 
     attacks &= m_board.get_side_pieces(WHITE);

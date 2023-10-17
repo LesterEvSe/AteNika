@@ -25,6 +25,7 @@ private:
     // If >= 50 moves, there will be a draw
     uint8_t m_ply;
 
+    // If it does not exist, then 0
     uint8_t m_en_passant_cell;
 
     // if white rook move, example 7 cell, we lose white kingside CASTLING.
@@ -62,6 +63,7 @@ public:
     // 4. En passant cell
     // 5. ply (half moves)
     explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
+    bool friend operator==(const Board &left, const Board &right) = default;
     void update_bitboards();
 
     [[nodiscard]] Color get_curr_move() const;

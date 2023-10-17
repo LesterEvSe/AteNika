@@ -198,7 +198,7 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 
 void Board::make(const Move &move) {
     // En passant is available on 1 move only
-    m_en_passant_cell = 0;
+    m_en_passant_cell = ZERO;
     ++m_ply;
 
     uint8_t to = move.get_to_cell();
@@ -214,7 +214,7 @@ void Board::make(const Move &move) {
             break;
         case Move::QSIDE_CASTLING: {
             m_hash.xor_qs_castle(m_player_move);
-            uint8_t rook_cell = (m_player_move == WHITE) ? 0 : 56;
+            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
 
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell + 3);
@@ -222,7 +222,7 @@ void Board::make(const Move &move) {
         }
         case Move::KSIDE_CASTLING: {
             m_hash.xor_ks_castle(m_player_move);
-            uint8_t rook_cell = (m_player_move == WHITE) ? 7 : 63;
+            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
 
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell - 2);
@@ -241,11 +241,12 @@ void Board::make(const Move &move) {
             add_piece(m_player_move, move.get_promotion_piece(), to);
             break;
         default: // Move::QUIET
+            m_ply = (move.get_move_piece() == PAWN) ? ZERO : m_ply;
             break;
     }
 
-    if (move.get_move_piece() == PAWN || move.get_flag() != Move::QUIET)
-        m_ply = 0;
+    if (move.get_flag() != Move::QUIET)
+        m_ply = ZERO;
 
     update_bitboards();
     m_player_move = get_opponent_move();
