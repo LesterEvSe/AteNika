@@ -56,7 +56,8 @@ public:
     [[nodiscard]] PieceType get_promotion_piece() const;
     [[nodiscard]] int32_t get_score() const;
 
-    // For insertion sort in MovePicker class
+    void set_score(int32_t val);
+    // For selection sort in MovePicker class
     friend bool operator<(const Move &left, const Move &right);
 };
 

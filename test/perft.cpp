@@ -164,7 +164,7 @@ TEST_F(PerftFixture, trouble_position_6) {
     const uint8_t size = 4;
 
     int64_t actual[size];
-    int64_t expect[] = {46, 2'079, 89'890, 3'894'594 };
+    int64_t expect[] = {46, 2'079, 89'890, 3'894'594};
 
     for (uint8_t i = 0; i < size; ++i)
         actual[i] = perft(board, i+1);

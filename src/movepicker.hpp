@@ -15,7 +15,7 @@ private:
 public:
     static void init();
 
-    explicit MovePicker(MoveList *move_list) : m_move_list(*move_list), m_curr_node(0) {}
+    explicit MovePicker(MoveList *move_list);
     [[nodiscard]] bool has_next() const;
     const Move &get_next(); // Using selection sorting in place, O(n) at a time
 };

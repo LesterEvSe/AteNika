@@ -3,6 +3,15 @@
 
 uint8_t MovePicker::m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
+// Heee, I don't know what I want to do here...
+MovePicker::MovePicker(MoveList *move_list) :
+    m_move_list(*move_list), m_curr_node(0)
+{
+    for (uint8_t i = 0; i < m_move_list.size(); ++i) {
+
+    }
+}
+
 void MovePicker::init() {
     PieceType MVV[PIECE_SIZE - 1] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN };
     PieceType LVA[PIECE_SIZE] = {KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN };

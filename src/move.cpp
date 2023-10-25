@@ -12,6 +12,10 @@ int32_t Move::get_score() const {
     return m_score;
 }
 
+void Move::set_score(int32_t val) {
+    m_score = val;
+}
+
 bool operator<(const Move &left, const Move &right) {
     return left.m_score < right.m_score;
 }

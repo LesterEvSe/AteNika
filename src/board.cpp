@@ -264,19 +264,19 @@ std::ostream& operator<<(std::ostream &out, const Board &board) {
         out << row+1 << " |";
         for (uint8_t col = 0; col < 8; ++col) {
             int8_t temp = row * 8 + col;
-            if      (board.m_pieces[BLACK][PAWN] & (ONE << temp)) out << " p";
-            else if (board.m_pieces[BLACK][ROOK] & (ONE << temp)) out << " r";
+            if      (board.m_pieces[BLACK][PAWN]   & (ONE << temp)) out << " p";
+            else if (board.m_pieces[BLACK][ROOK]   & (ONE << temp)) out << " r";
             else if (board.m_pieces[BLACK][KNIGHT] & (ONE << temp)) out << " n";
             else if (board.m_pieces[BLACK][BISHOP] & (ONE << temp)) out << " b";
-            else if (board.m_pieces[BLACK][KING] & (ONE << temp)) out << " k";
-            else if (board.m_pieces[BLACK][QUEEN] & (ONE << temp)) out << " q";
+            else if (board.m_pieces[BLACK][KING]   & (ONE << temp)) out << " k";
+            else if (board.m_pieces[BLACK][QUEEN]  & (ONE << temp)) out << " q";
 
-            else if (board.m_pieces[WHITE][PAWN] & (ONE << temp)) out << " P";
-            else if (board.m_pieces[WHITE][ROOK] & (ONE << temp)) out << " R";
+            else if (board.m_pieces[WHITE][PAWN]   & (ONE << temp)) out << " P";
+            else if (board.m_pieces[WHITE][ROOK]   & (ONE << temp)) out << " R";
             else if (board.m_pieces[WHITE][KNIGHT] & (ONE << temp)) out << " N";
             else if (board.m_pieces[WHITE][BISHOP] & (ONE << temp)) out << " B";
-            else if (board.m_pieces[WHITE][KING] & (ONE << temp)) out << " K";
-            else if (board.m_pieces[WHITE][QUEEN] & (ONE << temp)) out << " Q";
+            else if (board.m_pieces[WHITE][KING]   & (ONE << temp)) out << " K";
+            else if (board.m_pieces[WHITE][QUEEN]  & (ONE << temp)) out << " Q";
             else out << " -";
         }
         out << std::endl;
