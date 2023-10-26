@@ -15,6 +15,7 @@ set(PROJECT_SOURCES
     src/zobrist_hash.cpp
     src/move_list.cpp
     src/evaluation.cpp
+    src/piece_square_tables.cpp
 )
 
 set(PROJECT_HEADERS
