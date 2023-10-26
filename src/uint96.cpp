@@ -1,15 +1,15 @@
 #include "uint96.hpp"
 
 void uint96::operator^=(const uint96 &object) {
-    first  ^= object.first;
-    second ^= object.second;
+    m_first  ^= object.m_first;
+    m_second ^= object.m_second;
 }
 
 bool operator==(const uint96 &left, const uint96 &right) {
-//    return first == obj.first && second == obj.second;
-    return left.first == right.first && left.second == right.second;
+//    return m_first == obj.m_first && m_second == obj.m_second;
+    return left.m_first == right.m_first && left.m_second == right.m_second;
 }
 
 uint96::operator std::bitset<96>() const {
-    return (std::bitset<96>(first) << 64) | std::bitset<96>(second);
+    return (std::bitset<96>(m_first) << 64) | std::bitset<96>(m_second);
 }

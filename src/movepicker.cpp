@@ -3,7 +3,7 @@
 
 uint8_t MovePicker::m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
-// Heee, I don't know what I want to do here...
+// TODO evaluate moves in for cycle
 MovePicker::MovePicker(MoveList *move_list) :
     m_move_list(*move_list), m_curr_node(0)
 {

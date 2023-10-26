@@ -23,7 +23,7 @@ private:
     static uint96 KS_CASTLE[COLOR_SIZE];
     static uint96 WHITE_MOVE;
 
-    uint96 m_hash {ZERO};
+    uint96 m_hash;
 
 public:
     static void init();
