@@ -5,8 +5,8 @@
 
 namespace Evaluation {
 namespace hidden {
-    const int32_t MATERIAL_VALUES[PHASES][PIECE_SIZE] = {
-        // Alpha Zero evaluation for classical position
+    constexpr int32_t MATERIAL_BONUS[PHASES][PIECE_SIZE] = {
+        // Alpha Zero evaluation for classical position in OPENING
         [OPENING] = {
             [PAWN] = 100,
             [KNIGHT] = 305,
@@ -24,6 +24,61 @@ namespace hidden {
             [KING] = 50'000,
         }
     };
+
+    constexpr int16_t MOBILITY_BONUS[PHASES][PIECE_SIZE] = {
+        [OPENING] = {
+            [PAWN] = 0,
+            [KNIGHT] = 0,
+            [BISHOP] = 4,
+            [ROOK] = 3,
+            [QUEEN] = 1,
+            [KING] = 0,
+        },
+        [ENDGAME] = {
+            [PAWN] = 1,
+            [KNIGHT] = 1,
+            [BISHOP] = 5,
+            [ROOK] = 2,
+            [QUEEN] = 1,
+            [KING] = 1,
+        }
+    };
+
+    constexpr bitboard NULL_FILES_AND_NEIGHBORS[8] = {
+        ~FILE_A & ~FILE_B,
+        ~FILE_A & ~FILE_B & ~FILE_C,
+        ~FILE_B & ~FILE_C & ~FILE_D,
+        ~FILE_C & ~FILE_D & ~FILE_E,
+        ~FILE_D & ~FILE_E & ~FILE_F,
+        ~FILE_E & ~FILE_F & ~FILE_G,
+        ~FILE_F & ~FILE_G & ~FILE_H,
+        ~FILE_G & ~FILE_H
+    };
+
+    /* TODO Rework. It wasn't a pawn shield
+     * 0 1 1
+     * 1 0 0
+     * 0 0 0
+     */
+    // If 3+ pawns stand in these positions, then it is a pawn shield
+    constexpr bitboard PAWN_SHIELD_MASK[COLOR_SIZE] = {
+        [BLACK] = 0x07030000000000,
+        [WHITE] = 0xc0e000
+    };
+
+    // Phases - OPENING, ENDGAME
+    constexpr int32_t BISHOP_PAIR[PHASES] {45, 55};
+    constexpr int32_t ROOK_OPEN_FILE[PHASES] {20, 0};
+    constexpr int32_t DOUBLED_ROOKS[PHASES] {15, 20};
+    constexpr int32_t WEAK_COLOR[PHASES] {-15, 0};
+    constexpr int32_t LOST_CASTLING[PHASES] {-40, 0};
+
+    constexpr int32_t ISOLATED_PAWNS[PHASES] {-15, -30};
+    constexpr int32_t CONNECTED_PAWNS[PHASES] {12, 20};
+    constexpr int32_t PAWN_ISLAND[PHASES] {-0, -0}; // TODO thing about this
+    constexpr int32_t DOUBLED_PAWNS[PHASES] {-20, -30};
+    constexpr int32_t PASSED_PAWNS[PHASES] {10, 40};
+    constexpr int32_t KING_PAWNS_SHIELD[PHASES] {40, 0};
 
     int32_t has_bishop_pair(const Board &board, Color color); // +45 op, +55 end
     int32_t rook_on_open_file(const Board &board, Color color); // +20 on opening, skip at endgame

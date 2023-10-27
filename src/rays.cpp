@@ -46,10 +46,10 @@ void Rays::init()
         east = (east << 1) & ~FILE_A;
 
 
-        hidden::_rays[NORTH_EAST][i] = hidden::_east_shift(DIAG_A1_H8 & ~RANK_1, get_col(i))     << (get_row(i) * 8);
-        hidden::_rays[NORTH_WEST][i] = hidden::_west_shift(DIAG_A8_H1 & ~RANK_1, 7 - get_col(i)) << (get_row(i) * 8);
-        hidden::_rays[SOUTH_EAST][i] = hidden::_east_shift(DIAG_A8_H1 & ~RANK_8, get_col(i))     >> ((7 - get_row(i)) * 8);
-        hidden::_rays[SOUTH_WEST][i] = hidden::_west_shift(DIAG_A1_H8 & ~RANK_8, 7 - get_col(i)) >> ((7 - get_row(i)) * 8);
+        hidden::_rays[NORTH_EAST][i] = hidden::_east_shift(DIAG_A1_H8 & ~RANK_1, get_file(i)) << (get_rank(i) * 8);
+        hidden::_rays[NORTH_WEST][i] = hidden::_west_shift(DIAG_A8_H1 & ~RANK_1, 7 - get_file(i)) << (get_rank(i) * 8);
+        hidden::_rays[SOUTH_EAST][i] = hidden::_east_shift(DIAG_A8_H1 & ~RANK_8, get_file(i)) >> ((7 - get_rank(i)) * 8);
+        hidden::_rays[SOUTH_WEST][i] = hidden::_west_shift(DIAG_A1_H8 & ~RANK_8, 7 - get_file(i)) >> ((7 - get_rank(i)) * 8);
     }
 }
 

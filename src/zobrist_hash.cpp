@@ -33,7 +33,7 @@ void ZobristHash::init() {
 void ZobristHash::set_hash(const Board &board) {
     if (board.get_curr_move() == WHITE)
         xor_move();
-    xor_en_passant(get_col(board.get_en_passant()));
+    xor_en_passant(get_file(board.get_en_passant()));
 
     if (board.get_white_qs_castle())
         xor_qs_castle(WHITE);

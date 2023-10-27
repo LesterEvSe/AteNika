@@ -64,6 +64,9 @@ constexpr bitboard FILE_F = FILE_A << 5;
 constexpr bitboard FILE_G = FILE_A << 6;
 constexpr bitboard FILE_H = FILE_A << 7;
 
+constexpr bitboard WHITE_SQUARES = 0x55aa55aa55aa55aa;
+constexpr bitboard BLACK_SQUARES = 0xaa55aa55aa55aa55;
+
 constexpr bitboard RANK_1 = 0xFFULL;
 constexpr bitboard RANK_2 = RANK_1 << (8 * 1);
 constexpr bitboard RANK_3 = RANK_1 << (8 * 2);
@@ -72,6 +75,7 @@ constexpr bitboard RANK_5 = RANK_1 << (8 * 4);
 constexpr bitboard RANK_6 = RANK_1 << (8 * 5);
 constexpr bitboard RANK_7 = RANK_1 << (8 * 6);
 constexpr bitboard RANK_8 = RANK_1 << (8 * 7);
+
 
 enum PieceType : uint8_t {
     PAWN,

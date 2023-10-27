@@ -9,6 +9,8 @@ MoveList &Movegen::get_moves() {
 }
 
 MoveList &Movegen::get_legal_moves() {
+    if (m_legal_moves.size() == 0)
+        gen_legal_moves();
     return m_legal_moves;
 }
 
@@ -31,7 +33,6 @@ void Movegen::gen_moves() {
         gen_white_moves();
     else
         gen_black_moves();
-    gen_legal_moves();
 }
 
 void Movegen::gen_legal_moves() {

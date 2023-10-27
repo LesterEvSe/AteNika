@@ -230,7 +230,7 @@ void Board::make(const Move &move) {
         }
         case Move::EN_PASSANT: {
             uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
-            m_hash.xor_en_passant(get_col(captured_pawn));
+            m_hash.xor_en_passant(get_file(captured_pawn));
             remove_piece(get_opponent_move(), PAWN, captured_pawn);
             break;
         }
