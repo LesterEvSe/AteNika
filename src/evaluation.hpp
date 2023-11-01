@@ -55,18 +55,6 @@ namespace hidden {
         ~FILE_G & ~FILE_H
     };
 
-    /* TODO Rework. It wasn't a pawn shield
-     * 0 1 1
-     * 1 0 0
-     * 0 0 0
-     */
-    // If 3+ pawns stand in these positions, then it is a pawn shield
-    constexpr bitboard PAWN_SHIELD_MASK[COLOR_SIZE] = {
-        [BLACK] = 0x07030000000000,
-        [WHITE] = 0xc0e000
-    };
-
-    // Phases - OPENING, ENDGAME
     constexpr int32_t BISHOP_PAIR[PHASES] {45, 55};
     constexpr int32_t ROOK_OPEN_FILE[PHASES] {20, 0};
     constexpr int32_t DOUBLED_ROOKS[PHASES] {15, 20};
@@ -75,12 +63,13 @@ namespace hidden {
 
     constexpr int32_t ISOLATED_PAWNS[PHASES] {-15, -30};
     constexpr int32_t CONNECTED_PAWNS[PHASES] {12, 20};
-    constexpr int32_t PAWN_ISLAND[PHASES] {-0, -0}; // TODO thing about this
     constexpr int32_t DOUBLED_PAWNS[PHASES] {-20, -30};
     constexpr int32_t PASSED_PAWNS[PHASES] {10, 40};
     constexpr int32_t KING_PAWNS_SHIELD[PHASES] {40, 0};
 
-    int32_t _has_bishop_pair(const Board &board, Color color); // +45 op, +55 end
+    extern bitboard _pawns_shield_mask[COLOR_SIZE][64];
+
+    bool _has_bishop_pair(const Board &board, Color color); // +45 op, +55 end
     int32_t _rook_on_open_file(const Board &board, Color color); // +20 on opening, skip at endgame
     int32_t _doubled_rooks(const Board &board, Color color); // +15
     int32_t _color_weakness(const Board &board, Color color); // If fields of one color are worse controlled than for another color
@@ -89,14 +78,21 @@ namespace hidden {
     // Pawn evaluates
     int32_t _isolated_pawns(const Board &board, Color color); // -10
     int32_t _connected_pawns(const Board &board, Color color); // Pawn protected by another pawn +12
-    int32_t _pawn_islands(const Board &board, Color color); // Maybe need to delete
     int32_t _doubled_pawns(const Board &board, Color color); // -25
     int32_t _passed_pawns(const Board &board, Color color);
     int32_t _king_pawns_shield(const Board &board, Color color);
 
-}; // hidden
+    // I do not know how to code pawn_islands evaluation now
 
+    int32_t _get_pawn_eval(const Board &board, Color color);
+
+    template<GamePhase phase>
+    int32_t _phase_evaluation(const Board &board, Color color);
+
+} // hidden
+
+    void init();
     int32_t evaluate(const Board &board, Color color);
-};
+}
 
 #endif //ATENICA_EVALUATION_HPP
