@@ -1,8 +1,8 @@
 #include "piece_square_tables.hpp"
 
-int32_t PieceTables::hidden::piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];
+int32_t PieceTables::hidden::_piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];
 
-int32_t *PieceTables::hidden::create_pawns_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_pawns_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
             0,  0,  0,  0,  0,  0,  0,  0,
@@ -16,7 +16,7 @@ int32_t *PieceTables::hidden::create_pawns_pt(GamePhase phase) {
         };
     return new int32_t[64] {
         0,   0,  0,    0,   0,   0,   0,   0,
-        178, 173, 158, 134, 147, 132, 165, 187,
+        138, 133, 118, 94, 107, 92, 125, 147,
         94, 100,  85,  67,  56,  53,  82,  84,
         40,  40,  40,  40,  40,  40,  40,  40,
         20,  20,  20,  20,  20,  20,  20,  20,
@@ -25,7 +25,7 @@ int32_t *PieceTables::hidden::create_pawns_pt(GamePhase phase) {
         0,   0,   0,   0,   0,   0,   0,   0
     };
 }
-int32_t *PieceTables::hidden::create_knights_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_knights_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
             -167,-40,-30,-30,-30,-30,-40,-107,
@@ -48,7 +48,7 @@ int32_t *PieceTables::hidden::create_knights_pt(GamePhase phase) {
         -29,-51,-23,-15,-22,-18,-50,-64,
     };
 }
-int32_t *PieceTables::hidden::create_bishops_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_bishops_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
             -20,-10,-10,-10,-10,-10,-10,-20,
@@ -71,7 +71,7 @@ int32_t *PieceTables::hidden::create_bishops_pt(GamePhase phase) {
         -20,-10,-10,-10,-10,-10,-10,-20,
     };
 }
-int32_t *PieceTables::hidden::create_rooks_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_rooks_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
              0,  0,  0,  0,  0,  0,  0,  0,
@@ -94,7 +94,7 @@ int32_t *PieceTables::hidden::create_rooks_pt(GamePhase phase) {
          0, 0, 0, 0, 0, 0, 0,  0,
     };
 }
-int32_t *PieceTables::hidden::create_queens_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_queens_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
             -20,-10,-10, -5, -5,-10,-10,-20,
@@ -117,7 +117,7 @@ int32_t *PieceTables::hidden::create_queens_pt(GamePhase phase) {
         -20,-10,-10, -5, -5,-10,-10,-20
     };
 }
-int32_t *PieceTables::hidden::create_king_pt(GamePhase phase) {
+int32_t *PieceTables::hidden::_create_king_pt(GamePhase phase) {
     if (phase == OPENING)
         return new int32_t[64] {
             -30,-40,-40,-50,-50,-40,-40,-30,
@@ -158,25 +158,25 @@ void PieceTables::init() {
     };
 
     int32_t *(*table[PIECE_SIZE])(GamePhase);
-    table[PAWN]   = hidden::create_pawns_pt;
-    table[KNIGHT] = hidden::create_knights_pt;
-    table[BISHOP] = hidden::create_bishops_pt;
-    table[ROOK]   = hidden::create_rooks_pt;
-    table[QUEEN]  = hidden::create_queens_pt;
-    table[KING]   = hidden::create_king_pt;
+    table[PAWN]   = hidden::_create_pawns_pt;
+    table[KNIGHT] = hidden::_create_knights_pt;
+    table[BISHOP] = hidden::_create_bishops_pt;
+    table[ROOK]   = hidden::_create_rooks_pt;
+    table[QUEEN]  = hidden::_create_queens_pt;
+    table[KING]   = hidden::_create_king_pt;
 
     for (uint8_t ph = 0; ph < PHASES; ++ph)
         for (uint8_t pc = 0; pc < PIECE_SIZE; ++pc) {
             int32_t *temp_table = table[pc]((GamePhase)ph);
 
             for (uint8_t i = 0; i < 64; ++i) {
-                hidden::piece_sq_tables[BLACK][ph][pc][i] = temp_table[i];
-                hidden::piece_sq_tables[WHITE][ph][pc][i] = temp_table[flip[i]];
+                hidden::_piece_sq_tables[BLACK][ph][pc][i] = temp_table[i];
+                hidden::_piece_sq_tables[WHITE][ph][pc][i] = temp_table[flip[i]];
             }
             delete[] temp_table;
         }
 }
 
 int32_t PieceTables::get_eval(Color color, GamePhase phase, PieceType piece, uint8_t square) {
-    return hidden::piece_sq_tables[color][phase][piece][square];
+    return hidden::_piece_sq_tables[color][phase][piece][square];
 }

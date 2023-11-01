@@ -80,19 +80,19 @@ namespace hidden {
     constexpr int32_t PASSED_PAWNS[PHASES] {10, 40};
     constexpr int32_t KING_PAWNS_SHIELD[PHASES] {40, 0};
 
-    int32_t has_bishop_pair(const Board &board, Color color); // +45 op, +55 end
-    int32_t rook_on_open_file(const Board &board, Color color); // +20 on opening, skip at endgame
-    int32_t doubled_rooks(const Board &board, Color color); // +15
-    int32_t color_weakness(const Board &board, Color color); // If fields of one color are worse controlled than for another color
-    int32_t lost_castling(const Board &board, Color color); // -50
+    int32_t _has_bishop_pair(const Board &board, Color color); // +45 op, +55 end
+    int32_t _rook_on_open_file(const Board &board, Color color); // +20 on opening, skip at endgame
+    int32_t _doubled_rooks(const Board &board, Color color); // +15
+    int32_t _color_weakness(const Board &board, Color color); // If fields of one color are worse controlled than for another color
+    int32_t _lost_castling(const Board &board, Color color); // -50
 
     // Pawn evaluates
-    int32_t isolated_pawns(const Board &board, Color color); // -10
-    int32_t connected_pawns(const Board &board, Color color); // Pawn protected by another pawn +12
-    int32_t pawn_islands(const Board &board, Color color); // Maybe need to delete
-    int32_t doubled_pawns(const Board &board, Color color); // -25
-    int32_t passed_pawns(const Board &board, Color color);
-    int32_t king_pawns_shield(const Board &board, Color color);
+    int32_t _isolated_pawns(const Board &board, Color color); // -10
+    int32_t _connected_pawns(const Board &board, Color color); // Pawn protected by another pawn +12
+    int32_t _pawn_islands(const Board &board, Color color); // Maybe need to delete
+    int32_t _doubled_pawns(const Board &board, Color color); // -25
+    int32_t _passed_pawns(const Board &board, Color color);
+    int32_t _king_pawns_shield(const Board &board, Color color);
 
 }; // hidden
 
