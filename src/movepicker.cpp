@@ -1,14 +1,28 @@
 #include <algorithm> // for std::swap
 #include "movepicker.hpp"
+#include "piece_square_tables.hpp"
 
 uint8_t MovePicker::m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
-// TODO evaluate moves in for cycle
+
 MovePicker::MovePicker(MoveList *move_list) :
     m_move_list(*move_list), m_curr_node(0)
 {
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
-
+        int32_t score = 0;
+        switch (m_move_list[i].get_flag()) {
+            case Move::CAPTURE_PROMOTION:
+                score += PROMOTION_BONUS;
+            case Move::CAPTURE:
+                score += m_mvv_lva[m_move_list[i].get_move_piece()][m_move_list[i].get_captured_piece()];
+                score += CAPTURE_BONUS;
+                break;
+            case Move::PROMOTION:
+                score += PROMOTION_BONUS;
+            default:
+                break;
+        }
+        m_move_list[i].set_score(score);
     }
 }
 

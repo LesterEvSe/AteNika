@@ -93,6 +93,8 @@ namespace hidden {
 
     void init();
     int32_t evaluate(const Board &board, Color color);
+
+    int32_t get_material_eval(PieceType piece);
 }
 
 #endif //ATENICA_EVALUATION_HPP

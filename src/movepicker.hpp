@@ -11,6 +11,8 @@ private:
     // MVV - Most Valuable Victim
     // LVA - Least Valuable Attacker
     static uint8_t m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
+    static constexpr int32_t CAPTURE_BONUS = 2000;
+    static constexpr int32_t PROMOTION_BONUS = 1000;
 
 public:
     static void init();

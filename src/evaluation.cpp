@@ -20,3 +20,7 @@ bool Evaluation::hidden::_has_bishop_pair(const Board &board, Color color) {
     bitboard bishops = board.get_pieces(color, BISHOP);
     return ((bishops & WHITE_SQUARES) && (bishops & BLACK_SQUARES));
 }
+
+int32_t Evaluation::get_material_eval(PieceType piece) {
+    return hidden::MATERIAL_BONUS[OPENING][piece];
+}
