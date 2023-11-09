@@ -190,6 +190,9 @@ int32_t Evaluation::hidden::_phase_evaluation(const Board &board, Color color) {
     eval += _doubled_rooks(board, color) ? DOUBLED_ROOKS[phase] : 0;
     eval -= _doubled_rooks(board, opposite) ? DOUBLED_ROOKS[phase] : 0;
 
+    eval += board.get_pst().get_eval(color, phase);
+    eval -= board.get_pst().get_eval(opposite, phase);
+
     if (phase == ENDGAME)
         return eval;
 

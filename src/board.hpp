@@ -4,8 +4,9 @@
 #include "defs.hpp"
 #include "bitfunc.hpp"
 #include "attacks.hpp"
-#include "zobrist_hash.hpp"
 #include "move.hpp"
+#include "zobrist_hash.hpp"
+#include "piece_square_tables.hpp"
 
 class Board {
 private:
@@ -51,6 +52,7 @@ private:
     uint8_t m_castling_rights {0};
 
     ZobristHash m_hash;
+    PieceTables m_pst; // piece square tables
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -63,7 +65,6 @@ public:
     // 4. En passant cell
     // 5. ply (half moves)
     explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
-    bool friend operator==(const Board &left, const Board &right) = default;
     void update_bitboards();
 
     [[nodiscard]] Color get_curr_move() const;
@@ -74,6 +75,7 @@ public:
     [[nodiscard]] bitboard get_all_pieces() const;
     [[nodiscard]] bitboard get_free_cells() const;
 
+    [[nodiscard]] PieceTables get_pst() const;
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 

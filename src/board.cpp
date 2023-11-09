@@ -79,13 +79,14 @@ void Board::update_bitboards() {
 Color Board::get_curr_move()     const { return m_player_move; }
 Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
 
-bitboard Board::get_pieces(Color color, PieceType type) const { return m_pieces[color][type]; }
+bitboard Board::get_pieces(Color color, PieceType type)  const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
+PieceTables Board::get_pst()      const { return m_pst;  }
 uint8_t Board::get_ply()          const { return m_ply;  }
-uint8_t Board::get_en_passant()   const { return m_en_passant_cell;     }
+uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
 bool Board::get_white_qs_castle() const { return m_castling_rights & 2; }
@@ -186,11 +187,13 @@ bool Board::under_attack(Color defender, uint8_t cell) const {
 }
 
 void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
+    m_pst.add_piece(color, piece, cell);
     set1(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
 
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
+    m_pst.remove_piece(color, piece, cell);
     set0(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
