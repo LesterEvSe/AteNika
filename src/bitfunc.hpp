@@ -40,7 +40,7 @@ static constexpr uint8_t BitScan[64] {
 };
 
 // IMPORTANT NOTE! lsb faster than msb!!!
-inline uint8_t lsb(bitboard bb) { return BitScan[((bb ^ (bb - 1)) * bitboard(0x03f79d71b4cb0a89)) >> 58]; }
+inline uint8_t lsb(bitboard bb) { return BitScan[((bb ^ (bb - 1)) * 0x03f79d71b4cb0a89ull) >> 58]; }
 inline uint8_t msb(bitboard bb) {
     bb |= bb >> 1;
     bb |= bb >> 2;
