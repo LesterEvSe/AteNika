@@ -32,14 +32,14 @@ private:
     // if white rook move, example 7 cell, we lose white kingside CASTLING.
     // So, m_castling_rights & CASTLING[7] = 1111 & 1101 = 1101
     static constexpr uint8_t CASTLING[64] = {
-            13, 15, 15, 15, 12, 15, 15, 14,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 15, 15, 15, 15, 15,
-            7, 15, 15, 15, 3,  15, 15, 11
+        13, 15, 15, 15, 12, 15, 15, 14,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        7, 15, 15, 15, 3,  15, 15, 11
     };
 
     // Using the Fen order
@@ -66,6 +66,9 @@ public:
     // 5. ply (half moves)
     explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
     void update_bitboards();
+
+    // Required for testing
+    friend bool operator==(const Board &left, const Board &right);
 
     [[nodiscard]] Color get_curr_move() const;
     [[nodiscard]] Color get_opponent_move() const;

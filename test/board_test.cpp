@@ -149,5 +149,4 @@ TEST_F(BoardTestFixture, make_move_block) {
 
     board.make(Move(g7, f6, BISHOP));
     ASSERT_EQ(expected, board);
-
 }

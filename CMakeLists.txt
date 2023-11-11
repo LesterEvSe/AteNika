@@ -35,7 +35,7 @@ endif()
 execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # You just need to change the path to the google-test folder to run everything else
-set(GTEST_ROOT /home/${CURRENT_USER}/googletest-1.14.0)
+set(GTEST_ROOT /home/${CURRENT_USER}/googletest)
 
 include_directories(${GTEST_ROOT}/googletest/include test)
 set(TEST_SOURCES
@@ -43,6 +43,7 @@ set(TEST_SOURCES
     test/board_test.cpp
     test/bitfunc_test.cpp
     test/perft.cpp
+    test/eval_test.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

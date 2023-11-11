@@ -76,6 +76,10 @@ void Board::update_bitboards() {
     m_all = m_side[WHITE] | m_side[BLACK];
 }
 
+bool operator==(const Board &left, const Board &right) {
+    return left.m_hash == right.m_hash;
+}
+
 Color Board::get_curr_move()     const { return m_player_move; }
 Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
 

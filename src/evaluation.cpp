@@ -1,5 +1,4 @@
 #include "evaluation.hpp"
-#include "rays.hpp"
 
 bitboard Evaluation::hidden::_pawns_shield_mask[COLOR_SIZE][64];
 bitboard Evaluation::hidden::_passed_pawns_mask[COLOR_SIZE][64];
@@ -176,8 +175,7 @@ int32_t Evaluation::hidden::_evaluate_mobility(const Board &board, Color color, 
     return eval;
 }
 
-template<GamePhase phase>
-int32_t Evaluation::hidden::_phase_evaluation(const Board &board, Color color) {
+int32_t Evaluation::hidden::_phase_evaluation(const Board &board, Color color, GamePhase phase) {
     int32_t eval = 0;
     eval += _get_pawn_eval(board, color, phase);
     eval += _evaluate_material(board, color, phase);
@@ -210,8 +208,8 @@ int32_t Evaluation::hidden::_calculate_phase(const Board &board) {
 }
 
 int32_t Evaluation::evaluate(const Board &board, Color color) {
-    int32_t opening = hidden::_phase_evaluation<OPENING>(board, color);
-    int32_t endgame = hidden::_phase_evaluation<ENDGAME>(board, color);
+    int32_t opening = hidden::_phase_evaluation(board, color, OPENING);
+    int32_t endgame = hidden::_phase_evaluation(board, color, ENDGAME);
 
     int32_t phase = hidden::_calculate_phase(board);
     return (opening * (hidden::MAX_PHASE - phase) + endgame * phase) / hidden::MAX_PHASE;

@@ -25,14 +25,14 @@ namespace hidden {
     constexpr int32_t HALF_TOTAL_PHASE = TOTAL_PHASE / 2;
 
     constexpr bitboard FILES_AND_NEIGHBORS[8] = {
-            FILE_A | FILE_B,
-            FILE_A | FILE_B | FILE_C,
-            FILE_B | FILE_C | FILE_D,
-            FILE_C | FILE_D | FILE_E,
-            FILE_D | FILE_E | FILE_F,
-            FILE_E | FILE_F | FILE_G,
-            FILE_F | FILE_G | FILE_H,
-            FILE_G | FILE_H
+        FILE_A | FILE_B,
+        FILE_A | FILE_B | FILE_C,
+        FILE_B | FILE_C | FILE_D,
+        FILE_C | FILE_D | FILE_E,
+        FILE_D | FILE_E | FILE_F,
+        FILE_E | FILE_F | FILE_G,
+        FILE_F | FILE_G | FILE_H,
+        FILE_G | FILE_H
     };
 
     constexpr int32_t MATERIAL_BONUS[PHASES][PIECE_SIZE] = {
@@ -109,9 +109,7 @@ namespace hidden {
     int32_t _evaluate_material(const Board &board, Color color, GamePhase phase);
     int32_t _evaluate_mobility(const Board &board, Color color, GamePhase phase);
 
-    template<GamePhase phase>
-    int32_t _phase_evaluation(const Board &board, Color color);
-
+    int32_t _phase_evaluation(const Board &board, Color color, GamePhase phase);
     int32_t _calculate_phase(const Board &board);
 
 } // hidden
