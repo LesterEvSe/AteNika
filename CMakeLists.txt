@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.22)
 project(AteNica)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,8 +14,9 @@ set(PROJECT_SOURCES
     src/uint96.cpp
     src/zobrist_hash.cpp
     src/move_list.cpp
-        src/eval.cpp
+    src/eval.cpp
     src/piece_square_tables.cpp
+    src/Ttable.cpp
 )
 
 set(PROJECT_HEADERS

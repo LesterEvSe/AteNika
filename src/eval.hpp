@@ -24,6 +24,7 @@ namespace hidden {
             4*PHASE_WEIGHTS[KNIGHT] + 4*PHASE_WEIGHTS[BISHOP] + 4*PHASE_WEIGHTS[ROOK] + 2*PHASE_WEIGHTS[QUEEN];
     constexpr int32_t HALF_TOTAL_PHASE = TOTAL_PHASE / 2;
 
+
     constexpr bitboard FILES_AND_NEIGHBORS[8] = {
         FILE_A | FILE_B,
         FILE_A | FILE_B | FILE_C,
@@ -113,8 +114,9 @@ namespace hidden {
     int32_t _calculate_phase(const Board &board);
 
 } // hidden
+
     void init();
     int32_t evaluate(const Board &board, Color color);
-}
+} // Eval
 
 #endif //ATENICA_EVAL_HPP

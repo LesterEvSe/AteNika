@@ -60,6 +60,10 @@ void ZobristHash::set_hash(const Board &board) {
     }
 }
 
+uint96 ZobristHash::get_hash() const {
+    return m_hash;
+}
+
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
     return left.m_hash == right.m_hash;
 }

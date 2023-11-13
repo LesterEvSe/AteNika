@@ -93,6 +93,6 @@ namespace hidden {
     bitboard get_pawn_attacks(Color color, uint8_t cell);
     bitboard get_knight_attacks(uint8_t cell);
     bitboard get_king_attacks(uint8_t cell);
-}
+} // Attacks
 
 #endif //ATENICA_ATTACKS_HPP

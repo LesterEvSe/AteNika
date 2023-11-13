@@ -3,6 +3,7 @@
 
 #include "defs.hpp"
 
+// used only 4 bytes (I want 3 bytes, but alignment...)
 class Move {
 public:
     enum Flag : uint8_t {

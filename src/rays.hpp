@@ -32,6 +32,6 @@ namespace hidden {
 
     void init();
     bitboard get_ray(Direction dir, uint8_t cell);
-}
+} // Rays
 
 #endif //ATENICA_RAYS_HPP

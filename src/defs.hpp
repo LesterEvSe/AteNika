@@ -100,6 +100,13 @@ enum GamePhase : uint8_t {
     PHASES
 };
 
+// for transposition table and entry
+enum TTFlag : uint8_t {
+    LOWER,
+    EXACT,
+    UPPER
+};
+
 constexpr uint64_t ZERO {0};
 constexpr uint64_t ONE  {1};
 
