@@ -2,7 +2,7 @@
 #include "board.hpp"
 #include "movepicker.hpp"
 #include "piece_square_tables.hpp"
-#include "evaluation.hpp"
+#include "eval.hpp"
 
 int main() {
     Rays::init();
@@ -10,7 +10,7 @@ int main() {
     MovePicker::init();
     ZobristHash::init();
     PieceTables::init();
-    Evaluation::init();
+    Eval::init();
 
     return 0;
 }

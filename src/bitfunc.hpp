@@ -68,6 +68,7 @@ inline void error(const std::string &msg) {
     exit(1);
 }
 
+// For debugging action
 inline void printbb(bitboard bb) {
     std::cout << "   ";
 

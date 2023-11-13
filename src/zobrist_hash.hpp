@@ -29,7 +29,7 @@ public:
     static void init();
     ZobristHash() = default;
     void set_hash(const Board &board);
-    friend bool operator==(const ZobristHash& left, const ZobristHash& right);
+    friend bool operator==(const ZobristHash &left, const ZobristHash &right);
 
     void xor_piece(Color col, PieceType piece, uint8_t cell);
     void xor_en_passant(uint8_t file);

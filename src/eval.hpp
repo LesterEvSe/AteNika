@@ -1,9 +1,9 @@
-#ifndef ATENICA_EVALUATION_HPP
-#define ATENICA_EVALUATION_HPP
+#ifndef ATENICA_EVAL_HPP
+#define ATENICA_EVAL_HPP
 
 #include "board.hpp"
 
-namespace Evaluation {
+namespace Eval {
 namespace hidden {
     constexpr bitboard ROW[] = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
     constexpr bitboard COL[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
@@ -117,4 +117,4 @@ namespace hidden {
     int32_t evaluate(const Board &board, Color color);
 }
 
-#endif //ATENICA_EVALUATION_HPP
+#endif //ATENICA_EVAL_HPP
