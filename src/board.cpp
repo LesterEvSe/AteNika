@@ -52,10 +52,17 @@ Board::Board(std::string short_fen) {
     else
         m_en_passant_cell = get_cell(en_passant);
 
-    iss >> m_ply;
+    // for implicit conversion
+    int temp_ply;
+    iss >> temp_ply;
+    m_ply = temp_ply;
 
     update_bitboards();
-    m_hash.set_hash(*this); // Order is important! Hash need after all initializations
+
+    // Order is important!
+    // m_hash and m_pst are initialized, after the rest of the Board fields are initialized
+    m_hash.set_hash(*this);
+    m_pst.set_score(*this);
 }
 
 void Board::update_bitboards() {
@@ -158,8 +165,8 @@ PieceType Board::get_piece_at(Color color, uint8_t index) const {
     if (field & m_pieces[color][QUEEN])  return QUEEN;
     if (field & m_pieces[color][KING])   return KING;
 
-    std::string col = color == WHITE ? "white" : "black";
-    error(col + " has not piece at " + FIELD[index] + " cell");
+    std::string player = color == WHITE ? "white" : "black";
+    error(player + " has not piece at " + FIELD[index] + " cell");
     return NONE; // Will never reach this line
 }
 
@@ -259,6 +266,11 @@ void Board::make(const Move &move) {
     m_player_move = get_opponent_move();
     m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
     m_hash.xor_move();
+}
+
+// TODO implement later
+std::string Board::get_fen() const {
+    return "";
 }
 
 std::ostream& operator<<(std::ostream &out, const Board &board) {

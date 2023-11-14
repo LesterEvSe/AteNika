@@ -1,4 +1,5 @@
-#include "piece_square_tables.hpp"
+#include "pst.hpp"
+#include "board.hpp"
 
 int32_t PieceTables::piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];
 
@@ -177,15 +178,30 @@ void PieceTables::init() {
         }
 }
 
+void PieceTables::set_score(const Board &board) {
+    for (uint8_t i = 0; i < PIECE_SIZE; ++i) {
+        bitboard white_pieces = board.get_pieces(WHITE, PIECES[i]);
+        bitboard black_pieces = board.get_pieces(BLACK, PIECES[i]);
+
+        for (uint8_t j = 0; j < 64; ++j) {
+            uint64_t square = ONE << j;
+            if (white_pieces & square)
+                add_piece(WHITE, PIECES[i], j);
+            else if (black_pieces & square)
+                add_piece(BLACK, PIECES[i], j);
+        }
+    }
+}
+
 void PieceTables::add_piece(Color color, PieceType piece, uint8_t square) {
-    evals[color][OPENING] += piece_sq_tables[color][OPENING][piece][square];
-    evals[color][ENDGAME] += piece_sq_tables[color][ENDGAME][piece][square];
+    scores[color][OPENING] += piece_sq_tables[color][OPENING][piece][square];
+    scores[color][ENDGAME] += piece_sq_tables[color][ENDGAME][piece][square];
 }
 void PieceTables::remove_piece(Color color, PieceType piece, uint8_t square) {
-    evals[color][OPENING] -= piece_sq_tables[color][OPENING][piece][square];
-    evals[color][ENDGAME] -= piece_sq_tables[color][ENDGAME][piece][square];
+    scores[color][OPENING] -= piece_sq_tables[color][OPENING][piece][square];
+    scores[color][ENDGAME] -= piece_sq_tables[color][ENDGAME][piece][square];
 }
 
 int32_t PieceTables::get_eval(Color color, GamePhase phase) {
-    return evals[color][phase];
+    return scores[color][phase];
 }

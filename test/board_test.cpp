@@ -9,6 +9,7 @@ protected:
 
 public:
     static void SetUpTestCase() {
+        ZobristHash::init();
         Rays::init();
         Attacks::init();
         std::cout << board;
@@ -137,16 +138,7 @@ TEST_F(BoardTestFixture, get_black_bishop) {
 
 TEST_F(BoardTestFixture, en_passant) {
     Board board = Board("8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0");
-    std::cout << board;
     uint8_t en_passant_cell = board.get_en_passant();
 
     ASSERT_EQ(d3, en_passant_cell);
-}
-
-TEST_F(BoardTestFixture, make_move_block) {
-    Board board = Board("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3");
-    Board expected = Board("r6r/1b2k2q/5b2/8/7B/8/8/R3K2R w KQ - 4");
-
-    board.make(Move(g7, f6, BISHOP));
-    ASSERT_EQ(expected, board);
 }

@@ -88,6 +88,8 @@ enum PieceType : uint8_t {
     NONE // should be at the end
 };
 
+constexpr PieceType PIECES[] = { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+
 enum Color : uint8_t {
     BLACK,
     WHITE,

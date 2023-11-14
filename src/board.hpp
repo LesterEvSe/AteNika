@@ -1,12 +1,11 @@
 #ifndef ATENICA_BOARD_HPP
 #define ATENICA_BOARD_HPP
 
-#include "defs.hpp"
 #include "bitfunc.hpp"
 #include "attacks.hpp"
 #include "move.hpp"
 #include "zobrist_hash.hpp"
-#include "piece_square_tables.hpp"
+#include "pst.hpp"
 
 class Board {
 private:
@@ -100,6 +99,7 @@ public:
 
     void make(const Move &move);
 
+    [[nodiscard]] std::string get_fen() const;
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
 

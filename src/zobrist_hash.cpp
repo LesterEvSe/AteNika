@@ -33,7 +33,8 @@ void ZobristHash::init() {
 void ZobristHash::set_hash(const Board &board) {
     if (board.get_curr_move() == WHITE)
         xor_move();
-    xor_en_passant(get_file(board.get_en_passant()));
+    if (board.get_en_passant())
+        xor_en_passant(get_file(board.get_en_passant()));
 
     if (board.get_white_qs_castle())
         xor_qs_castle(WHITE);
@@ -45,17 +46,16 @@ void ZobristHash::set_hash(const Board &board) {
     if (board.get_black_ks_castle())
         xor_ks_castle(BLACK);
 
-    static constexpr PieceType type[PIECE_SIZE] = {PAWN, ROOK, KNIGHT, BISHOP, KING, QUEEN };
     for (uint8_t i = 0; i < PIECE_SIZE; ++i) {
-        bitboard white_pieces = board.get_pieces(WHITE, type[i]);
-        bitboard black_pieces = board.get_pieces(BLACK, type[i]);
+        bitboard white_pieces = board.get_pieces(WHITE, PIECES[i]);
+        bitboard black_pieces = board.get_pieces(BLACK, PIECES[i]);
 
         for (uint8_t j = 0; j < 64; ++j) {
             uint64_t cell = ONE << j;
             if (white_pieces & cell)
-                xor_piece(WHITE, type[i], j);
-            if (black_pieces & cell)
-                xor_piece(BLACK, type[i], j);
+                xor_piece(WHITE, PIECES[i], j);
+            else if (black_pieces & cell)
+                xor_piece(BLACK, PIECES[i], j);
         }
     }
 }
@@ -75,6 +75,10 @@ void ZobristHash::xor_piece(Color col, PieceType piece, uint8_t cell) {
 
 void ZobristHash::xor_en_passant(uint8_t file) {
     m_hash ^= EN_PASSANT_FILE[file];
+}
+
+void ZobristHash::clear_en_passant() {
+
 }
 
 void ZobristHash::xor_qs_castle(Color color) {

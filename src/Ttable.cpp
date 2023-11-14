@@ -12,6 +12,10 @@ bool Transposition::in_table(const ZobristHash &hash) {
     return hidden::_tt.find((bits96)hash.get_hash()) != hidden::_tt.end();
 }
 
+void Transposition::clear() {
+    hidden::_tt.clear();
+}
+
 TTEntry Transposition::get(const ZobristHash &hash) {
     return hidden::_tt[(bits96)hash.get_hash()];
 }

@@ -3,6 +3,18 @@ project(AteNica)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# For execute in release version from build directory.
+# cmake .. -DCMAKE_BUILD_TYPE=Release
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+elseif (MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "/Ox")
+endif()
+
 include_directories(src)
 set(PROJECT_SOURCES
     src/attacks.cpp
@@ -15,8 +27,9 @@ set(PROJECT_SOURCES
     src/zobrist_hash.cpp
     src/move_list.cpp
     src/eval.cpp
-    src/piece_square_tables.cpp
+    src/pst.cpp
     src/Ttable.cpp
+    src/search.cpp
 )
 
 set(PROJECT_HEADERS
@@ -28,10 +41,13 @@ add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 
 # Instruction for build the tests
-set(BUILD_TESTS TRUE)
-if (NOT BUILD_TESTS)
-    return()
-endif()
+# For build tests execute the command: cmake .. -DBUILD_TESTS=ON
+
+# TODO uncommect after finish the project
+#option(BUILD_TESTS "Build tests" OFF)
+#if (NOT BUILD_TESTS)
+#    return()
+#endif()
 
 execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -45,6 +61,7 @@ set(TEST_SOURCES
     test/bitfunc_test.cpp
     test/perft.cpp
     test/eval_test.cpp
+    test/zob_hash_test.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

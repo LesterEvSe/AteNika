@@ -36,6 +36,8 @@ namespace hidden {
 } // hidden
 
     bool in_table(const ZobristHash &hash);
+    void clear();
+
     TTEntry get(const ZobristHash &hash);
     void set(const ZobristHash &hash, const TTEntry &entry);
 }

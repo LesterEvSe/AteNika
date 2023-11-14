@@ -12,7 +12,7 @@ private:
     uint32_t m_second;
 
 public:
-    uint96() = default;
+    uint96() : m_first(0), m_second(0) {}
     uint96(uint64_t most_significant, uint32_t least_significant) :
         m_first(most_significant), m_second(least_significant) {}
 

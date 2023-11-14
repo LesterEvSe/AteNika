@@ -7,7 +7,6 @@ namespace Eval {
 namespace hidden {
     constexpr bitboard ROW[] = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
     constexpr bitboard COL[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
-    constexpr PieceType PIECES[] = { PAWN, KNIGHT, BISHOP,ROOK,QUEEN,KING };
 
     // For Tapered Eval https://www.chessprogramming.org/Tapered_Eval
     constexpr uint8_t PHASE_WEIGHTS[6] = {
@@ -99,7 +98,6 @@ namespace hidden {
     uint8_t _rook_on_open_file(const Board &board, Color color);
 
     // Pawn evaluates, return value - quantity of pawns
-    // TODO test
     uint8_t _isolated_pawns(const Board &board, Color color);
     uint8_t _connected_pawns(const Board &board, Color color);
     uint8_t _doubled_pawns(const Board &board, Color color);

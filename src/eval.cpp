@@ -39,7 +39,6 @@ bool Eval::hidden::_has_bishop_pair(const Board &board, Color color) {
     return ((bishops & WHITE_SQUARES) && (bishops & BLACK_SQUARES));
 }
 
-// TODO Test failed
 bool Eval::hidden::_doubled_rooks(const Board &board, Color color) {
     bitboard all = board.get_all_pieces();
     bitboard rooks = board.get_pieces(color, ROOK);

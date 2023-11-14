@@ -116,5 +116,4 @@ TEST_F(EvalTestFixture, white_and_black_king_pawns_shield_true) {
 TEST_F(EvalTestFixture, black_king_pawns_shield_false) {
     Board board = Board("k7/pp6/8/8/8/8/8/8");
     ASSERT_TRUE(_king_pawns_shield(board, BLACK));
-    std::cout << evaluate(board, BLACK);
 }

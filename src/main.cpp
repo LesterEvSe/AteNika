@@ -1,7 +1,7 @@
 #include "rays.hpp"
 #include "board.hpp"
 #include "movepicker.hpp"
-#include "piece_square_tables.hpp"
+#include "pst.hpp"
 #include "eval.hpp"
 
 int main() {

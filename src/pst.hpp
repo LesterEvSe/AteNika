@@ -1,8 +1,11 @@
-#ifndef ATENICA_PIECE_SQUARE_TABLES_HPP
-#define ATENICA_PIECE_SQUARE_TABLES_HPP
+#ifndef ATENICA_PST_HPP
+#define ATENICA_PST_HPP
 
 #include "defs.hpp"
 
+class Board;
+
+// PST - Piece Square Tables
 // Mix 3 tables in first version
 // 1. https://www.chessprogramming.org/Simplified_Evaluation_Function
 // 2. https://github.com/GunshipPenguin/shallow-blue
@@ -19,14 +22,16 @@ private:
     static int32_t *create_queens_pt  (GamePhase phase);
     static int32_t *create_king_pt    (GamePhase phase);
 
-    int32_t evals[COLOR_SIZE][PHASES] = {{0}};
+    int32_t scores[COLOR_SIZE][PHASES];
 
 public:
+    static void init();
+    PieceTables() : scores {{0}} {}
+    void set_score(const Board &board);
+
     void add_piece(Color color, PieceType piece, uint8_t square);
     void remove_piece(Color color, PieceType piece, uint8_t square);
-
-    static void init();
     int32_t get_eval(Color color, GamePhase phase);
 };
 
-#endif //ATENICA_PIECE_SQUARE_TABLES_HPP
+#endif //ATENICA_PST_HPP

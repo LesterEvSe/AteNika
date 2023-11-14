@@ -1,9 +1,7 @@
 #include <algorithm> // for std::swap
 #include "movepicker.hpp"
-#include "piece_square_tables.hpp"
 
 uint8_t MovePicker::m_mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
-
 
 MovePicker::MovePicker(MoveList *move_list) :
     m_move_list(*move_list), m_curr_node(0)
