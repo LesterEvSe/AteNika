@@ -95,8 +95,8 @@ bitboard Board::get_side_pieces(Color color)             const { return m_side[c
 bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
-PieceTables Board::get_pst()      const { return m_pst;  }
 uint8_t Board::get_ply()          const { return m_ply;  }
+PieceTables Board::get_pst()      const { return m_pst;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
@@ -267,9 +267,65 @@ void Board::make(const Move &move) {
     m_hash.update_castling_rights(m_castling_rights);
 }
 
-// TODO implement later
 std::string Board::get_fen() const {
-    return "";
+    std::string fen;
+
+    for (int8_t row = 7; row >= 0; --row) {
+        // We can use char, because symbols <= '9'
+        char empty = '0';
+
+        for (uint8_t col = 0; col < 8; ++col) {
+            bitboard square = ONE << (row * 8 + col);
+            char piece = 0;
+
+            if      (m_pieces[BLACK][PAWN]   & square) piece = 'p';
+            else if (m_pieces[BLACK][ROOK]   & square) piece = 'r';
+            else if (m_pieces[BLACK][KNIGHT] & square) piece = 'n';
+            else if (m_pieces[BLACK][BISHOP] & square) piece = 'b';
+            else if (m_pieces[BLACK][KING]   & square) piece = 'k';
+            else if (m_pieces[BLACK][QUEEN]  & square) piece = 'q';
+
+            else if (m_pieces[WHITE][PAWN]   & square) piece = 'P';
+            else if (m_pieces[WHITE][ROOK]   & square) piece = 'R';
+            else if (m_pieces[WHITE][KNIGHT] & square) piece = 'N';
+            else if (m_pieces[WHITE][BISHOP] & square) piece = 'B';
+            else if (m_pieces[WHITE][KING]   & square) piece = 'K';
+            else if (m_pieces[WHITE][QUEEN]  & square) piece = 'Q';
+            else ++empty;
+
+            if (!piece) continue;
+            if (empty != '0') {
+                fen += empty;
+                empty = '0';
+            }
+            fen += piece;
+        }
+
+        if (empty != '0') fen += empty;
+        if (row)          fen += '/';
+    }
+
+    fen += m_player_move == WHITE ? " w " : " b ";
+    if (get_white_ks_castle())
+        fen += 'K';
+    if (get_white_qs_castle())
+        fen += 'Q';
+    if (get_black_ks_castle())
+        fen += 'k';
+    if (get_black_qs_castle())
+        fen += 'q';
+
+    // if m_castling_rights == 0
+    if (fen.back() == ' ')
+        fen += "- ";
+    else
+        fen += ' ';
+
+    if (m_en_passant_cell)
+        fen += FIELD[m_en_passant_cell] + " ";
+    else
+        fen += "- ";
+    return fen + std::to_string(m_ply);
 }
 
 std::ostream& operator<<(std::ostream &out, const Board &board) {
@@ -282,6 +338,7 @@ std::ostream& operator<<(std::ostream &out, const Board &board) {
         out << row+1 << " |";
         for (uint8_t col = 0; col < 8; ++col) {
             int8_t temp = row * 8 + col;
+
             if      (board.m_pieces[BLACK][PAWN]   & (ONE << temp)) out << " p";
             else if (board.m_pieces[BLACK][ROOK]   & (ONE << temp)) out << " r";
             else if (board.m_pieces[BLACK][KNIGHT] & (ONE << temp)) out << " n";

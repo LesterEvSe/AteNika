@@ -16,7 +16,7 @@ public:
     }
 };
 
-Board BoardTestFixture::board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 0");
+Board BoardTestFixture::board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 36");
 
 // Check get_pieces method for pawns
 TEST_F(BoardTestFixture, white_pawns_position) {
@@ -141,4 +141,23 @@ TEST_F(BoardTestFixture, en_passant) {
     uint8_t en_passant_cell = board.get_en_passant();
 
     ASSERT_EQ(d3, en_passant_cell);
+}
+
+TEST_F(BoardTestFixture, get_fen) {
+    std::string expected = "rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 36";
+    ASSERT_EQ(expected, board.get_fen());
+}
+
+TEST_F(BoardTestFixture, get_fen_without_castling_and_with_en_passant) {
+    Board board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w - e3 0");
+    std::string expected = "rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w - e3 0";
+
+    ASSERT_EQ(expected, board.get_fen());
+}
+
+TEST_F(BoardTestFixture, get_fen_full_castling) {
+    Board board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R b KQkq - 0");
+    std::string expected = "rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R b KQkq - 0";
+
+    ASSERT_EQ(expected, board.get_fen());
 }

@@ -77,8 +77,8 @@ public:
     [[nodiscard]] bitboard get_all_pieces() const;
     [[nodiscard]] bitboard get_free_cells() const;
 
-    [[nodiscard]] PieceTables get_pst() const;
     [[nodiscard]] uint8_t get_ply() const;
+    [[nodiscard]] PieceTables get_pst() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 
     // ks - king side

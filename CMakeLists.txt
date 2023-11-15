@@ -43,7 +43,7 @@ add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 # Instruction for build the tests
 # For build tests execute the command: cmake .. -DBUILD_TESTS=ON
 
-# TODO uncommect after finish the project
+# TODO uncomment after finish the project
 #option(BUILD_TESTS "Build tests" OFF)
 #if (NOT BUILD_TESTS)
 #    return()

@@ -22,8 +22,11 @@ TEST_F(ZobHashTestFixture, make_move_block) {
 
 TEST_F(ZobHashTestFixture, make_one_move) {
     Board board = Board("b7/8/8/8/8/8/8/1B6 w - - 0");
-    Board expected = Board("b7/8/8/8/8/8/2B5/8 b - - 1");
+    Board expected = Board("8/8/8/8/B7/8/8/7b b - - 3");
 
     board.make(Move(b1, c2, BISHOP));
+    board.make(Move(a8, h1, BISHOP));
+    board.make(Move(c2, a4, BISHOP));
+
     ASSERT_EQ(expected, board);
 }
