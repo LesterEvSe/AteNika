@@ -87,8 +87,8 @@ bool operator==(const Board &left, const Board &right) {
     return left.m_hash == right.m_hash;
 }
 
-Color Board::get_curr_move()     const { return m_player_move; }
-Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
+Color Board::get_curr_move()      const { return m_player_move; }
+Color Board::get_opponent_move()  const { return m_player_move == WHITE ? BLACK : WHITE; }
 
 bitboard Board::get_pieces(Color color, PieceType type)  const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
@@ -213,6 +213,7 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 void Board::make(const Move &move) {
     // En passant is available on 1 move only
     m_en_passant_cell = ZERO;
+    m_hash.clear_en_passant();
     ++m_ply;
 
     uint8_t to = move.get_to_cell();
@@ -225,26 +226,22 @@ void Board::make(const Move &move) {
             break;
         case Move::LONG_PAWN_MOVE:
             m_en_passant_cell = (m_player_move == WHITE) ? to-8 : to+8;
+            m_hash.xor_en_passant(get_file(m_en_passant_cell));
             break;
         case Move::QSIDE_CASTLING: {
-            m_hash.xor_qs_castle(m_player_move);
             uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
-
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell + 3);
             break;
         }
         case Move::KSIDE_CASTLING: {
-            m_hash.xor_ks_castle(m_player_move);
             uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
-
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell - 2);
             break;
         }
         case Move::EN_PASSANT: {
             uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
-            m_hash.xor_en_passant(get_file(captured_pawn));
             remove_piece(get_opponent_move(), PAWN, captured_pawn);
             break;
         }
@@ -264,8 +261,10 @@ void Board::make(const Move &move) {
 
     update_bitboards();
     m_player_move = get_opponent_move();
-    m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
     m_hash.xor_move();
+
+    m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
+    m_hash.update_castling_rights(m_castling_rights);
 }
 
 // TODO implement later
