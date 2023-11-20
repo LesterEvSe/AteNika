@@ -30,6 +30,7 @@ set(PROJECT_SOURCES
     src/pst.cpp
     src/Ttable.cpp
     src/search.cpp
+    src/history.cpp
 )
 
 set(PROJECT_HEADERS
@@ -37,6 +38,11 @@ set(PROJECT_HEADERS
     src/bitfunc.hpp
 )
 
+# TODO if we build tests, then we do not need the project executable (check it)
+#option(BUILD_TESTS "Build tests" OFF)
+#if (NOT BUILD_TESTS)
+#    return()
+#endif()
 add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 

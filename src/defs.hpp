@@ -111,5 +111,6 @@ enum TTFlag : uint8_t {
 
 constexpr uint64_t ZERO {0};
 constexpr uint64_t ONE  {1};
+constexpr uint8_t DRAW_RULE_50 {50};
 
 #endif //ATENICA_DEFS_HPP
