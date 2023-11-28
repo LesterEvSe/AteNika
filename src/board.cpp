@@ -97,6 +97,7 @@ bitboard Board::get_free_cells()  const { return ~m_all; }
 
 uint8_t Board::get_ply()          const { return m_ply;  }
 PieceTables Board::get_pst()      const { return m_pst;  }
+ZobristHash Board::get_zob_hash() const { return m_hash; }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }

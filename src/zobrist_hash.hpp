@@ -24,7 +24,7 @@ private:
     static uint96 WHITE_MOVE;
 
 
-    // ep - en passant
+    // ep - en passant (empty if 1000)
     // 4 bits
     // 0001 - white kingside
     // 0010 - white queenside

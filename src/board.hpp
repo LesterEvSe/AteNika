@@ -79,6 +79,7 @@ public:
 
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] PieceTables get_pst() const;
+    [[nodiscard]] ZobristHash get_zob_hash() const;
     [[nodiscard]] uint8_t get_en_passant() const;
 
     // ks - king side

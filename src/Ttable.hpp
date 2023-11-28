@@ -35,11 +35,11 @@ namespace hidden {
 
 } // hidden
 
-    bool in_table(const ZobristHash &hash);
+    bool in_table(const ZobristHash &zob_hash);
     void clear();
 
-    TTEntry get(const ZobristHash &hash);
-    void set(const ZobristHash &hash, const TTEntry &entry);
+    TTEntry get(const ZobristHash &zob_hash);
+    void set(const ZobristHash &zob_hash, const TTEntry &entry);
 }
 
 #endif //ATENICA_TTABLE_HPP
