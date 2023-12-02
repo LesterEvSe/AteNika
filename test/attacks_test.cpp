@@ -7,6 +7,7 @@ class AttacksTestFixture : public testing::Test
 public:
     static void SetUpTestCase() {
         // Order is important
+        init_bits_pre_calculation();
         Rays::init();
         Attacks::init();
     }

@@ -1,14 +1,16 @@
 #include <gtest/gtest.h>
 #include "board.hpp"
 #include "rays.hpp"
+#include "bitfunc.hpp"
 
-class BoardTestFixture : public testing::Test
+class BoardTestFixture : public ::testing::Test
 {
 protected:
     static Board board;
 
 public:
     static void SetUpTestCase() {
+        init_bits_pre_calculation();
         ZobristHash::init();
         Rays::init();
         Attacks::init();

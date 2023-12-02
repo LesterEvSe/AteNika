@@ -10,7 +10,15 @@ inline uint8_t get_rank(uint8_t cell) { return cell >> 3; }
 inline uint8_t get_file(uint8_t cell) { return cell & 7; }
 inline Color get_opposite_move(Color color) { return color == WHITE ? BLACK : WHITE; }
 
-inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
+constexpr uint16_t MAX_VAL = 0xFFFF;
+extern uint8_t memo_bits[1 << 16];
+void init_bits_pre_calculation();
+
+//inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
+inline uint8_t count_bits(uint64_t board) {
+    return memo_bits[board & MAX_VAL] + memo_bits[(board >> 16) & MAX_VAL] +
+        memo_bits[(board >> 32) & MAX_VAL] + memo_bits[(board >> 48) & MAX_VAL];
+}
 inline void set0(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
 inline void set1(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
 
