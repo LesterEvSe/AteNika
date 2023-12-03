@@ -7,7 +7,6 @@
 class Movegen
 {
 private:
-    // Because we need to make and unmake moves
     const Board &m_board;
     MoveList m_moves;
     MoveList m_legal_moves;

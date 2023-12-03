@@ -1,8 +1,7 @@
-#include <algorithm> // for std::swap
-#include "movepicker.hpp"
+#include "quiescence_movepick.hpp"
 #include "mvv_lva.hpp"
 
-MovePicker::MovePicker(MoveList *move_list) :
+QMovePicker::QMovePicker(MoveList *move_list) :
     m_move_list(*move_list), m_curr_node(0)
 {
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
@@ -19,19 +18,24 @@ MovePicker::MovePicker(MoveList *move_list) :
             default:
                 break;
         }
-        m_move_list[i].set_score(score);
+
+        // Set moves only with captures or promotions
+        if (score != 0) {
+            m_move_list[m_size] = m_move_list[i];
+            m_move_list[m_size++].set_score(score);
+        }
     }
 }
 
-bool MovePicker::has_next() const {
-    return m_curr_node < m_move_list.size();
+bool QMovePicker::has_next() const {
+    m_curr_node < m_size;
 }
 
-const Move &MovePicker::get_next() {
+const Move &QMovePicker::get_next() {
     int32_t score = m_move_list[m_curr_node].get_score();
     uint8_t max_val_ind = m_curr_node;
 
-    for (uint8_t i = m_curr_node+1; i < m_move_list.size(); ++i)
+    for (uint8_t i = m_curr_node+1; i < m_size; ++i)
         if (score < m_move_list[i].get_score()) {
             score = m_move_list[i].get_score();
             max_val_ind = i;

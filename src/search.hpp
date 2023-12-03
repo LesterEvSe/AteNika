@@ -3,11 +3,11 @@
 
 #include "board.hpp"
 #include "history.hpp"
-// #include <unordered_set>
 #include <limits>
 
 namespace Search {
 namespace hidden {
+
     extern Move _best_move;
     extern int32_t _best_score;
 

@@ -32,6 +32,8 @@ set(PROJECT_SOURCES
     src/search.cpp
     src/history.cpp
     src/bitfunc.cpp
+    src/mvv_lva.cpp
+    src/quiescence_movepick.cpp
 )
 
 set(PROJECT_HEADERS
@@ -69,7 +71,7 @@ set(TEST_SOURCES
     test/perft.cpp
     test/eval_test.cpp
     test/zob_hash_test.cpp
-        test/perft_comparison.cpp
+    test/perft_comparison.cpp
 )
 add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

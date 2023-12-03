@@ -30,6 +30,7 @@ void Search::iter_deep(const Board &board) {
         int32_t alpha = -hidden::INF;
         int32_t beta = hidden::INF;
 
+        Move curr_best_move = moves[0];
         while (move_picker.has_next()) {
             Move move = move_picker.get_next();
             Board temp = board;
@@ -38,33 +39,23 @@ void Search::iter_deep(const Board &board) {
 
             if (score > alpha) {
                 alpha = score;
-                hidden::_best_move = move;
+                curr_best_move = move;
 
                 // if checkmate
                 if (score == hidden::INF)
                     break;
             }
         }
+
+        if (!hidden::_stop) {
+            TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
+            Transposition::set(board.get_zob_hash(), entry);
+
+            hidden::_best_move = curr_best_move;
+            hidden::_best_score = alpha;
+        }
     }
 }
-
-//int negamax(int depth, int alpha, int beta, int curr) {
-//    if (!--depth) {
-//        visited.emplace(curr);
-//        return -scores[curr];
-//    }
-//    int arr[2] = {(curr << 1), (curr | 1) << 1};
-//
-//    for (int elem : arr) {
-//        int score = -negamax(depth, -beta, -alpha, elem);
-//
-//        if (score >= beta)
-//            return beta;
-//        if (score > alpha)
-//            alpha = score;
-//    }
-//    return alpha;
-//}
 
 int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta) {
     if (_stop)
@@ -83,15 +74,14 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     // MAX_DEPTH - depth (curr depth)
     // if curr_depth + TT depth >= MAX_DEPTH, then use, otherwise recalculate
     // MD - depth + TT_depth >= MD simplified to TT_depth >= d
-    // TODO add -> && Transposition::get(zob_hash).get_depth() >= depth
-    if (Transposition::in_table(zob_hash)) {
+    if (Transposition::in_table(zob_hash) && Transposition::get(zob_hash).get_depth() >= depth) {
         TTEntry entry = Transposition::get(zob_hash);
         int32_t score = entry.get_score();
 
         switch (entry.get_flag()) {
-            case LOWER : alpha = score < alpha ? alpha : score; // maximum
+            case LOWER : alpha = score < alpha ? alpha : score; break; // maximum
             case EXACT : return entry.get_score();
-            case UPPER : beta = score < beta ? score : beta; // minimum
+            case UPPER : beta = score < beta ? score : beta; break; // minimum
         }
 
         // Beta-cutoff condition
@@ -106,21 +96,44 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if (move_list.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
-    // Adding depth if it's now king in check.
-    // We can do this because it won't increase the search tree much
+    // We can increase depth, when king in check,
+    // because it won't increase the search tree much
+    if (board.king_in_check(board.get_curr_move()))
+        ++depth;
 
-
-    // if depth == 0, the quiescence search
+    if (--depth == 0)
+        return _quiescence_search(board, alpha, beta);
 
     MovePicker move_picker = MovePicker(&move_list);
+    Move curr_best_move = move_list[0];
+    int32_t start_alpha = alpha;
+
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
         Board temp = board;
         temp.make(move);
 
-//        int32_t score = -_negamax()
+        int32_t score = -_negamax(board, depth, -beta, -alpha);
+        if (score >= beta) {
+            TTEntry entry = TTEntry(move, score, depth, LOWER);
+            Transposition::set(temp.get_zob_hash(), entry);
+            return beta;
+        }
+
+        // new best move
+        if (score > alpha) {
+            alpha = score;
+            curr_best_move = move;
+        }
     }
 
-    // set new TT
+    TTFlag flag = (alpha > start_alpha) ? EXACT : UPPER;
+    TTEntry entry = TTEntry(curr_best_move, alpha, depth, flag);
+    Transposition::set(board.get_zob_hash(), entry);
+    return alpha;
+}
+
+int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, int32_t beta) {
+
     return alpha;
 }
