@@ -19,3 +19,7 @@ void Move::set_score(int32_t val) {
 bool operator<(const Move &left, const Move &right) {
     return left.m_score < right.m_score;
 }
+
+bool operator==(const Move &left, const Move &right) {
+    return left.m_move_repr == right.m_move_repr;
+}

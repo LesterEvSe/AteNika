@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <limits>
 
 /** Arrangements for the presentation of the board (uint64_t) */
 /**
@@ -112,5 +113,6 @@ enum TTFlag : uint8_t {
 constexpr uint64_t ZERO {0};
 constexpr uint64_t ONE  {1};
 constexpr uint8_t DRAW_RULE_50 {50};
+constexpr int32_t INF = std::numeric_limits<int32_t>::max();
 
 #endif //ATENICA_DEFS_HPP

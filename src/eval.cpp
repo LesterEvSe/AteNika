@@ -173,28 +173,6 @@ int32_t Eval::hidden::_evaluate_mobility(const Board &board, Color color, GamePh
     return eval;
 }
 
-template<GamePhase phase>
-int32_t Eval::hidden::_fast_phase_evaluation(const Board &board, Color color) {
-    Color opposite = get_opposite_move(color);
-
-    int32_t eval = 0;
-    eval += _evaluate_material(board, color, phase);
-    eval += _evaluate_mobility(board, color, phase);
-
-    eval += _has_bishop_pair(board, color) ? BISHOP_PAIR[phase] : 0;
-    eval -= _has_bishop_pair(board, opposite) ? BISHOP_PAIR[phase] : 0;
-
-    eval += board.get_pst().get_eval(color, phase);
-    eval -= board.get_pst().get_eval(opposite, phase);
-
-    if (phase == ENDGAME)
-        return eval;
-
-    eval += _king_pawns_shield(board, color) ? KING_PAWNS_SHIELD[phase] : 0;
-    eval -= _king_pawns_shield(board, opposite) ? KING_PAWNS_SHIELD[phase] : 0;
-    return eval;
-}
-
 int32_t Eval::hidden::_phase_evaluation(const Board &board, Color color, GamePhase phase) {
     int32_t eval = 0;
     eval += _get_pawn_eval(board, color, phase);
@@ -227,16 +205,14 @@ int32_t Eval::hidden::_calculate_phase(const Board &board) {
     return (phase * MAX_PHASE + HALF_TOTAL_PHASE) / TOTAL_PHASE;
 }
 
+int32_t Eval::get_material(PieceType type) {
+    return hidden::MATERIAL_BONUS[OPENING][type];
+}
+
 int32_t Eval::evaluate(const Board &board, Color color) {
     int32_t opening = hidden::_phase_evaluation(board, color, OPENING);
     int32_t endgame = hidden::_phase_evaluation(board, color, ENDGAME);
 
     int32_t phase = hidden::_calculate_phase(board);
     return (opening * (hidden::MAX_PHASE - phase) + endgame * phase) / hidden::MAX_PHASE;
-}
-
-int32_t Eval::fast_eval(const Board &board, Color color) {
-    if (count_bits(board.get_all_pieces()) < 8)
-        return hidden::_fast_phase_evaluation<OPENING>(board, color);
-    return hidden::_fast_phase_evaluation<ENDGAME>(board, color);
 }

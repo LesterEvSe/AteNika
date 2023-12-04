@@ -19,14 +19,19 @@ public:
 
 private:
     // Move representation
-    struct {
-        uint8_t m_from : 6;
-        uint8_t m_to   : 6;
+    union {
+        struct {
+            uint8_t m_from: 6;
+            uint8_t m_to: 6;
 
-        Flag    m_flag : 5;
-        PieceType m_move_piece      : 3;
-        PieceType m_captured_piece  : 3;
-        PieceType m_promotion_piece : 3;
+            Flag m_flag: 5;
+            PieceType m_move_piece: 3;
+            PieceType m_captured_piece: 3;
+            PieceType m_promotion_piece: 3;
+        };
+
+        // For comparison
+        int32_t m_move_repr;
     };
 
     int32_t m_score;
@@ -60,6 +65,7 @@ public:
     void set_score(int32_t val);
     // For selection sort in MovePicker class
     friend bool operator<(const Move &left, const Move &right);
+    friend bool operator==(const Move &left, const Move &right);
 };
 
 #endif //ATENICA_MOVE_HPP

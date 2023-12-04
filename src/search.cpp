@@ -28,6 +28,7 @@ Move Search::get_best_move() {
 }
 
 void Search::iter_deep(const Board &board) {
+    std::clo
     for (int16_t i = 1; i <= hidden::MAX_DEPTH; ++i) {
         if (hidden::_stop)
             break;
@@ -35,8 +36,8 @@ void Search::iter_deep(const Board &board) {
         MoveList moves = Movegen(board).get_legal_moves();
         MovePicker move_picker = MovePicker(&moves, board);
 
-        int32_t alpha = -hidden::INF;
-        int32_t beta = hidden::INF;
+        int32_t alpha = -INF;
+        int32_t beta = INF;
 
         Move curr_best_move = moves[0];
         while (move_picker.has_next()) {
@@ -50,7 +51,7 @@ void Search::iter_deep(const Board &board) {
                 curr_best_move = move;
 
                 // if checkmate
-                if (score == hidden::INF)
+                if (score == INF)
                     break;
             }
         }
@@ -89,9 +90,9 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         int32_t score = entry.get_score();
 
         switch (entry.get_flag()) {
-            case LOWER : alpha = score < alpha ? alpha : score; break; // maximum
+            case LOWER : alpha = std::max(score, alpha); break; // score < alpha ? alpha : score; break; // maximum
             case EXACT : return entry.get_score();
-            case UPPER : beta = score < beta ? score : beta; break; // minimum
+            case UPPER : beta = std::min(score, beta); break; // score < beta ? score : beta; break; // minimum
         }
 
         // Beta-cutoff condition
