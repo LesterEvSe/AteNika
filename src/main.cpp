@@ -14,15 +14,18 @@ int main() {
     PieceTables::init();
     Eval::init();
 
-    Search::restart();
-
     Board board = Board();
     std::cout << board;
-    Search::iter_deep(board);
+    for (int i = 0; i < 1000; ++i) {
+        std::cout << "ply: " << i << std::endl;
+        Search::restart();
+//        Search::restart(false, 50);
+        Search::iter_deep(board);
 
-    Move best_move = Search::get_best_move();
-    board.make(best_move);
-    std::cout << board;
+        Move best_move = Search::get_best_move();
+        board.make(best_move);
+        std::cout << board;
+    }
 
     return 0;
 }

@@ -9,14 +9,22 @@
 
 Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
-History Search::hidden::_history;
-bool Search::hidden::_stop;
 int64_t Search::hidden::_nodes;
+History Search::hidden::_history;
 
-void Search::restart() {
-    hidden::_history = History();
-    hidden::_stop = false;
+int32_t Search::hidden::_time_allocated_ms;
+bool Search::hidden::_without_time;
+bool Search::hidden::_stop;
+
+void Search::restart(bool without_time, int32_t time_allocated_ms) {
     hidden::_nodes = 0;
+    hidden::_best_move = Move();
+    hidden::_best_score = 0;
+    hidden::_history = History();
+
+    hidden::_time_allocated_ms = time_allocated_ms;
+    hidden::_without_time = without_time;
+    hidden::_stop = false;
 }
 
 void Search::stop() {
@@ -28,7 +36,8 @@ Move Search::get_best_move() {
 }
 
 void Search::iter_deep(const Board &board) {
-    std::clo
+    auto start = std::chrono::steady_clock::now();
+
     for (int16_t i = 1; i <= hidden::MAX_DEPTH; ++i) {
         if (hidden::_stop)
             break;
@@ -55,7 +64,10 @@ void Search::iter_deep(const Board &board) {
                     break;
             }
         }
-        std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << std::endl;
+
+        int32_t elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+        std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << "; elapsed: " << (int)elapsed << std::endl;
 
         if (!hidden::_stop) {
             TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
@@ -64,6 +76,8 @@ void Search::iter_deep(const Board &board) {
             hidden::_best_move = curr_best_move;
             hidden::_best_score = alpha;
         }
+        if (!hidden::_without_time && elapsed >= (hidden::_time_allocated_ms / 2))
+            break;
     }
 }
 
