@@ -8,13 +8,13 @@ class Move {
 public:
     enum Flag : uint8_t {
         QUIET = 0,
-        CAPTURE = 1,
         LONG_PAWN_MOVE = 2,
         QSIDE_CASTLING = 3,
         KSIDE_CASTLING = 4,
         EN_PASSANT = 5,
-        PROMOTION = 6,
-        CAPTURE_PROMOTION = 7 // if Capture 001 and Promotion 110 bits set
+        CAPTURE = 8,
+        PROMOTION = 16,
+        CAPTURE_PROMOTION = 24 // if Capture 1000 and Promotion 10000 bits set
     };
 
 private:
@@ -23,7 +23,7 @@ private:
         uint8_t m_from : 6;
         uint8_t m_to   : 6;
 
-        Flag    m_flag : 3;
+        Flag    m_flag : 5;
         PieceType m_move_piece      : 3;
         PieceType m_captured_piece  : 3;
         PieceType m_promotion_piece : 3;

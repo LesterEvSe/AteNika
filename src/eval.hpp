@@ -9,7 +9,7 @@ namespace hidden {
     constexpr bitboard COL[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 
     // For Tapered Eval https://www.chessprogramming.org/Tapered_Eval
-    constexpr uint8_t PHASE_WEIGHTS[6] = {
+    constexpr uint16_t PHASE_WEIGHTS[6] = {
         [PAWN] = 0,
         [KNIGHT] = 1,
         [BISHOP] = 1,
@@ -108,6 +108,9 @@ namespace hidden {
     int32_t _evaluate_material(const Board &board, Color color, GamePhase phase);
     int32_t _evaluate_mobility(const Board &board, Color color, GamePhase phase);
 
+    template<GamePhase phase>
+    int32_t _fast_phase_evaluation(const Board &board, Color color);
+
     int32_t _phase_evaluation(const Board &board, Color color, GamePhase phase);
     int32_t _calculate_phase(const Board &board);
 
@@ -115,6 +118,7 @@ namespace hidden {
 
     void init();
     int32_t evaluate(const Board &board, Color color);
+    int32_t fast_eval(const Board &board, Color color);
 } // Eval
 
 #endif //ATENICA_EVAL_HPP

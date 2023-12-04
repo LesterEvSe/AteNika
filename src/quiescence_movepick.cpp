@@ -2,7 +2,7 @@
 #include "mvv_lva.hpp"
 
 QMovePicker::QMovePicker(MoveList *move_list) :
-    m_move_list(*move_list), m_curr_node(0)
+    m_move_list(*move_list), m_curr_node(0), m_size(0)
 {
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
         int32_t score = 0;
@@ -20,23 +20,23 @@ QMovePicker::QMovePicker(MoveList *move_list) :
         }
 
         // Set moves only with captures or promotions
-        if (score != 0) {
-            m_move_list[m_size] = m_move_list[i];
-            m_move_list[m_size++].set_score(score);
+        if (score) {
+            m_move_list[i].set_score(score);
+            ++m_size;
         }
     }
 }
 
 bool QMovePicker::has_next() const {
-    m_curr_node < m_size;
+    return m_curr_node < m_size;
 }
 
 const Move &QMovePicker::get_next() {
     int32_t score = m_move_list[m_curr_node].get_score();
     uint8_t max_val_ind = m_curr_node;
 
-    for (uint8_t i = m_curr_node+1; i < m_size; ++i)
-        if (score < m_move_list[i].get_score()) {
+    for (uint8_t i = m_curr_node+1; i < m_move_list.size(); ++i)
+        if ((m_move_list[i].get_flag() & Move::Flag::CAPTURE_PROMOTION) && score < m_move_list[i].get_score()) {
             score = m_move_list[i].get_score();
             max_val_ind = i;
         }

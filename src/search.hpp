@@ -11,6 +11,8 @@ namespace hidden {
     extern Move _best_move;
     extern int32_t _best_score;
 
+    extern int64_t _nodes;
+
     // TODO Test unordered_set, history with 50 and 51 bits
     // last 50 moves
     // Maybe more efficiently use static C array with search.

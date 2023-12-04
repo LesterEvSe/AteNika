@@ -1,7 +1,9 @@
 #include "search.hpp"
 #include "movegen.hpp"
 #include "movepicker.hpp"
+#include "quiescence_movepick.hpp"
 #include "Ttable.hpp"
+#include "eval.hpp"
 
 #include <chrono>
 
@@ -9,23 +11,29 @@ Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
 History Search::hidden::_history;
 bool Search::hidden::_stop;
+int64_t Search::hidden::_nodes;
 
 void Search::restart() {
     hidden::_history = History();
     hidden::_stop = false;
+    hidden::_nodes = 0;
 }
 
 void Search::stop() {
     hidden::_stop = true;
 }
 
+Move Search::get_best_move() {
+    return hidden::_best_move;
+}
+
 void Search::iter_deep(const Board &board) {
-    for (int16_t i = 0; i < hidden::MAX_DEPTH; ++i) {
+    for (int16_t i = 1; i <= hidden::MAX_DEPTH; ++i) {
         if (hidden::_stop)
             break;
 
         MoveList moves = Movegen(board).get_legal_moves();
-        MovePicker move_picker = MovePicker(&moves);
+        MovePicker move_picker = MovePicker(&moves, board);
 
         int32_t alpha = -hidden::INF;
         int32_t beta = hidden::INF;
@@ -35,7 +43,7 @@ void Search::iter_deep(const Board &board) {
             Move move = move_picker.get_next();
             Board temp = board;
             temp.make(move);
-            int32_t score = -hidden::_negamax(temp, hidden::MAX_DEPTH, alpha, beta);
+            int32_t score = -hidden::_negamax(temp, i, alpha, beta);
 
             if (score > alpha) {
                 alpha = score;
@@ -46,6 +54,7 @@ void Search::iter_deep(const Board &board) {
                     break;
             }
         }
+        std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << std::endl;
 
         if (!hidden::_stop) {
             TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
@@ -58,6 +67,7 @@ void Search::iter_deep(const Board &board) {
 }
 
 int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta) {
+    ++_nodes;
     if (_stop)
         return 0;
 
@@ -89,11 +99,11 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
             return score;
     }
 
-    MoveList move_list = Movegen(board).get_legal_moves();
+    MoveList legal_moves = Movegen(board).get_legal_moves();
 
     // The complexity of this method is O(1)
     // In this case, checkmate or stalemate
-    if (move_list.size() == 0)
+    if (legal_moves.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
     // We can increase depth, when king in check,
@@ -101,11 +111,13 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if (board.king_in_check(board.get_curr_move()))
         ++depth;
 
-    if (--depth == 0)
-        return _quiescence_search(board, alpha, beta);
+    if (--depth == 0) {
+        return Eval::evaluate(board, board.get_curr_move());
+        return _quiescence_search(board, -beta, -alpha);
+    }
 
-    MovePicker move_picker = MovePicker(&move_list);
-    Move curr_best_move = move_list[0];
+    MovePicker move_picker = MovePicker(&legal_moves, board);
+    Move curr_best_move = legal_moves[0];
     int32_t start_alpha = alpha;
 
     while (move_picker.has_next()) {
@@ -113,7 +125,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(board, depth, -beta, -alpha);
+        int32_t score = -_negamax(temp, depth, -beta, -alpha);
         if (score >= beta) {
             TTEntry entry = TTEntry(move, score, depth, LOWER);
             Transposition::set(temp.get_zob_hash(), entry);
@@ -129,11 +141,42 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 
     TTFlag flag = (alpha > start_alpha) ? EXACT : UPPER;
     TTEntry entry = TTEntry(curr_best_move, alpha, depth, flag);
-    Transposition::set(board.get_zob_hash(), entry);
+    Transposition::set(zob_hash, entry);
     return alpha;
 }
 
 int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, int32_t beta) {
+    ++_nodes;
+    if (_stop)
+        return 0;
 
+    MoveList legal_moves = Movegen(board).get_legal_moves();
+
+    // Stalemate if not in check
+    if (legal_moves.size() == 0)
+        return board.king_in_check(board.get_curr_move()) ? -INF : 0;
+
+    QMovePicker q_move_picker = QMovePicker(&legal_moves);
+
+    int32_t static_eval = Eval::evaluate(board, board.get_curr_move());
+
+    // if node already quite
+    if (!q_move_picker.has_next())
+        return static_eval;
+    if (static_eval >= beta)
+        return beta;
+    if (static_eval > alpha)
+        alpha = static_eval;
+
+    while (q_move_picker.has_next()) {
+        Board temp = board;
+        temp.make(q_move_picker.get_next());
+
+        int32_t score = -_quiescence_search(temp, -beta, -alpha);
+        if (score >= beta)
+            return beta;
+        if (score > alpha)
+            alpha = score;
+    }
     return alpha;
 }
