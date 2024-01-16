@@ -23,3 +23,8 @@ bool operator<(const Move &left, const Move &right) {
 bool operator==(const Move &left, const Move &right) {
     return left.m_move_repr == right.m_move_repr;
 }
+
+std::ostream &operator<<(std::ostream &out, const Move &move) {
+    out << FIELD[move.m_from] + FIELD[move.m_to] << std::endl;
+    return out;
+}

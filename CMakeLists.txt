@@ -39,6 +39,8 @@ set(PROJECT_SOURCES
 set(PROJECT_HEADERS
     src/defs.hpp
     src/bitfunc.hpp
+        src/uci.cpp
+        src/uci.hpp
 )
 
 # TODO if we build tests, then we do not need the project executable (check it)

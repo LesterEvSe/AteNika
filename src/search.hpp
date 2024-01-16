@@ -24,11 +24,12 @@ namespace hidden {
     int32_t _quiescence_search(const Board &board, int32_t alpha, int32_t beta);
 
 } // hidden
-    void restart(bool without_time = true, int32_t time_allocated_ms = 0);
+    void restart();
     void stop(); // stop search if time has expired
+    void set_time(int32_t time_allocated_ms);
 
     Move get_best_move();
-    void iter_deep(const Board &board);
+    void iter_deep(const Board &board, bool debug = false);
 }
 
 #endif //ATENICA_SEARCH_HPP

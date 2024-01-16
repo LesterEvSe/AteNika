@@ -329,7 +329,7 @@ std::string Board::get_fen() const {
     return fen + std::to_string(m_ply);
 }
 
-std::ostream& operator<<(std::ostream &out, const Board &board) {
+std::ostream &operator<<(std::ostream &out, const Board &board) {
     out << "   ";
     for (char let = 'A'; let <= 'H'; ++let)
         out << ' ' << let;

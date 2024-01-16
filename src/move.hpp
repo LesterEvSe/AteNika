@@ -1,6 +1,7 @@
 #ifndef ATENICA_MOVE_HPP
 #define ATENICA_MOVE_HPP
 
+#include <iostream> // for std::ostream
 #include "defs.hpp"
 
 // used only 4 bytes (I want 3 bytes, but alignment...)
@@ -66,6 +67,7 @@ public:
     // For selection sort in MovePicker class
     friend bool operator<(const Move &left, const Move &right);
     friend bool operator==(const Move &left, const Move &right);
+    friend std::ostream &operator<<(std::ostream &out, const Move &move);
 };
 
 #endif //ATENICA_MOVE_HPP

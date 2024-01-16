@@ -1,5 +1,6 @@
 #include "pst.hpp"
 #include "board.hpp"
+#include <functional> // for std::function
 
 int32_t PieceTables::piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];
 
@@ -158,7 +159,9 @@ void PieceTables::init() {
         0,   1,   2,   3,   4,   5,   6,   7
     };
 
-    int32_t *(*table[PIECE_SIZE])(GamePhase);
+    // int32_t *(*table[PIECE_SIZE])(GamePhase); // Poorly readable
+    std::function<int32_t*(GamePhase)> table[PIECE_SIZE];
+
     table[PAWN]   = create_pawns_pt;
     table[KNIGHT] = create_knights_pt;
     table[BISHOP] = create_bishops_pt;
