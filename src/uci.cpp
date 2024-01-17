@@ -1,10 +1,21 @@
 #include "uci.hpp"
+#include <sstream>
+#include <functional>
+#include <thread>
+#include <atomic>
 
 namespace {
+    std::atomic<bool> lock(false);
+    std::atomic<bool> quit(false);
+
     void go(Board &board, bool debug) {
+        lock = true;
         Search::iter_deep(board, debug);
         board.make(Search::get_best_move());
-        std::cout << "Engine's move: " << Search::get_best_move();
+
+        if (!quit)
+            std::cout << "\nEngine's move: " << Search::get_best_move();
+        lock = false;
     }
 }
 
@@ -19,35 +30,42 @@ void Uci::start() {
     static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
     Board board;
     Search::restart();
-    std::string command;
+    std::string input, command;
 
     while(1) {
         std::cout << "AteNica> ";
-        std::getline(std::cin, command); // check how it work
+        std::getline(std::cin, input); // check how it works
+        std::istringstream iss(input);
+        iss >> command;
 
-        if (command == "go")
-            go(board, false);
-        else if (command == "godeb")
-            go(board, true);
-        else if (command == "search")
-            ; // Search::set_time(); // n * 1000 in ms
-        else if (command == "newgame") {
+        if (command == "go" || command == "godeb") {
+            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            std::thread search([&board, &command]{ return go(board, command == "godeb"); });
+            search.detach();
+        } else if (command == "newgame") {
+            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             Search::restart();
-        }
-        else if (command == "prb")
+        } else if (command == "prb") {
+            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::cout << board;
-        else if (command == "quit")
+        } else if (command == "stop") {
+            Search::stop();
+        } else if (command == "quit") {
+            quit = true;
+            Search::stop();
             break;
-        else if (command == "help") {
+        } else if (command == "help") {
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - go with debug information" << std::endl;
-            std::cout << "search n - search for n seconds per move" << std::endl;
             std::cout << "newgame - start new game" << std::endl;
             std::cout << "prb - print board" << std::endl;
+            std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }
-    std::cout << "See you later!";
+    
+    while (lock); // waiting for finished the thread
+    std::cout << "See you later!" << std::endl;
 }

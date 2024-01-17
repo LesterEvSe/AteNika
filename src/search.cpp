@@ -87,6 +87,7 @@ void Search::iter_deep(const Board &board, bool debug) {
         if (!hidden::_without_time && elapsed >= (hidden::_time_allocated_ms / 2))
             break;
     }
+    hidden::_stop = false; // clear stop flag
 }
 
 int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta) {
