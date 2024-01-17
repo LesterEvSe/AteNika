@@ -50,14 +50,17 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::cout << board;
         } else if (command == "stop") {
+            if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
         } else if (command == "quit") {
-            quit = true;
-            Search::stop();
+            if (lock) {
+                quit = true;
+                Search::stop();
+            }
             break;
         } else if (command == "help") {
             std::cout << "go - find and print best move" << std::endl;
-            std::cout << "godeb - go with debug information" << std::endl;
+            std::cout << "godeb - \"go\" command with debug information" << std::endl;
             std::cout << "newgame - start new game" << std::endl;
             std::cout << "prb - print board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
