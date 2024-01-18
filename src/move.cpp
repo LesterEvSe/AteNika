@@ -10,7 +10,7 @@ Move::Move(const Board &board, const std::string &move) {
 
     MoveList legal_moves = Movegen(board).get_legal_moves();
     int i;
-    
+
     for (i = 0; i < legal_moves.size(); ++i)
         if (move == static_cast<std::string>(legal_moves[i])) {
             *this = legal_moves[i];

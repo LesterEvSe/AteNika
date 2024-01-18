@@ -27,8 +27,8 @@ void Uci::init(std::string book_path) {
 }
 
 void Uci::start() {
-    std::cout << "AteNica by LesterEvSe" << std::endl;
-    std::cout << "\"help\" displays all commands" << std::endl;
+    std::cout << "AteNica by LesterEvSe\n\n";
+    std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
     Board board;
@@ -68,8 +68,10 @@ void Uci::start() {
             std::cout << "prb - print board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
-            std::cout << "Enter move in coordinate notation, e.g. e4e5, c4e6 d1h5" << std::endl;
+            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6 d1h5" << std::endl;
         } else if (Move::isMove(command)) {
+            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+
             try {
                 Move move = Move(board, command);
                 board.make(move);

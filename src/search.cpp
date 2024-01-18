@@ -87,6 +87,7 @@ void Search::iter_deep(const Board &board, bool debug) {
         if (!hidden::_without_time && elapsed >= (hidden::_time_allocated_ms / 2))
             break;
     }
+    hidden::_nodes = 0;
     hidden::_stop = false; // clear stop flag
 }
 

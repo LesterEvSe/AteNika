@@ -353,10 +353,14 @@ std::ostream &operator<<(std::ostream &out, const Board &board) {
             else if (board.m_pieces[WHITE][BISHOP] & (ONE << temp)) out << " B";
             else if (board.m_pieces[WHITE][KING]   & (ONE << temp)) out << " K";
             else if (board.m_pieces[WHITE][QUEEN]  & (ONE << temp)) out << " Q";
-            else out << " -";
+            else out << " .";
         }
         out << std::endl;
     }
-    out << "--------------------\n\n";
+    out << "\n   ";
+
+    for (char let = 'A'; let <= 'H'; ++let)
+        out << ' ' << let;
+    out << std::endl << std::endl;
     return out;
 }
