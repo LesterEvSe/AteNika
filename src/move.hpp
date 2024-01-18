@@ -4,6 +4,8 @@
 #include <iostream> // for std::ostream
 #include "defs.hpp"
 
+class Board;
+
 // used only 4 bytes (I want 3 bytes, but alignment...)
 class Move {
 public:
@@ -39,6 +41,9 @@ private:
 
 public:
     Move() = default;
+    // example e4e5 d8c6 or something else
+    explicit Move(const Board &board, const std::string &move);
+
     Move(uint8_t from,
          uint8_t to,
          PieceType move_piece,
@@ -64,10 +69,12 @@ public:
     [[nodiscard]] int32_t get_score() const;
 
     void set_score(int32_t val);
+    static bool isMove(const std::string &move);
+
     // For selection sort in MovePicker class
     friend bool operator<(const Move &left, const Move &right);
     friend bool operator==(const Move &left, const Move &right);
-    friend std::ostream &operator<<(std::ostream &out, const Move &move);
+    explicit operator std::string() const;
 };
 
 #endif //ATENICA_MOVE_HPP

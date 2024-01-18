@@ -13,6 +13,8 @@ int main() {
     ZobristHash::init();
     PieceTables::init();
     Eval::init();
+
+    Uci::init();
     Uci::start();
     return 0;
 }

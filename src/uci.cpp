@@ -3,6 +3,7 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <exception>
 
 namespace {
     std::atomic<bool> lock(false);
@@ -14,7 +15,9 @@ namespace {
         board.make(Search::get_best_move());
 
         if (!quit)
-            std::cout << "\nEngine's move: " << Search::get_best_move();
+            // std::endl required, otherwise,
+            // it will be output only after entering the next command
+            std::cout << "\nEngine's move: " << static_cast<std::string>(Search::get_best_move()) << std::endl;
         lock = false;
     }
 }
@@ -65,6 +68,14 @@ void Uci::start() {
             std::cout << "prb - print board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
+            std::cout << "Enter move in coordinate notation, e.g. e4e5, c4e6 d1h5" << std::endl;
+        } else if (Move::isMove(command)) {
+            try {
+                Move move = Move(board, command);
+                board.make(move);
+            } catch (std::exception &e) {
+                std::cout << e.what() << std::endl;
+            }
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }

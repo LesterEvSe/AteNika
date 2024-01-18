@@ -49,7 +49,6 @@ private:
 
 public:
     explicit Movegen(const Board &board);
-    MoveList &get_moves();
     MoveList &get_legal_moves();
 };
 

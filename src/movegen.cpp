@@ -4,10 +4,6 @@ Movegen::Movegen(const Board &board) : m_board(board) {
     gen_moves();
 }
 
-MoveList &Movegen::get_moves() {
-    return m_moves;
-}
-
 MoveList &Movegen::get_legal_moves() {
     if (m_legal_moves.size() == 0)
         gen_legal_moves();
