@@ -1,5 +1,5 @@
-#ifndef ATENICA_UCI_HPP
-#define ATENICA_UCI_HPP
+#ifndef ATENIKA_UCI_HPP
+#define ATENIKA_UCI_HPP
 
 #include "search.hpp"
 
@@ -8,4 +8,4 @@ namespace Uci {
     void start();
 }
 
-#endif //ATENICA_UCI_HPP
+#endif //ATENIKA_UCI_HPP

@@ -1,5 +1,5 @@
-#ifndef ATENICA_PST_HPP
-#define ATENICA_PST_HPP
+#ifndef ATENIKA_PST_HPP
+#define ATENIKA_PST_HPP
 
 #include "defs.hpp"
 
@@ -34,4 +34,4 @@ public:
     int32_t get_eval(Color color, GamePhase phase);
 };
 
-#endif //ATENICA_PST_HPP
+#endif //ATENIKA_PST_HPP

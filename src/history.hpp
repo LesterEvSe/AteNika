@@ -1,5 +1,5 @@
-#ifndef ATENICA_HISTORY_HPP
-#define ATENICA_HISTORY_HPP
+#ifndef ATENIKA_HISTORY_HPP
+#define ATENIKA_HISTORY_HPP
 
 #include "zobrist_hash.hpp"
 
@@ -16,4 +16,4 @@ public:
     [[nodiscard]] bool rule_of_threes(const ZobristHash &zob_hash) const;
 };
 
-#endif //ATENICA_HISTORY_HPP
+#endif //ATENIKA_HISTORY_HPP

@@ -1,5 +1,5 @@
-#ifndef ATENICA_ATTACKS_HPP
-#define ATENICA_ATTACKS_HPP
+#ifndef ATENIKA_ATTACKS_HPP
+#define ATENIKA_ATTACKS_HPP
 
 #include "bitfunc.hpp"
 
@@ -95,4 +95,4 @@ namespace hidden {
     bitboard get_king_attacks(uint8_t cell);
 } // Attacks
 
-#endif //ATENICA_ATTACKS_HPP
+#endif //ATENIKA_ATTACKS_HPP

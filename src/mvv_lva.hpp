@@ -1,5 +1,5 @@
-#ifndef ATENICA_MVV_LVA_HPP
-#define ATENICA_MVV_LVA_HPP
+#ifndef ATENIKA_MVV_LVA_HPP
+#define ATENIKA_MVV_LVA_HPP
 
 #include "defs.hpp"
 
@@ -14,4 +14,4 @@ namespace MvvLva {
     void init();
 }
 
-#endif //ATENICA_MVV_LVA_HPP
+#endif //ATENIKA_MVV_LVA_HPP

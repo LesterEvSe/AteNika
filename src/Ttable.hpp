@@ -1,5 +1,5 @@
-#ifndef ATENICA_TTABLE_HPP
-#define ATENICA_TTABLE_HPP
+#ifndef ATENIKA_TTABLE_HPP
+#define ATENIKA_TTABLE_HPP
 
 #include "defs.hpp"
 #include "move.hpp"
@@ -42,4 +42,4 @@ namespace hidden {
     void set(const ZobristHash &zob_hash, const TTEntry &entry);
 }
 
-#endif //ATENICA_TTABLE_HPP
+#endif //ATENIKA_TTABLE_HPP

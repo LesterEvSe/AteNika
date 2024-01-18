@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(AteNica)
+project(AteNika)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -42,7 +42,7 @@ set(PROJECT_HEADERS
     src/bitfunc.hpp
 )
 
-add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+add_executable(AteNika src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 
 # Comment this command, if you enter custom path
 execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -60,10 +60,10 @@ set(TEST_SOURCES
     test/zob_hash_test.cpp
     test/perft_comparison.cpp
 )
-add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
+add_executable(AteNikaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 
 enable_testing()
-target_link_libraries(AteNicaTest
+target_link_libraries(AteNikaTest
     ${GTEST_ROOT}/build/lib/libgtest.a
     ${GTEST_ROOT}/build/lib/libgtest_main.a
 )
@@ -71,7 +71,7 @@ target_link_libraries(AteNicaTest
 # Build application by default
 #option(BUILD_TESTS "Build tests" OFF)
 #if (NOT BUILD_TESTS)
-#    add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+#    add_executable(AteNika src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 #else()
 #    # Comment this command, if you enter custom path
 #    execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -89,10 +89,10 @@ target_link_libraries(AteNicaTest
 #        test/zob_hash_test.cpp
 #        test/perft_comparison.cpp
 #    )
-#    add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
+#    add_executable(AteNikaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 #
 #    enable_testing()
-#    target_link_libraries(AteNicaTest
+#    target_link_libraries(AteNikaTest
 #        ${GTEST_ROOT}/build/lib/libgtest.a
 #        ${GTEST_ROOT}/build/lib/libgtest_main.a
 #    )

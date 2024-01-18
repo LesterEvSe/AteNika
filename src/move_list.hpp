@@ -1,5 +1,5 @@
-#ifndef ATENICA_MOVE_LIST_HPP
-#define ATENICA_MOVE_LIST_HPP
+#ifndef ATENIKA_MOVE_LIST_HPP
+#define ATENIKA_MOVE_LIST_HPP
 
 #include "move.hpp"
 
@@ -18,4 +18,4 @@ public:
     void emplace_back(const Move &move);
 };
 
-#endif //ATENICA_MOVE_LIST_HPP
+#endif //ATENIKA_MOVE_LIST_HPP

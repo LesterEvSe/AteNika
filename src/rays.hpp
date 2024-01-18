@@ -1,5 +1,5 @@
-#ifndef ATENICA_RAYS_HPP
-#define ATENICA_RAYS_HPP
+#ifndef ATENIKA_RAYS_HPP
+#define ATENIKA_RAYS_HPP
 
 #include "defs.hpp"
 
@@ -34,4 +34,4 @@ namespace hidden {
     bitboard get_ray(Direction dir, uint8_t cell);
 } // Rays
 
-#endif //ATENICA_RAYS_HPP
+#endif //ATENIKA_RAYS_HPP

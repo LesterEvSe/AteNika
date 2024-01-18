@@ -1,5 +1,5 @@
-#ifndef ATENICA_MOVE_HPP
-#define ATENICA_MOVE_HPP
+#ifndef ATENIKA_MOVE_HPP
+#define ATENIKA_MOVE_HPP
 
 #include <iostream> // for std::ostream
 #include "defs.hpp"
@@ -77,4 +77,4 @@ public:
     explicit operator std::string() const;
 };
 
-#endif //ATENICA_MOVE_HPP
+#endif //ATENIKA_MOVE_HPP

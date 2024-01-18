@@ -5,7 +5,7 @@ Briefly about the name. **AteNika** are the names of two ancient Greek goddesses
 ## Building
 On **Windows**, all you need to do is run the code from any available IDE with C++20.
 
-For **Unix-like** systems follow this steps:  
+For **Unix-like** systems follow this steps:
 ```
 mkdir build
 cd build

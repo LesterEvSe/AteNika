@@ -1,5 +1,5 @@
-#ifndef ATENICA_BOARD_HPP
-#define ATENICA_BOARD_HPP
+#ifndef ATENIKA_BOARD_HPP
+#define ATENIKA_BOARD_HPP
 
 #include "bitfunc.hpp"
 #include "attacks.hpp"
@@ -104,4 +104,4 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
 };
 
-#endif //ATENICA_BOARD_HPP
+#endif //ATENIKA_BOARD_HPP

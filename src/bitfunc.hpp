@@ -1,5 +1,5 @@
-#ifndef ATENICA_BITFUNC_HPP
-#define ATENICA_BITFUNC_HPP
+#ifndef ATENIKA_BITFUNC_HPP
+#define ATENIKA_BITFUNC_HPP
 
 #include "defs.hpp"
 #include <iostream> // for std::cerr
@@ -92,4 +92,4 @@ inline void printbb(bitboard bb) {
     std::cout << "\n--------------------\n\n";
 }
 
-#endif //ATENICA_BITFUNC_HPP
+#endif //ATENIKA_BITFUNC_HPP

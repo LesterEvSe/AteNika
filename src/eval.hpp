@@ -1,5 +1,5 @@
-#ifndef ATENICA_EVAL_HPP
-#define ATENICA_EVAL_HPP
+#ifndef ATENIKA_EVAL_HPP
+#define ATENIKA_EVAL_HPP
 
 #include "board.hpp"
 
@@ -118,4 +118,4 @@ namespace hidden {
     int32_t evaluate(const Board &board, Color color);
 } // Eval
 
-#endif //ATENICA_EVAL_HPP
+#endif //ATENIKA_EVAL_HPP

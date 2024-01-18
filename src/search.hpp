@@ -1,5 +1,5 @@
-#ifndef ATENICA_SEARCH_HPP
-#define ATENICA_SEARCH_HPP
+#ifndef ATENIKA_SEARCH_HPP
+#define ATENIKA_SEARCH_HPP
 
 #include "board.hpp"
 #include "history.hpp"
@@ -32,4 +32,4 @@ namespace hidden {
     void iter_deep(const Board &board, bool debug = false);
 }
 
-#endif //ATENICA_SEARCH_HPP
+#endif //ATENIKA_SEARCH_HPP

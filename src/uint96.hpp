@@ -1,5 +1,5 @@
-#ifndef ATENICA_UINT96_HPP
-#define ATENICA_UINT96_HPP
+#ifndef ATENIKA_UINT96_HPP
+#define ATENIKA_UINT96_HPP
 
 #include <cstdint>
 #include <bitset>
@@ -24,4 +24,4 @@ public:
     explicit operator std::bitset<96>() const;
 };
 
-#endif //ATENICA_UINT96_HPP
+#endif //ATENIKA_UINT96_HPP

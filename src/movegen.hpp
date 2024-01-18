@@ -1,5 +1,5 @@
-#ifndef ATENICA_MOVEGEN_HPP
-#define ATENICA_MOVEGEN_HPP
+#ifndef ATENIKA_MOVEGEN_HPP
+#define ATENIKA_MOVEGEN_HPP
 
 #include "board.hpp"
 #include "move_list.hpp"
@@ -52,4 +52,4 @@ public:
     MoveList &get_legal_moves();
 };
 
-#endif //ATENICA_MOVEGEN_HPP
+#endif //ATENIKA_MOVEGEN_HPP

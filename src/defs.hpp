@@ -1,5 +1,5 @@
-#ifndef ATENICA_DEFS_HPP
-#define ATENICA_DEFS_HPP
+#ifndef ATENIKA_DEFS_HPP
+#define ATENIKA_DEFS_HPP
 
 #include <cstdint>
 #include <string>
@@ -115,4 +115,4 @@ constexpr uint64_t ONE  {1};
 constexpr uint8_t DRAW_RULE_50 {50};
 constexpr int32_t INF = std::numeric_limits<int32_t>::max();
 
-#endif //ATENICA_DEFS_HPP
+#endif //ATENIKA_DEFS_HPP

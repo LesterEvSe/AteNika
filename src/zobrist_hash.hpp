@@ -1,5 +1,5 @@
-#ifndef ATENICA_ZOBRIST_HASH_HPP
-#define ATENICA_ZOBRIST_HASH_HPP
+#ifndef ATENIKA_ZOBRIST_HASH_HPP
+#define ATENIKA_ZOBRIST_HASH_HPP
 
 #include "defs.hpp"
 #include "uint96.hpp"
@@ -51,4 +51,4 @@ public:
     void update_castling_rights(uint8_t castling);
 };
 
-#endif //ATENICA_ZOBRIST_HASH_HPP
+#endif //ATENIKA_ZOBRIST_HASH_HPP

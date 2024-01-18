@@ -1,5 +1,5 @@
-#ifndef ATENICA_MOVEPICKER_HPP
-#define ATENICA_MOVEPICKER_HPP
+#ifndef ATENIKA_MOVEPICKER_HPP
+#define ATENIKA_MOVEPICKER_HPP
 
 #include "move_list.hpp"
 
@@ -16,4 +16,4 @@ public:
     const Move &get_next(); // Using selection sorting in place, O(n) at a time
 };
 
-#endif //ATENICA_MOVEPICKER_HPP
+#endif //ATENIKA_MOVEPICKER_HPP
