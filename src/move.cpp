@@ -3,7 +3,6 @@
 #include "move_list.hpp"
 #include "movegen.hpp"
 
-// For example: e4e5 f3c6 a1h8 and so on
 Move::Move(const Board &board, const std::string &move) {
     if (!Move::isMove(move))
        throw std::invalid_argument("Input data is incorrect");

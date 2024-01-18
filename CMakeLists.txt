@@ -34,51 +34,40 @@ set(PROJECT_SOURCES
     src/bitfunc.cpp
     src/mvv_lva.cpp
     src/quiescence_movepick.cpp
+    src/uci.cpp
 )
 
 set(PROJECT_HEADERS
     src/defs.hpp
     src/bitfunc.hpp
-        src/uci.cpp
-        src/uci.hpp
 )
 
-# TODO if we build tests, then we do not need the project executable (check it)
-#option(BUILD_TESTS "Build tests" OFF)
-#if (NOT BUILD_TESTS)
-#    return()
-#endif()
-add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+# Build application by default
+option(BUILD_TESTS "Build tests" OFF)
+if (NOT BUILD_TESTS)
+    add_executable(AteNica src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
+else()
+    # Comment this command, if you enter custom path
+    execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+    # You just need to change the path to the google-test folder to run everything else
+    set(GTEST_ROOT /home/${CURRENT_USER}/googletest)
 
-# Instruction for build the tests
-# For build tests execute the command: cmake .. -DBUILD_TESTS=ON
+    include_directories(${GTEST_ROOT}/googletest/include test)
+    set(TEST_SOURCES
+        test/attacks_test.cpp
+        test/board_test.cpp
+        test/bitfunc_test.cpp
+        test/perft.cpp
+        test/eval_test.cpp
+        test/zob_hash_test.cpp
+        test/perft_comparison.cpp
+    )
+    add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 
-# TODO uncomment after finish the project
-#option(BUILD_TESTS "Build tests" OFF)
-#if (NOT BUILD_TESTS)
-#    return()
-#endif()
-
-execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-# You just need to change the path to the google-test folder to run everything else
-set(GTEST_ROOT /home/${CURRENT_USER}/googletest)
-
-include_directories(${GTEST_ROOT}/googletest/include test)
-set(TEST_SOURCES
-    test/attacks_test.cpp
-    test/board_test.cpp
-    test/bitfunc_test.cpp
-    test/perft.cpp
-    test/eval_test.cpp
-    test/zob_hash_test.cpp
-    test/perft_comparison.cpp
-)
-add_executable(AteNicaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
-
-enable_testing()
-target_link_libraries(AteNicaTest
-    ${GTEST_ROOT}/build/lib/libgtest.a
-    ${GTEST_ROOT}/build/lib/libgtest_main.a
-)
+    enable_testing()
+    target_link_libraries(AteNicaTest
+        ${GTEST_ROOT}/build/lib/libgtest.a
+        ${GTEST_ROOT}/build/lib/libgtest_main.a
+    )
+endif()

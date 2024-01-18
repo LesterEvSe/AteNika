@@ -49,7 +49,7 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             Search::restart();
-        } else if (command == "prb") {
+        } else if (command == "p") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::cout << board;
         } else if (command == "stop") {
@@ -65,7 +65,7 @@ void Uci::start() {
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
             std::cout << "newgame - start new game" << std::endl;
-            std::cout << "prb - print board" << std::endl;
+            std::cout << "p - print board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
             std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6 d1h5" << std::endl;
