@@ -43,7 +43,7 @@ namespace hidden {
             [BISHOP] = 333,
             [ROOK] = 563,
             [QUEEN] = 950,
-            [KING] = 50'000,
+            [KING] = 0 // 50'000,
         },
         [ENDGAME] = {
             [PAWN] = 120,
@@ -51,7 +51,7 @@ namespace hidden {
             [BISHOP] = 310,
             [ROOK] = 500,
             [QUEEN] = 960,
-            [KING] = 50'000,
+            [KING] = 0 // 50'000,
         }
     };
 

@@ -14,13 +14,13 @@ History Search::hidden::_history;
 
 int32_t Search::hidden::_time_allocated_ms;
 bool Search::hidden::_without_time;
-bool Search::hidden::_stop;
+std::atomic<bool> Search::hidden::_stop;
 
 void Search::restart() {
     hidden::_nodes = 0;
     hidden::_best_move = Move();
     hidden::_best_score = 0;
-    hidden::_history = History();
+    hidden::_history.clear();
 
     hidden::_time_allocated_ms = 0;
     hidden::_without_time = true;
@@ -114,9 +114,9 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         int32_t score = entry.get_score();
 
         switch (entry.get_flag()) {
-            case LOWER : alpha = std::max(score, alpha); break; // score < alpha ? alpha : score; break; // maximum
+            case LOWER : alpha = score < alpha ? alpha : score; break; // maximum
             case EXACT : return entry.get_score();
-            case UPPER : beta = std::min(score, beta); break; // score < beta ? score : beta; break; // minimum
+            case UPPER : beta = score < beta ? score : beta; break; // minimum
         }
 
         // Beta-cutoff condition
@@ -136,10 +136,8 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if (board.king_in_check(board.get_curr_move()))
         ++depth;
 
-    if (--depth == 0) {
-        return Eval::evaluate(board, board.get_curr_move());
+    if (--depth == 0)
         return _quiescence_search(board, -beta, -alpha);
-    }
 
     MovePicker move_picker = MovePicker(&legal_moves, board);
     Move curr_best_move = legal_moves[0];
@@ -165,7 +163,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     }
 
     TTFlag flag = (alpha > start_alpha) ? EXACT : UPPER;
-    TTEntry entry = TTEntry(curr_best_move, alpha, depth, flag);
+    TTEntry entry = TTEntry(curr_best_move, alpha, depth+1, flag);
     Transposition::set(zob_hash, entry);
     return alpha;
 }

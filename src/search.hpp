@@ -4,6 +4,7 @@
 #include "board.hpp"
 #include "history.hpp"
 #include <limits>
+#include <atomic>
 
 namespace Search {
 namespace hidden {
@@ -15,7 +16,7 @@ namespace hidden {
 
     extern int32_t _time_allocated_ms;
     extern bool _without_time;
-    extern bool _stop; // if time expired, then false
+    extern std::atomic<bool> _stop; // if time expired, then false
 
     // Curr MAX_DEPTH = 7. Not bigger, or calculate more than 1 minute
     constexpr int16_t MAX_DEPTH = 7; // Want depth = 20. Unfortunately too much
