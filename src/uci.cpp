@@ -12,9 +12,15 @@ namespace {
     void go(Board &board, bool debug) {
         lock = true;
         Search::iter_deep(board, debug);
-        board.make(Search::get_best_move());
 
-        if (!quit)
+        if (quit) {
+            lock = false;
+            return;
+        }
+
+        if (Search::get_best_move().get_flag() == Move::NULL_MOVE)
+            std::cout << "\nEngine's move: No moves" << std::endl;
+        else
             // std::endl required, otherwise,
             // it will be output only after entering the next command
             std::cout << "\nEngine's move: " << static_cast<std::string>(Search::get_best_move()) << std::endl;
@@ -45,7 +51,7 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::thread search([&board, &command]{ return go(board, command == "godeb"); });
             search.detach();
-        } else if (command == "newgame") {
+        } else if (command == "ucinewgame") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             Search::restart();
@@ -64,7 +70,7 @@ void Uci::start() {
         } else if (command == "help") {
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
-            std::cout << "newgame - start new game" << std::endl;
+            std::cout << "ucinewgame - start new game" << std::endl;
             std::cout << "d - display the current position" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;

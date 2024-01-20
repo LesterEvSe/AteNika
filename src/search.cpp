@@ -4,7 +4,6 @@
 #include "quiescence_movepick.hpp"
 #include "Ttable.hpp"
 #include "eval.hpp"
-
 #include <chrono>
 
 Move Search::hidden::_best_move;
@@ -15,6 +14,7 @@ History Search::hidden::_history;
 int32_t Search::hidden::_time_allocated_ms;
 bool Search::hidden::_without_time;
 std::atomic<bool> Search::hidden::_stop;
+int16_t Search::hidden::limit_nodes = 4096;
 
 void Search::restart() {
     hidden::_nodes = 0;
@@ -34,6 +34,15 @@ void Search::stop() {
 Move Search::get_best_move() {
     return hidden::_best_move;
 }
+
+//bool Search::hidden::check_limits() {
+//    if (--limit_nodes > 0)
+//        return false;
+//
+//    limit_nodes = 4096;
+//    _stop = true;
+//    return true;
+//}
 
 void Search::set_time(int32_t time_allocated_ms) {
     if (time_allocated_ms == INF)
@@ -60,7 +69,10 @@ void Search::iter_deep(const Board &board, bool debug) {
             Move move = move_picker.get_next();
             Board temp = board;
             temp.make(move);
-            int32_t score = -hidden::_negamax(temp, i, alpha, beta);
+            int32_t score = -hidden::_negamax(temp, i, -beta, -alpha);
+
+            if (hidden::_stop)
+                break;
 
             if (score > alpha) {
                 alpha = score;
@@ -114,9 +126,9 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         int32_t score = entry.get_score();
 
         switch (entry.get_flag()) {
-            case LOWER : alpha = score < alpha ? alpha : score; break; // maximum
-            case EXACT : return entry.get_score();
-            case UPPER : beta = score < beta ? score : beta; break; // minimum
+            case LOWER : alpha = score < alpha ? alpha : score; break; // max
+            case EXACT : return score;
+            case UPPER : beta = score < beta ? score : beta; break; // min
         }
 
         // Beta-cutoff condition
@@ -136,7 +148,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if (board.king_in_check(board.get_curr_move()))
         ++depth;
 
-    if (--depth == 0)
+    if (--depth <= 0)
         return _quiescence_search(board, -beta, -alpha);
 
     MovePicker move_picker = MovePicker(&legal_moves, board);

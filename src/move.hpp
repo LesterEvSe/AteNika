@@ -10,7 +10,8 @@ class Board;
 class Move {
 public:
     enum Flag : uint8_t {
-        QUIET = 0,
+        NULL_MOVE = 0,
+        QUIET = 1,
         LONG_PAWN_MOVE = 2,
         QSIDE_CASTLING = 3,
         KSIDE_CASTLING = 4,
@@ -40,7 +41,7 @@ private:
     int32_t m_score;
 
 public:
-    Move() = default;
+    Move() : m_flag(NULL_MOVE) {}
     // example e4e5 d8c6 or something else
     explicit Move(const Board &board, const std::string &move);
 
