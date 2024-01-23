@@ -109,12 +109,15 @@ namespace hidden {
     int32_t _evaluate_mobility(const Board &board, Color color, GamePhase phase);
 
     int32_t _phase_evaluation(const Board &board, Color color, GamePhase phase);
+    int32_t _fast_phase_evaluation(const Board &board, Color color, GamePhase phase);
     int32_t _calculate_phase(const Board &board);
 
 } // hidden
 
     void init();
     int32_t get_material(PieceType type);
+
+    template<bool fast>
     int32_t evaluate(const Board &board, Color color);
 } // Eval
 

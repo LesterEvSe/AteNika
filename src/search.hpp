@@ -19,8 +19,8 @@ namespace hidden {
     extern std::atomic<bool> _stop; // if time expired, then false
     extern int16_t limit_nodes;
 
-    // Curr MAX_DEPTH = 6. Not bigger, or calculate more than 1 minute
-    constexpr int16_t MAX_DEPTH = 6; // Want depth = 20. Unfortunately too much
+    // Curr MAX_DEPTH = 7. Not bigger, or calculate more than 1 minute
+    constexpr int16_t MAX_DEPTH = 7; // Want depth = 20. Unfortunately too much
 
     int32_t _negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta);
     int32_t _quiescence_search(const Board &board, int32_t alpha, int32_t beta);

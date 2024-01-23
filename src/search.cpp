@@ -145,11 +145,10 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 
     // We can increase depth, when king in check,
     // because it won't increase the search tree much
-    if (board.king_in_check(board.get_curr_move()))
-        ++depth;
+    int32_t king_threat = board.king_in_check(board.get_curr_move());
 
-    if (--depth <= 0)
-        return _quiescence_search(board, -beta, -alpha);
+    if ((depth + king_threat) <= 0)
+        return _quiescence_search(board, alpha, beta);
 
     MovePicker move_picker = MovePicker(&legal_moves, board);
     Move curr_best_move = legal_moves[0];
@@ -160,7 +159,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(temp, depth, -beta, -alpha);
+        int32_t score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
         if (score >= beta) {
             TTEntry entry = TTEntry(move, score, depth, LOWER);
             Transposition::set(temp.get_zob_hash(), entry);
@@ -175,13 +174,12 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     }
 
     TTFlag flag = (alpha > start_alpha) ? EXACT : UPPER;
-    TTEntry entry = TTEntry(curr_best_move, alpha, depth+1, flag);
+    TTEntry entry = TTEntry(curr_best_move, alpha, depth, flag);
     Transposition::set(zob_hash, entry);
     return alpha;
 }
 
 int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, int32_t beta) {
-    ++_nodes;
     if (_stop)
         return 0;
 
@@ -191,9 +189,10 @@ int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, in
     if (legal_moves.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
-    QMovePicker q_move_picker = QMovePicker(&legal_moves);
+    int32_t static_eval = Eval::evaluate<false>(board, board.get_curr_move());
+    ++_nodes;
 
-    int32_t static_eval = Eval::evaluate(board, board.get_curr_move());
+    QMovePicker q_move_picker = QMovePicker(&legal_moves);
 
     // if node already quite
     if (!q_move_picker.has_next())
