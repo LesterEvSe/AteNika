@@ -1,6 +1,5 @@
 #include "uci.hpp"
 #include <sstream>
-#include <functional>
 #include <thread>
 #include <atomic>
 #include <exception>
@@ -18,12 +17,12 @@ namespace {
             return;
         }
 
-        if (Search::get_best_move().get_flag() == Move::NULL_MOVE)
+        if (!Search::get_best_move())
             std::cout << "\nEngine's move: No moves" << std::endl;
         else
             // std::endl required, otherwise,
             // it will be output only after entering the next command
-            std::cout << "\nEngine's move: " << static_cast<std::string>(Search::get_best_move()) << std::endl;
+            std::cout << "\nEngine's move: " << static_cast<std::string>(*Search::get_best_move()) << std::endl;
         lock = false;
     }
 }
@@ -38,7 +37,7 @@ void Uci::start() {
 
     static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
     Board board;
-    Search::restart();
+    Search::init();
     std::string input, command;
 
     while(1) {
@@ -47,35 +46,63 @@ void Uci::start() {
         std::istringstream iss(input);
         iss >> command;
 
-        if (command == "go" || command == "godeb") {
+        if (input == "go" || input == "godeb") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::thread search([&board, &command]{ return go(board, command == "godeb"); });
             search.detach();
-        } else if (command == "ucinewgame") {
+        } else if (input == "ucinewgame") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
-            Search::restart();
-        } else if (command == "d") {
+        } else if (command == "depth" || command == "time") {
+            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            std::string value;
+            std::getline(iss, value);
+
+            if (command == "time" && value.substr(1) == "inf") {
+                Search::set_time(INF);
+                continue;
+            }
+
+            size_t pos;
+            int16_t number;
+            try {
+                number = static_cast<int16_t>(std::stoi(value, &pos));
+                if (pos != value.size()) throw std::exception();
+
+            } catch (const std::exception &e) {
+                std::cout << "Incorrect command, try again" << std::endl;
+                continue;
+            }
+
+            if (command == "depth") {
+                Search::set_depth(number);
+                Search::set_time(INF);
+            } else
+                Search::set_time(number * 1000);
+
+        } else if (input == "d") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::cout << board;
-        } else if (command == "stop") {
+        } else if (input == "stop") {
             if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
-        } else if (command == "quit") {
+        } else if (input == "quit") {
             if (lock) {
                 quit = true;
                 Search::stop();
             }
             break;
-        } else if (command == "help") {
+        } else if (input == "help") {
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
             std::cout << "ucinewgame - start new game" << std::endl;
+            std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
+            std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)" << std::endl;
             std::cout << "d - display the current position" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
             std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6 d1h5" << std::endl;
-        } else if (Move::isMove(command)) {
+        } else if (Move::isMove(input)) {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
 
             try {

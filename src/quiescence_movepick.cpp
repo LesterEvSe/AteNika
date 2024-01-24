@@ -12,8 +12,8 @@ QMovePicker::QMovePicker(MoveList *move_list) :
                 score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());
             case Move::CAPTURE:
                 score += MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_move_piece()][m_move_list[i].get_captured_piece()];
-                ++m_size;
                 m_move_list[i].set_score(score);
+                ++m_size;
                 break;
             case Move::PROMOTION:
                 score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());

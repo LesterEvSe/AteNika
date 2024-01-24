@@ -13,65 +13,101 @@ History Search::hidden::_history;
 
 int32_t Search::hidden::_time_allocated_ms;
 bool Search::hidden::_without_time;
+
 std::atomic<bool> Search::hidden::_stop;
-int16_t Search::hidden::limit_nodes = 4096;
+int16_t Search::hidden::_check_gap = GAP;
 
-void Search::restart() {
+std::chrono::time_point<std::chrono::steady_clock> Search::hidden::_start;
+int16_t Search::hidden::_seeking_depth;
+
+void Search::init() {
     hidden::_nodes = 0;
-    hidden::_best_move = Move();
     hidden::_best_score = 0;
-    hidden::_history.clear();
+    hidden::_best_move = Move();
+    hidden::_history = History();
 
-    hidden::_time_allocated_ms = 0;
-    hidden::_without_time = true;
+    hidden::_time_allocated_ms = 2 * 1000;
+    hidden::_without_time = false;
     hidden::_stop = false;
+    hidden::_seeking_depth = 7;
 }
 
 void Search::stop() {
     hidden::_stop = true;
 }
 
-Move Search::get_best_move() {
-    return hidden::_best_move;
+void Search::hidden::new_search() {
+    _nodes = 0;
+    _best_score = 0;
+    _best_move = Move();
+    _stop = false;
 }
 
-//bool Search::hidden::check_limits() {
-//    if (--limit_nodes > 0)
-//        return false;
-//
-//    limit_nodes = 4096;
-//    _stop = true;
-//    return true;
-//}
+bool Search::hidden::check_limits() {
+    if (_stop) return true;
+    if (--_check_gap > 0) return false;
 
-void Search::set_time(int32_t time_allocated_ms) {
-    if (time_allocated_ms == INF)
-        Search::hidden::_without_time = true;
-    else
-        Search::hidden::_time_allocated_ms = time_allocated_ms;
+    _check_gap = GAP;
+    int32_t elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+
+    if (_without_time || elapsed < _time_allocated_ms) return false;
+    return _stop = true;
+}
+
+Move *Search::get_best_move() {
+    return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
+}
+
+int32_t Search::get_score() {
+    return hidden::_best_score;
+}
+
+bool Search::set_time(int32_t time_allocated_ms) {
+    if (time_allocated_ms == INF) {
+        hidden::_without_time = true;
+        return true;
+    } else if (time_allocated_ms < 1 || time_allocated_ms > 2'000'000)
+        return false;
+    else {
+        hidden::_time_allocated_ms = time_allocated_ms;
+        return true;
+    }
+}
+
+bool Search::set_depth(int16_t n) {
+    if (n < 1 || n > 50) return false;
+    hidden::_seeking_depth = n;
+    return true;
 }
 
 void Search::iter_deep(const Board &board, bool debug) {
-    auto start = std::chrono::steady_clock::now();
+    hidden::new_search();
+    hidden::_start = std::chrono::steady_clock::now();
 
-    for (int16_t i = 1; i <= hidden::MAX_DEPTH; ++i) {
+    for (int16_t i = 1; i <= hidden::_seeking_depth; ++i) {
         if (hidden::_stop)
             break;
 
-        MoveList moves = Movegen(board).get_legal_moves();
-        MovePicker move_picker = MovePicker(&moves, board);
+        MoveList legal_moves = Movegen(board).get_legal_moves();
+        if (legal_moves.size() == 0) {
+            hidden::_best_move = Move();
+            hidden::_best_score = board.king_in_check(board.get_curr_move()) ? -INF : 0;
+            return;
+        }
+        MovePicker move_picker = MovePicker(&legal_moves, board);
 
         int32_t alpha = -INF;
         int32_t beta = INF;
 
-        Move curr_best_move = moves[0];
+        Move curr_best_move = legal_moves[0];
         while (move_picker.has_next()) {
             Move move = move_picker.get_next();
             Board temp = board;
             temp.make(move);
             int32_t score = -hidden::_negamax(temp, i, -beta, -alpha);
 
-            if (hidden::_stop)
+            if (hidden::check_limits())
                 break;
 
             if (score > alpha) {
@@ -85,7 +121,7 @@ void Search::iter_deep(const Board &board, bool debug) {
         }
 
         int32_t elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
         if (debug)
             std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << "; elapsed: " << (int)elapsed << "ms" << std::endl;
 
@@ -99,13 +135,11 @@ void Search::iter_deep(const Board &board, bool debug) {
         if (!hidden::_without_time && elapsed >= (hidden::_time_allocated_ms / 2))
             break;
     }
-    hidden::_nodes = 0;
-    hidden::_stop = false; // clear stop flag
 }
 
 int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta) {
     ++_nodes;
-    if (_stop)
+    if (check_limits())
         return 0;
 
     ZobristHash zob_hash = board.get_zob_hash();
@@ -118,8 +152,8 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     else if (_history.rule_of_threes(zob_hash))
         return 0;
 
-    // MAX_DEPTH - depth (curr depth)
-    // if curr_depth + TT depth >= MAX_DEPTH, then use, otherwise recalculate
+    // _seeking_depth - depth (curr depth)
+    // if curr_depth + TT depth >= _seeking_depth, then use, otherwise recalculate
     // MD - depth + TT_depth >= MD simplified to TT_depth >= d
     if (Transposition::in_table(zob_hash) && Transposition::get(zob_hash).get_depth() >= depth) {
         TTEntry entry = Transposition::get(zob_hash);
@@ -180,7 +214,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 }
 
 int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, int32_t beta) {
-    if (_stop)
+    if (check_limits())
         return 0;
 
     MoveList legal_moves = Movegen(board).get_legal_moves();
