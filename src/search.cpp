@@ -26,7 +26,7 @@ void Search::init() {
     hidden::_best_move = Move();
     hidden::_history = History();
 
-    hidden::_time_allocated_ms = 2 * 1000;
+    hidden::_time_allocated_ms = 3 * 1000;
     hidden::_without_time = false;
     hidden::_stop = false;
     hidden::_seeking_depth = 7;

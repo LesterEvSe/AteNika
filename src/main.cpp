@@ -13,6 +13,7 @@ int main() {
     ZobristHash::init();
     PieceTables::init();
     Eval::init();
+    Search::init();
 
     Uci::init();
     Uci::start();

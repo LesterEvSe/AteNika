@@ -35,9 +35,8 @@ void Uci::start() {
     std::cout << "AteNica by LesterEvSe\n\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
-    Board board;
-    Search::init();
+    //static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
+    Board board = Board();
     std::string input, command;
 
     while(1) {
