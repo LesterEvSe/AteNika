@@ -6,12 +6,13 @@
 
 class Board;
 
-// used only 4 bytes (I want 3 bytes, but alignment...)
+// Used only 4 bytes
 class Move {
 public:
+    // Order is important!
     enum Flag : uint8_t {
-        NULL_MOVE = 0,
-        QUIET = 1,
+        QUIET = 0,
+        NULL_MOVE = 1,
         LONG_PAWN_MOVE = 2,
         QSIDE_CASTLING = 3,
         KSIDE_CASTLING = 4,
