@@ -8,7 +8,7 @@ namespace {
     std::atomic<bool> lock(false);
     std::atomic<bool> quit(false);
 
-    void go(Board &board, bool debug) {
+    void go(const Board &board, bool debug) {
         lock = true;
         Search::iter_deep(board, debug);
 
@@ -35,8 +35,7 @@ void Uci::start() {
     std::cout << "AteNica by LesterEvSe\n\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    //static constexpr size_t n = std::numeric_limits<std::streamsize>::max();
-    Board board = Board();
+    Board board = Board("K1k5/8/P7/8/8/8/8/8 w - - 0");
     std::string input, command;
 
     while(1) {
@@ -47,8 +46,9 @@ void Uci::start() {
 
         if (input == "go" || input == "godeb") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
-            std::thread search([&board, &command]{ return go(board, command == "godeb"); });
-            search.detach();
+            go(board, command == "godeb");
+            //std::thread search([&board, &command]{ return go(board, command == "godeb"); });
+            //search.detach();
         } else if (input == "ucinewgame") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();

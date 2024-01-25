@@ -86,8 +86,6 @@ void Search::iter_deep(const Board &board, bool debug) {
     hidden::_start = std::chrono::steady_clock::now();
 
     for (int16_t i = 1; i <= hidden::_seeking_depth; ++i) {
-        if (hidden::_stop)
-            break;
 
         MoveList legal_moves = Movegen(board).get_legal_moves();
         if (legal_moves.size() == 0) {
@@ -125,13 +123,15 @@ void Search::iter_deep(const Board &board, bool debug) {
         if (debug)
             std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << "; elapsed: " << (int)elapsed << "ms" << std::endl;
 
-        if (!hidden::_stop) {
-            TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
-            Transposition::set(board.get_zob_hash(), entry);
+        if (hidden::_stop)
+            break;
 
-            hidden::_best_move = curr_best_move;
-            hidden::_best_score = alpha;
-        }
+        TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
+        Transposition::set(board.get_zob_hash(), entry);
+
+        hidden::_best_move = curr_best_move;
+        hidden::_best_score = alpha;
+
         if (!hidden::_without_time && elapsed >= (hidden::_time_allocated_ms / 2))
             break;
     }
@@ -143,14 +143,17 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         return 0;
 
     ZobristHash zob_hash = board.get_zob_hash();
-    _history.add_pos(zob_hash);
+    if (board.get_ply() >= DRAW_RULE_50 || _history.rule_of_threes(zob_hash))
+        return 0;
 
-    if (board.get_ply() >= DRAW_RULE_50)
-        return 0;
-    if (board.get_ply() == 0)
-        _history.clear();
-    else if (_history.rule_of_threes(zob_hash))
-        return 0;
+//    _history.add_pos(zob_hash);
+//
+//    if (board.get_ply() >= DRAW_RULE_50)
+//        return 0;
+//    if (board.get_ply() == 0)
+//        _history.clear();
+//    else if (_history.rule_of_threes(zob_hash))
+//        return 0;
 
     // _seeking_depth - depth (curr depth)
     // if curr_depth + TT depth >= _seeking_depth, then use, otherwise recalculate
@@ -172,14 +175,14 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 
     MoveList legal_moves = Movegen(board).get_legal_moves();
 
-    // The complexity of this method is O(1)
-    // In this case, checkmate or stalemate
-    if (legal_moves.size() == 0)
-        return board.king_in_check(board.get_curr_move()) ? -INF : 0;
-
     // We can increase depth, when king in check,
     // because it won't increase the search tree much
     int32_t king_threat = board.king_in_check(board.get_curr_move());
+
+    // The complexity of this method is O(1)
+    // In this case, checkmate or stalemate
+    if (legal_moves.size() == 0)
+        return king_threat ? -INF : 0;
 
     if ((depth + king_threat) <= 0)
         return _quiescence_search(board, alpha, beta);

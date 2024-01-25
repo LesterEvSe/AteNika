@@ -13,7 +13,7 @@ namespace hidden {
     extern int64_t _nodes;
     extern int32_t _best_score;
     extern Move _best_move;
-    extern History _history;
+    extern History _history; // TODO fix bug with empty history
 
     extern int32_t _time_allocated_ms;
     extern bool _without_time;
