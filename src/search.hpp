@@ -13,7 +13,7 @@ namespace hidden {
     extern int64_t _nodes;
     extern int32_t _best_score;
     extern Move _best_move;
-    extern History _history; // TODO fix bug with empty history
+    extern History _history;
 
     extern int32_t _time_allocated_ms;
     extern bool _without_time;
@@ -38,7 +38,7 @@ namespace hidden {
 
     Move *get_best_move();
     int32_t get_score();
-    void iter_deep(const Board &board, bool debug = false);
+    void iter_deep(const History &history, const Board &board, bool debug = false);
 }
 
 #endif //ATENIKA_SEARCH_HPP

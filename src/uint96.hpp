@@ -20,6 +20,8 @@ public:
     void operator^=(const uint96 &object);
     friend bool operator==(const uint96 &left, const uint96 &right);
 
+    friend std::ostream &operator<<(std::ostream &out, const uint96 &num);
+
     // Required for hashing, because using a std::bitset in std::unordered_map
     explicit operator std::bitset<96>() const;
 };

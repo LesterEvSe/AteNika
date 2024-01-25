@@ -8,9 +8,12 @@ namespace {
     std::atomic<bool> lock(false);
     std::atomic<bool> quit(false);
 
-    void go(const Board &board, bool debug) {
+    Board board;
+    History history;
+
+    void go(bool debug) {
         lock = true;
-        Search::iter_deep(board, debug);
+        Search::iter_deep(history, board, debug);
 
         if (quit) {
             lock = false;
@@ -35,7 +38,8 @@ void Uci::start() {
     std::cout << "AteNica by LesterEvSe\n\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    Board board = Board("K1k5/8/P7/8/8/8/8/8 w - - 0");
+    board = Board();
+    history = History();
     std::string input, command;
 
     while(1) {
@@ -46,12 +50,14 @@ void Uci::start() {
 
         if (input == "go" || input == "godeb") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
-            go(board, command == "godeb");
-            //std::thread search([&board, &command]{ return go(board, command == "godeb"); });
-            //search.detach();
+            std::thread search([&command]{ return go(command == "godeb"); });
+            search.detach();
+
         } else if (input == "ucinewgame") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
+            history.clear();
+
         } else if (command == "depth" || command == "time") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             std::string value;
@@ -81,7 +87,7 @@ void Uci::start() {
 
         } else if (input == "d") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
-            std::cout << board;
+            board.display_all();
         } else if (input == "stop") {
             if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
@@ -100,16 +106,24 @@ void Uci::start() {
             std::cout << "d - display the current position" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
-            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6 d1h5" << std::endl;
+            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl <<
+                         "Or for promotion piece add last symbol q (queen), n (knight), b (bishop) or r (rook) a7a8q" << std::endl;
         } else if (Move::isMove(input)) {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
 
+            Move move;
             try {
-                Move move = Move(board, command);
-                board.make(move);
+                move = Move(board, command);
             } catch (std::exception &e) {
                 std::cout << e.what() << std::endl;
+                continue;
             }
+
+            board.make(move);
+            if (board.get_ply() == 0)
+                history.clear();
+            else
+                history.add_pos(board.get_zob_hash());
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }

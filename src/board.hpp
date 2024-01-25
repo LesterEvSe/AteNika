@@ -102,6 +102,7 @@ public:
 
     [[nodiscard]] std::string get_fen() const;
     friend std::ostream& operator<<(std::ostream &out, const Board &board);
+    void display_all() const;
 };
 
 #endif //ATENIKA_BOARD_HPP

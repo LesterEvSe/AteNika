@@ -29,7 +29,7 @@ void Search::init() {
     hidden::_time_allocated_ms = 3 * 1000;
     hidden::_without_time = false;
     hidden::_stop = false;
-    hidden::_seeking_depth = 7;
+    hidden::_seeking_depth = 20;
 }
 
 void Search::stop() {
@@ -70,6 +70,7 @@ bool Search::set_time(int32_t time_allocated_ms) {
     } else if (time_allocated_ms < 1 || time_allocated_ms > 2'000'000)
         return false;
     else {
+        hidden::_without_time = false;
         hidden::_time_allocated_ms = time_allocated_ms;
         return true;
     }
@@ -81,8 +82,9 @@ bool Search::set_depth(int16_t n) {
     return true;
 }
 
-void Search::iter_deep(const Board &board, bool debug) {
+void Search::iter_deep(const History &history, const Board &board, bool debug) {
     hidden::new_search();
+    hidden::_history = history;
     hidden::_start = std::chrono::steady_clock::now();
 
     for (int16_t i = 1; i <= hidden::_seeking_depth; ++i) {
@@ -145,15 +147,6 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     ZobristHash zob_hash = board.get_zob_hash();
     if (board.get_ply() >= DRAW_RULE_50 || _history.rule_of_threes(zob_hash))
         return 0;
-
-//    _history.add_pos(zob_hash);
-//
-//    if (board.get_ply() >= DRAW_RULE_50)
-//        return 0;
-//    if (board.get_ply() == 0)
-//        _history.clear();
-//    else if (_history.rule_of_threes(zob_hash))
-//        return 0;
 
     // _seeking_depth - depth (curr depth)
     // if curr_depth + TT depth >= _seeking_depth, then use, otherwise recalculate

@@ -364,3 +364,9 @@ std::ostream &operator<<(std::ostream &out, const Board &board) {
     out << std::endl << std::endl;
     return out;
 }
+
+void Board::display_all() const {
+    std::cout << *this;
+    std::cout << "Fen: " << get_fen() << std::endl;
+    std::cout << "Key: " << m_hash.get_hash() << std::endl;
+}

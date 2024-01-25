@@ -20,7 +20,7 @@ private:
     static uint96 PIECE_KEYS[COLOR_SIZE][PIECE_SIZE][64];
     static uint96 EN_PASSANT_FILE[8];
     static uint96 QS_CASTLE[COLOR_SIZE];
-    static uint96 KS_CASTLE[COLOR_SIZE];\
+    static uint96 KS_CASTLE[COLOR_SIZE];
     static uint96 WHITE_MOVE;
 
 

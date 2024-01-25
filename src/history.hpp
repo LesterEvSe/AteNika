@@ -10,6 +10,7 @@ private:
 
 public:
     History() : m_size(0) {}
+    void operator=(const History &history);
 
     void add_pos(const ZobristHash &zob_hash);
     void clear();

@@ -1,4 +1,5 @@
 #include "uint96.hpp"
+#include <iostream>
 
 void uint96::operator^=(const uint96 &object) {
     m_first  ^= object.m_first;
@@ -7,6 +8,11 @@ void uint96::operator^=(const uint96 &object) {
 
 bool operator==(const uint96 &left, const uint96 &right) {
     return left.m_first == right.m_first && left.m_second == right.m_second;
+}
+
+std::ostream &operator<<(std::ostream &out, const uint96 &num) {
+    out << std::hex << num.m_first << num.m_second;
+    return out;
 }
 
 uint96::operator std::bitset<96>() const {

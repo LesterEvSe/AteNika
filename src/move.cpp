@@ -4,9 +4,6 @@
 #include "movegen.hpp"
 
 Move::Move(const Board &board, const std::string &move) {
-    if (!Move::isMove(move))
-       throw std::invalid_argument("Input data is incorrect");
-
     MoveList legal_moves = Movegen(board).get_legal_moves();
     int i;
 
@@ -36,15 +33,15 @@ void Move::set_score(int32_t val) {
     m_score = val;
 }
 
+// Basic check if such a move can exist at all
 bool Move::isMove(const std::string &move) {
-    if (move.size() != 4) return false;
+    if (move.size() != 4 && move.size() != 5) return false;
 
-    // Basic check if such a move can exist at all
-    for (int i = 0; i < 2; i += 2) {
+    uint8_t i;
+    for (i = 0; i <= 2; i += 2) {
         if (move[i] < 'a' || move[i] > 'h') return false;
         if (move[i+1] < '1' || move[i+1] > '8') return false;
     }
-
     return true;
 }
 
@@ -57,5 +54,13 @@ bool operator==(const Move &left, const Move &right) {
 }
 
 Move::operator std::string() const {
-    return FIELD[m_from] + FIELD[m_to];
+    char piece;
+    switch (m_promotion_piece) {
+        case KNIGHT: piece = 'n'; break;
+        case BISHOP: piece = 'b'; break;
+        case ROOK:   piece = 'r'; break;
+        case QUEEN:  piece = 'q'; break;
+        default: return FIELD[m_from] + FIELD[m_to];
+    }
+    return FIELD[m_from] + FIELD[m_to] + piece;
 }

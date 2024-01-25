@@ -82,13 +82,13 @@ namespace hidden {
 
     constexpr int32_t BISHOP_PAIR[PHASES] {45, 55};
     constexpr int32_t DOUBLED_ROOKS[PHASES] {15, 20};
-    constexpr int32_t ROOK_OPEN_FILE[PHASES] {20, 0};
+    constexpr int32_t ROOK_OPEN_FILE[PHASES] {10, 0};
 
     constexpr int32_t ISOLATED_PAWNS[PHASES] {-15, -30};
     constexpr int32_t CONNECTED_PAWNS[PHASES] {12, 20};
     constexpr int32_t DOUBLED_PAWNS[PHASES] {-20, -30};
     constexpr int32_t PASSED_PAWNS[PHASES] {10, 40};
-    constexpr int32_t KING_PAWNS_SHIELD[PHASES] {40, 0};
+    constexpr int32_t KING_PAWNS_SHIELD[PHASES] {30, 0};
 
     extern bitboard _pawns_shield_mask[COLOR_SIZE][64];
     extern bitboard _passed_pawns_mask[COLOR_SIZE][64];

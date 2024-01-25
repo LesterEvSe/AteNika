@@ -7,10 +7,10 @@
 
 int main() {
     init_bits_pre_calculation(); // Must be at the beginning!
+    ZobristHash::init();
     Rays::init();
     Attacks::init(); // Must be init after Rays
     MvvLva::init();
-    ZobristHash::init();
     PieceTables::init();
     Eval::init();
     Search::init();
