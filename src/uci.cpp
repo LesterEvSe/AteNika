@@ -64,7 +64,6 @@ void Uci::start() {
     board = Board();
     history = History();
     std::string input, command;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     while(1) {
         std::cout << "AteNica> ";
