@@ -2,10 +2,7 @@
 #include "board.hpp"
 #include <functional> // for std::function
 
-// Take evaluation from PeSTO's Function https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 int32_t PieceTables::piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];
-
-
 
 int32_t *PieceTables::create_pawns_pt(GamePhase phase) {
     if (phase == OPENING)

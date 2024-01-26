@@ -6,10 +6,7 @@
 class Board;
 
 // PST - Piece Square Tables
-// Mix 3 tables in first version
-// 1. https://www.chessprogramming.org/Simplified_Evaluation_Function
-// 2. https://github.com/GunshipPenguin/shallow-blue
-// 3. https://www.chessprogramming.org/PeSTO's_Evaluation_Function
+// Take evaluation from PeSTO's Function https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 class PieceTables {
 private:
     static int32_t piece_sq_tables[COLOR_SIZE][PHASES][PIECE_SIZE][64];

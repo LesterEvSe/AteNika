@@ -36,6 +36,8 @@ set(PROJECT_SOURCES
     src/quiescence_movepick.cpp
     src/uci.cpp
     src/pgn_parser.cpp
+        src/book.cpp
+        src/book.hpp
 )
 
 set(PROJECT_HEADERS

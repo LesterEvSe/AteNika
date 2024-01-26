@@ -11,7 +11,7 @@ bool operator==(const uint96 &left, const uint96 &right) {
 }
 
 std::ostream &operator<<(std::ostream &out, const uint96 &num) {
-    out << std::hex << num.m_first << num.m_second;
+    out << std::hex << std::uppercase << num.m_first << num.m_second;
     return out;
 }
 

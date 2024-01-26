@@ -1,8 +1,11 @@
 #include "uci.hpp"
+#include "book.hpp"
+
 #include <sstream>
 #include <thread>
 #include <atomic>
 #include <exception>
+#include <memory>
 
 namespace {
     std::atomic<bool> lock(false);
@@ -10,6 +13,7 @@ namespace {
 
     Board board;
     History history;
+    std::unique_ptr<Book> book;
 
     void go(bool debug) {
         lock = true;
@@ -32,6 +36,11 @@ namespace {
 
 void Uci::init(std::string book_path) {
     if (book_path.empty()) return;
+    try {
+        book = std::make_unique<Book>(Book(book_path));
+    } catch(const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+    }
 }
 
 void Uci::start() {

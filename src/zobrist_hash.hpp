@@ -10,7 +10,8 @@ class Board;
 class ZobristHash {
 private:
     // Pseudo-Random Number Generator
-    static constexpr uint64_t PRNG {1234};
+    // Love Beef :)
+    static constexpr uint64_t PRNG {0x4C4F5645BEEF};
     static std::mt19937_64 gen64;
     static std::mt19937 gen32;
     static std::uniform_int_distribution<uint64_t> dist64;

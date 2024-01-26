@@ -3,6 +3,7 @@
 
 #include <string>
 
+// PGN - Portable Game Notation
 namespace PGNParser {
 namespace hidden {
     extern std::string processed_file;
