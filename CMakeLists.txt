@@ -35,6 +35,7 @@ set(PROJECT_SOURCES
     src/mvv_lva.cpp
     src/quiescence_movepick.cpp
     src/uci.cpp
+    src/pgn_parser.cpp
 )
 
 set(PROJECT_HEADERS

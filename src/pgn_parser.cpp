@@ -1,38 +1,36 @@
-#include "rays.hpp"
-#include "mvv_lva.hpp"
-#include "pst.hpp"
-#include "eval.hpp"
-#include "board.hpp"
-#include "uci.hpp"
-
-#include <fstream>
+#include "pgn_parser.hpp"
 #include "movegen.hpp"
 #include "move.hpp"
 
-int convert_first() {
-    std::ifstream from("../all.txt");
+#include <iostream>
+#include <fstream>
+#include <cerrno>
+#include <cstring>
+#include <sstream>
 
-    if (!from.is_open()) {
-        std::cout << "Error open 'from' file" << std::endl;
-        return 1;
-    }
+std::string PGNParser::hidden::processed_file = "../processed_file.txt";
 
-    std::ofstream to("../all_new.txt", std::ios::out);
-    if (!to.is_open()) {
-        std::cout << "Error open 'to' file" << std::endl;
-        return 1;
-    }
+void PGNParser::hidden::first_processing(const std::string &path) {
+    std::ifstream from(path);
+
+    if (!from.is_open())
+        throw std::runtime_error(path + " " + strerror(errno));
+
+    std::ofstream to(processed_file, std::ios::out);
+    if (!to.is_open())
+        throw std::runtime_error(processed_file + " " + strerror(errno));
 
     std::string prev;
     std::string curr;
     bool add_moves = false;
 
-    auto pattern = [](const std::string &str) {
-        return str[0] == '3';// || str[0] == '2' && str[1] > '8';
+    auto condition = [](const std::string &str) {
+        return str[0] == '3';
     };
+
     while (std::getline(from, curr)) {
         if (prev.size() > 10 && prev.substr(1, 8) == "WhiteElo" &&
-            pattern(prev.substr(11, 2)) && pattern(curr.substr(11, 2)))
+                condition(prev.substr(11, 2)) && condition(curr.substr(11, 2)))
         {
             to << prev << std::endl;
             to << curr << std::endl;
@@ -47,22 +45,17 @@ int convert_first() {
 
     from.close();
     to.close();
-    return 0;
 }
+void PGNParser::hidden::second_processing() {
+    std::ifstream from(processed_file);
 
-int convert_second() {
-    std::ifstream from("../all_new.txt");
+    if (!from.is_open())
+        throw std::runtime_error(processed_file + " " + strerror(errno));
 
-    if (!from.is_open()) {
-        std::cout << "Error open 'from' file" << std::endl;
-        return 1;
-    }
-
-    std::ofstream to("../res.txt", std::ios::out);
-    if (!to.is_open()) {
-        std::cout << "Error open 'to' file" << std::endl;
-        return 1;
-    }
+    std::string target = "../book.txt";
+    std::ofstream to(target, std::ios::out);
+    if (!to.is_open())
+        throw std::runtime_error(target + " " + strerror(errno));
 
     std::string line;
     int num_line = 1;
@@ -77,11 +70,10 @@ int convert_second() {
         }
 
 
-        int coun = 3;
+        int counter = 3;
         while (iss >> command) {
-            std::cout << command << std::endl;
-            if (coun >= 300 || command[0] == '{') break;
-            if (coun++ % 3 == 0) continue;
+            if (counter >= 300 || command[0] == '{') break;
+            if (counter++ % 3 == 0) continue;
 
             if (command.back() == '+' || command.back() == '#')
                 command.pop_back();
@@ -128,7 +120,6 @@ int convert_second() {
                     continue;
                 }
                 if (command[3] == '=') {
-//                    std::cout << command << ' ' << temp << std::endl;
                     if (command.substr(1, 2) == temp.substr(2, 2) && command[4] == temp[4] && command[0] == temp[0]) {
                         to << temp << ' ';
                         break;
@@ -181,36 +172,23 @@ int convert_second() {
             }
 
             if (i == moves.size()) {
-                std::cout << "Trouble in" << std::endl;
-                std::cout << "Line: " << num_line << std::endl;
-                std::cout << "Move: " << coun/3 << ' ' << (coun % 3 == 2 ? "White" : "Black") << std::endl;
-                return 1;
+                std::cerr << "\nTrouble in " + processed_file << std::endl;
+                std::cerr << "Line: " << num_line << std::endl;
+                std::cerr << "Move: " << counter/3 << ' ' << (counter % 3 == 2 ? "White" : "Black") << std::endl;
+                throw std::runtime_error("");
             }
             board.make(move);
         }
         ++num_line;
         to << std::endl;
     }
-
-    return 0;
 }
 
-#include "pgn_parser.hpp"
-
-int main() {
-    init_bits_pre_calculation(); // Must be at the beginning!
-    ZobristHash::init();
-    Rays::init();
-    Attacks::init(); // Must be init after Rays
-    MvvLva::init();
-    PieceTables::init();
-    Eval::init();
-    Search::init();
-
-    // Data take from https://www.ficsgames.org/download.html
-    PGNParser::parse("../all.txt");
-    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317393.pgn");
-//    Uci::init();
-//    Uci::start();
-    return 0;
+void PGNParser::parse(const std::string &path) {
+    try {
+        hidden::first_processing(path);
+        hidden::second_processing();
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+    }
 }
