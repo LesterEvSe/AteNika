@@ -134,9 +134,12 @@ void Uci::start() {
             std::cout << "d - display the current position" << std::endl;
             std::cout << "info - display more precise information about board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
-            std::cout << "quit - exit the program" << std::endl;
-            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl <<
-                         "Or for promotion piece add last symbol q (queen), n (knight), b (bishop) or r (rook) a7a8q" << std::endl;
+            std::cout << "quit - exit the program" << std::endl << std::endl;
+
+            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl;
+            std::cout << "Or for promotion piece add last symbol q (queen), n (knight), b (bishop) or r (rook)." << std::endl;
+            std::cout << "E.g., a7a8q, d2d1r" << std::endl;
+
         } else if (Move::isMove(input)) {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
 
