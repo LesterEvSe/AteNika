@@ -1,5 +1,6 @@
 #include "uint96.hpp"
 #include <iostream>
+#include <iomanip>
 
 void uint96::operator^=(const uint96 &object) {
     m_first  ^= object.m_first;
@@ -12,6 +13,7 @@ bool operator==(const uint96 &left, const uint96 &right) {
 
 std::ostream &operator<<(std::ostream &out, const uint96 &num) {
     out << std::hex << std::uppercase << num.m_first << num.m_second;
+    out << std::resetiosflags(std::ios::hex | std::ios::uppercase);
     return out;
 }
 

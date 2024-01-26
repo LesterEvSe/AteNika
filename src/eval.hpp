@@ -114,10 +114,15 @@ namespace hidden {
 
 } // hidden
 
+    enum Evaluation {
+        FAST,
+        STATIC
+    };
+
     void init();
     int32_t get_material(PieceType type);
 
-    template<bool fast>
+    template<Evaluation eval>
     int32_t evaluate(const Board &board, Color color);
 } // Eval
 

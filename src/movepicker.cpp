@@ -18,7 +18,7 @@ MovePicker::MovePicker(MoveList *move_list, const Board &board) :
         if (best_move == m_move_list[i])
             m_move_list[i].set_score(INF);
         else
-            m_move_list[i].set_score(Eval::evaluate<true>(board, curr));
+            m_move_list[i].set_score(Eval::evaluate<Eval::FAST>(board, curr));
     }
 }
 

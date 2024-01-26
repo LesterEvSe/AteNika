@@ -219,14 +219,14 @@ int32_t Eval::get_material(PieceType type) {
     return hidden::MATERIAL_BONUS[OPENING][type];
 }
 
-template int32_t Eval::evaluate<true>(const Board &board, Color color);
-template int32_t Eval::evaluate<false>(const Board &board, Color color);
+template int32_t Eval::evaluate<Eval::FAST>(const Board &board, Color color);
+template int32_t Eval::evaluate<Eval::STATIC>(const Board &board, Color color);
 
 // To speed up code and eliminate unnecessary runtime checks
-template<bool fast>
+template<Eval::Evaluation eval>
 int32_t Eval::evaluate(const Board &board, Color color) {
     int32_t opening, endgame;
-    if (fast) {
+    if (eval == FAST) {
         opening = hidden::_fast_phase_evaluation(board, color, OPENING);
         endgame = hidden::_fast_phase_evaluation(board, color, ENDGAME);
     } else {

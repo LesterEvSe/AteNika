@@ -219,7 +219,7 @@ int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, in
     if (legal_moves.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
-    int32_t static_eval = Eval::evaluate<false>(board, board.get_curr_move());
+    int32_t static_eval = Eval::evaluate<Eval::STATIC>(board, board.get_curr_move());
     ++_nodes;
 
     QMovePicker q_move_picker = QMovePicker(&legal_moves);

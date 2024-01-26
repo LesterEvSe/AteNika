@@ -32,19 +32,30 @@ namespace {
             std::cout << "\nEngine's move: " << static_cast<std::string>(*Search::get_best_move()) << std::endl;
         lock = false;
     }
+
+    void create_book(const std::string &book_path) {
+        lock = true;
+        try {
+            book = std::make_unique<Book>(Book(book_path));
+        } catch(const std::exception &e) {
+            std::cerr << e.what() << std::endl;
+        }
+        lock = false;
+    }
 }
 
 void Uci::init(std::string book_path) {
     if (book_path.empty()) return;
-    try {
-        book = std::make_unique<Book>(Book(book_path));
-    } catch(const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
+    std::thread new_book([&book_path] {create_book(book_path); });
+    new_book.detach();
 }
 
 void Uci::start() {
-    std::cout << "AteNica by LesterEvSe\n\n";
+    std::cout << "Please, wait for the initialization of the move database\n\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    while (lock);
+
+    std::cout << "AteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
@@ -59,8 +70,13 @@ void Uci::start() {
 
         if (input == "go" || input == "godeb") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
-            std::thread search([&command]{ return go(command == "godeb"); });
-            search.detach();
+            if (book && book->has_move()) {
+                std::cout << (input == "godeb" ? "A move from the book\n" : "");
+                std::cout << "Engine's move: " << book->get_random() << std::endl;
+            } else {
+                std::thread search([&command] { go(command == "godeb"); });
+                search.detach();
+            }
 
         } else if (input == "ucinewgame") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
@@ -81,10 +97,10 @@ void Uci::start() {
             int16_t number;
             try {
                 number = static_cast<int16_t>(std::stoi(value, &pos));
-                if (pos != value.size()) throw std::exception();
+                if (pos != value.size()) throw std::runtime_error("Incorrect command, try again");
 
             } catch (const std::exception &e) {
-                std::cout << "Incorrect command, try again" << std::endl;
+                std::cout << e.what() << std::endl;
                 continue;
             }
 
@@ -94,9 +110,12 @@ void Uci::start() {
             } else
                 Search::set_time(number * 1000);
 
-        } else if (input == "d") {
+        } else if (input == "d" || input == "info") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
-            board.display_all();
+            if (input == "d")
+                std::cout << board;
+            else
+                board.display_all();
         } else if (input == "stop") {
             if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
@@ -113,6 +132,7 @@ void Uci::start() {
             std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
             std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)" << std::endl;
             std::cout << "d - display the current position" << std::endl;
+            std::cout << "info - display more precise information about board" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl;
             std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl <<
@@ -127,6 +147,9 @@ void Uci::start() {
                 std::cout << e.what() << std::endl;
                 continue;
             }
+
+            if (book && book->has_move())
+                book->next_move(command);
 
             board.make(move);
             if (board.get_ply() == 0)
