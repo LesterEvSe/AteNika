@@ -11,7 +11,7 @@ private:
     Move m_moves[218];
 
 public:
-    MoveList() : m_size(0), m_moves(Move()) {}
+    MoveList() : m_size(0), m_moves{ Move() } {}
     [[nodiscard]] uint8_t size() const;
 
     Move &operator[](uint8_t index);

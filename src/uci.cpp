@@ -45,8 +45,11 @@ namespace {
 }
 
 void Uci::init(std::string book_path) {
-    if (book_path.empty()) return;
-    std::thread new_book([&book_path] {create_book(book_path); });
+    if (book_path.empty()) {
+        book = nullptr;
+        return;
+    }
+    std::thread new_book([book_path] {create_book(book_path); });
     new_book.detach();
 }
 
@@ -74,7 +77,7 @@ void Uci::start() {
                 std::cout << (input == "godeb" ? "A move from the book\n" : "");
                 std::cout << "Engine's move: " << book->get_random() << std::endl;
             } else {
-                std::thread search([&command] { go(command == "godeb"); });
+                std::thread search([command] { go(command == "godeb"); });
                 search.detach();
             }
 

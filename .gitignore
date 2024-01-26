@@ -1,4 +1,10 @@
-# Clion directories
+build
+
+# CLion
 .idea
 *-build-*
-build
+
+# VS
+out
+.vs
+*.json
