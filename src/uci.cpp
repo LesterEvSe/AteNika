@@ -54,16 +54,17 @@ void Uci::init(std::string book_path) {
 }
 
 void Uci::start() {
-    std::cout << "Please, wait for the initialization of the move database\n\n";
+    std::cout << "Please wait while the moves database is initialized\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     while (lock);
 
-    std::cout << "AteNica by LesterEvSe\n";
+    std::cout << "\nAteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
     history = History();
     std::string input, command;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     while(1) {
         std::cout << "AteNica> ";
@@ -168,4 +169,8 @@ void Uci::start() {
     
     while (lock); // waiting for finished the thread
     std::cout << "See you later!" << std::endl;
+
+    #ifdef _MSC_VER
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    #endif
 }
