@@ -61,7 +61,7 @@ void Uci::start() {
     std::cout << "\nAteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    board = Board("8/8/8/3k4/1B2B3/7K/8/8 b - - 0");
+    board = Board();
     history = History();
     std::string input, command;
 
@@ -84,7 +84,8 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             history.clear();
-            book->reset();
+            if (book)
+                book->reset();
 
         } else if (command == "depth" || command == "time") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
@@ -166,8 +167,5 @@ void Uci::start() {
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }
-    
     while (lock); // waiting for finished the thread
-    std::cout << "See you later!" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(5));
 }

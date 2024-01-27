@@ -28,7 +28,7 @@ void Search::init() {
     hidden::_history = History();
     hidden::_order_info = OrderInfo();
 
-    hidden::_time_allocated_ms = 3 * 1000;
+    hidden::_time_allocated_ms = 5 * 1000;
     hidden::_without_time = false;
     hidden::_stop = false;
     hidden::_seeking_depth = 20;

@@ -17,8 +17,8 @@ int main() {
     Search::init();
 
     // Data take from https://www.ficsgames.org/download.html
-    // PGNParser::parse("ficsgamesdb_2020_CvC_nomovetimes_317393.pgn");
-    Uci::init();
+    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317502.pgn");
+    Uci::init("book.txt");
     Uci::start();
     return 0;
 }
