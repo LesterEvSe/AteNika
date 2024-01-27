@@ -6,8 +6,10 @@ void History::operator=(const History &history) {
         m_history[i] = history.m_history[i];
 }
 
-void History::add_pos(const ZobristHash &zob_hash) {
+bool History::add_pos(const ZobristHash &zob_hash) {
+    if (m_size == 50) return false;
     m_history[m_size++] = (bits96)zob_hash.get_hash();
+    return true;
 }
 
 void History::clear() {

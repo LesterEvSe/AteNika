@@ -10,6 +10,7 @@ Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
 int64_t Search::hidden::_nodes;
 History Search::hidden::_history;
+OrderInfo Search::hidden::_order_info;
 
 int32_t Search::hidden::_time_allocated_ms;
 bool Search::hidden::_without_time;
@@ -25,11 +26,31 @@ void Search::init() {
     hidden::_best_score = 0;
     hidden::_best_move = Move();
     hidden::_history = History();
+    hidden::_order_info = OrderInfo();
 
-    hidden::_time_allocated_ms = 3 * 1000;
+    hidden::_time_allocated_ms = 5 * 1000;
     hidden::_without_time = false;
     hidden::_stop = false;
     hidden::_seeking_depth = 20;
+}
+
+void Search::hidden::log_info(int depth, int elapsed) {
+    // cp - centi-pawns
+    // nps - nodes per second;
+
+    std::string score;
+    if (_best_score == INF)
+        score = "mate " + std::to_string(_best_score);
+    else if (_best_score == -INF)
+        score = "mate -" + std::to_string(_best_score);
+    else
+        score = std::to_string(_best_score);
+
+    // Sometimes I have an error in Linux
+    // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
+    // It's divide by zero error, so I increment elapsed ms, to avoid this problem
+    std::cout << depth << " nodes: " << (long long)_nodes << "; elapsed: " << elapsed << "ms; ";
+    std::cout << "cp: " << score << "; nps: " << (long long)(_nodes*1000 / ++elapsed) << std::endl;
 }
 
 void Search::stop() {
@@ -41,6 +62,7 @@ void Search::hidden::new_search() {
     _best_score = 0;
     _best_move = Move();
     _stop = false;
+    _order_info = OrderInfo();
 }
 
 bool Search::hidden::check_limits() {
@@ -57,10 +79,6 @@ bool Search::hidden::check_limits() {
 
 Move *Search::get_best_move() {
     return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
-}
-
-int32_t Search::get_score() {
-    return hidden::_best_score;
 }
 
 bool Search::set_time(int32_t time_allocated_ms) {
@@ -95,22 +113,35 @@ void Search::iter_deep(const History &history, const Board &board, bool debug) {
             hidden::_best_score = board.king_in_check(board.get_curr_move()) ? -INF : 0;
             return;
         }
-        MovePicker move_picker = MovePicker(&legal_moves, board);
+        MovePicker move_picker = MovePicker(&legal_moves, board, hidden::_order_info);
 
         int32_t alpha = -INF;
         int32_t beta = INF;
 
         Move curr_best_move = legal_moves[0];
+        bool full_window = true;
+
         while (move_picker.has_next()) {
             Move move = move_picker.get_next();
             Board temp = board;
             temp.make(move);
-            int32_t score = -hidden::_negamax(temp, i, -beta, -alpha);
+
+            ++hidden::_order_info;
+            int32_t score;
+            if (full_window)
+                score = -hidden::_negamax(temp, i, -beta, -alpha);
+            else {
+                score = -hidden::_negamax(temp, i, -alpha - 1, -alpha);
+                if (score > alpha)
+                    score = -hidden::_negamax(temp, i, -beta, -alpha);
+            }
+            --hidden::_order_info;
 
             if (hidden::check_limits())
                 break;
 
             if (score > alpha) {
+                full_window = false;
                 alpha = score;
                 curr_best_move = move;
 
@@ -122,11 +153,10 @@ void Search::iter_deep(const History &history, const Board &board, bool debug) {
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
-        if (debug)
-            std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << "; elapsed: " << (int)elapsed << "ms" << std::endl;
-
         if (hidden::_stop)
             break;
+        if (debug)
+            hidden::log_info(i, elapsed);
 
         TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
         Transposition::set(board.get_zob_hash(), entry);
@@ -180,17 +210,32 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if ((depth + king_threat) <= 0)
         return _quiescence_search(board, alpha, beta);
 
-    MovePicker move_picker = MovePicker(&legal_moves, board);
+    MovePicker move_picker = MovePicker(&legal_moves, board, _order_info);
     Move curr_best_move = legal_moves[0];
     int32_t start_alpha = alpha;
+    bool full_window = true;
 
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        ++_order_info;
+        int32_t score;
+        if (full_window)
+            score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        else {
+            score = -_negamax(temp, depth - 1 + king_threat, -alpha - 1, -alpha);
+            if (score > alpha)
+                score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        }
+        --_order_info;
+
         if (score >= beta) {
+            _order_info.update_killers(move);
+            if (!(move.get_flag() & Move::CAPTURE))
+                _order_info.inc_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(), depth);
+
             TTEntry entry = TTEntry(move, score, depth, LOWER);
             Transposition::set(temp.get_zob_hash(), entry);
             return beta;
@@ -198,6 +243,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 
         // new best move
         if (score > alpha) {
+            full_window = false;
             alpha = score;
             curr_best_move = move;
         }
@@ -219,7 +265,7 @@ int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, in
     if (legal_moves.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
-    int32_t static_eval = Eval::evaluate<Eval::STATIC>(board, board.get_curr_move());
+    int32_t static_eval = Eval::evaluate(board, board.get_curr_move());
     ++_nodes;
 
     QMovePicker q_move_picker = QMovePicker(&legal_moves);

@@ -156,19 +156,38 @@ int32_t Eval::hidden::_evaluate_material(const Board &board, Color color, GamePh
     int32_t eval = 0;
     Color opposite = get_opposite_move(color);
 
-    for (uint8_t i = 0; i < PIECE_SIZE-1; ++i) {
-        eval += count_bits(board.get_pieces(color, PIECES[i])) * MATERIAL_BONUS[phase][PIECES[i]];
-        eval -= count_bits(board.get_pieces(opposite, PIECES[i])) * MATERIAL_BONUS[phase][PIECES[i]];
+    for (PieceType type : PIECES) {
+        eval += count_bits(board.get_pieces(color, type)) * MATERIAL_BONUS[phase][type];
+        eval -= count_bits(board.get_pieces(opposite, type)) * MATERIAL_BONUS[phase][type];
     }
     return eval;
 }
 int32_t Eval::hidden::_evaluate_mobility(const Board &board, Color color, GamePhase phase) {
     int32_t eval = 0;
-    Color opposite = get_opposite_move(color);
+    // Pawns eval
+    bitboard pawns = board.get_pieces(color, PAWN);
+    bitboard free_cells = board.get_free_cells();
 
-    for (PieceType type : PIECES) {
-        eval += count_bits(board.get_pieces(color, type)) * MOBILITY_BONUS[phase][type];
-        eval -= count_bits(board.get_pieces(opposite, type)) * MOBILITY_BONUS[phase][type];
+    bitboard pawns_move, pawns_long_move, pawns_attacks;
+    if (color == WHITE) {
+        pawns_move = (pawns << 8) & free_cells;
+        pawns_long_move = ((pawns_move & RANK_3) << 8) & free_cells;
+        pawns_attacks = ((pawns << 7) & ~FILE_H) | ((pawns << 9) & FILE_A);
+    } else {
+        pawns_move = (pawns >> 8) & free_cells;
+        pawns_long_move = ((pawns_move & RANK_6) >> 8) & free_cells;
+        pawns_attacks = ((pawns >> 7) & ~FILE_A) | ((pawns >> 9) & ~FILE_H);
+    }
+    pawns_attacks &= board.get_side_pieces(get_opposite_move(color));
+    eval += count_bits(pawns_move | pawns_long_move | pawns_attacks) * MOBILITY_BONUS[phase][PAWN];
+
+    for (uint8_t i = 1; i < PIECE_SIZE; ++i) {
+        bitboard pieces = board.get_pieces(color, PIECES[i]);
+        while (pieces) {
+            uint8_t cell = pop_lsb(pieces);
+            bitboard temp = board.get_attacks_for_cell(color, PIECES[i], cell);
+            eval += count_bits(temp) * MOBILITY_BONUS[phase][PIECES[i]];
+        }
     }
     return eval;
 }
@@ -177,9 +196,11 @@ int32_t Eval::hidden::_phase_evaluation(const Board &board, Color color, GamePha
     int32_t eval = 0;
     eval += _get_pawn_eval(board, color, phase);
     eval += _evaluate_material(board, color, phase);
-    eval += _evaluate_mobility(board, color, phase);
 
     Color opposite = get_opposite_move(color);
+    eval += _evaluate_mobility(board, color, phase);
+    eval -= _evaluate_mobility(board, opposite, phase);
+
     eval += _has_bishop_pair(board, color) ? BISHOP_PAIR[phase] : 0;
     eval -= _has_bishop_pair(board, opposite) ? BISHOP_PAIR[phase] : 0;
 
@@ -196,16 +217,6 @@ int32_t Eval::hidden::_phase_evaluation(const Board &board, Color color, GamePha
     return eval;
 }
 
-int32_t Eval::hidden::_fast_phase_evaluation(const Board &board, Color color, GamePhase phase) {
-    int32_t eval = 0;
-    eval += _evaluate_material(board, color, phase);
-    eval += _evaluate_mobility(board, color, phase);
-
-    eval += board.get_pst().get_eval(color, phase);
-    eval -= board.get_pst().get_eval(board.get_opponent_move(), phase);
-    return eval;
-}
-
 int32_t Eval::hidden::_calculate_phase(const Board &board) {
     int32_t phase = TOTAL_PHASE;
     for (uint8_t i = 1; i < PIECE_SIZE-1; ++i) {
@@ -219,20 +230,9 @@ int32_t Eval::get_material(PieceType type) {
     return hidden::MATERIAL_BONUS[OPENING][type];
 }
 
-template int32_t Eval::evaluate<Eval::FAST>(const Board &board, Color color);
-template int32_t Eval::evaluate<Eval::STATIC>(const Board &board, Color color);
-
-// To speed up code and eliminate unnecessary runtime checks
-template<Eval::Evaluation eval>
 int32_t Eval::evaluate(const Board &board, Color color) {
-    int32_t opening, endgame;
-    if (eval == FAST) {
-        opening = hidden::_fast_phase_evaluation(board, color, OPENING);
-        endgame = hidden::_fast_phase_evaluation(board, color, ENDGAME);
-    } else {
-        opening = hidden::_phase_evaluation(board, color, OPENING);
-        endgame = hidden::_phase_evaluation(board, color, ENDGAME);
-    }
+    int32_t opening = hidden::_phase_evaluation(board, color, OPENING);
+    int32_t endgame = hidden::_phase_evaluation(board, color, ENDGAME);
 
     int32_t phase = hidden::_calculate_phase(board);
     return (opening * (hidden::MAX_PHASE - phase) + endgame * phase) / hidden::MAX_PHASE;

@@ -90,6 +90,18 @@ bool operator==(const Board &left, const Board &right) {
 Color Board::get_curr_move()      const { return m_player_move; }
 Color Board::get_opponent_move()  const { return m_player_move == WHITE ? BLACK : WHITE; }
 
+bitboard Board::get_attacks_for_cell(Color color, PieceType type, uint8_t cell) const {
+    bitboard free_cells = ~m_all;
+    switch (type) {
+        case PAWN  : return Attacks::get_pawn_attacks(color, cell) & free_cells;
+        case KNIGHT: return Attacks::get_knight_attacks(cell) & free_cells;
+        case BISHOP: return Attacks::get_bishop_attacks(cell, m_all);
+        case ROOK  : return Attacks::get_rook_attacks(cell, m_all);
+        case QUEEN : return Attacks::get_queen_attacks(cell, m_all);
+        case KING  : return Attacks::get_king_attacks(cell);
+        default    : return ZERO;
+    }
+}
 bitboard Board::get_pieces(Color color, PieceType type)  const { return m_pieces[color][type]; }
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }

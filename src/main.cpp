@@ -1,8 +1,8 @@
+#include "zobrist_hash.hpp"
 #include "rays.hpp"
 #include "mvv_lva.hpp"
 #include "pst.hpp"
 #include "eval.hpp"
-#include "board.hpp"
 #include "uci.hpp"
 #include "pgn_parser.hpp"
 
@@ -17,8 +17,8 @@ int main() {
     Search::init();
 
     // Data take from https://www.ficsgames.org/download.html
-    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317393.pgn");
-    Uci::init("../book.txt");
+    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317502.pgn");
+    Uci::init("book.txt");
     Uci::start();
     return 0;
 }

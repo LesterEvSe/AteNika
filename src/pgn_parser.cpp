@@ -126,7 +126,8 @@ void PGNParser::hidden::second_processing() {
         // We have pattern: number of move, white move, black move. So first move is 3/3 = 1
         int counter = 3;
         while (iss >> command) {
-            if (counter >= 300 || command[0] == '{') break;
+            // 150 - first 50 moves
+            if (counter >= 150 || command[0] == '{') break;
             if (counter++ % 3 == 0) continue;
 
             command = processing(command);

@@ -9,14 +9,8 @@ namespace hidden {
     constexpr bitboard COL[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 
     // For Tapered Eval https://www.chessprogramming.org/Tapered_Eval
-    constexpr uint16_t PHASE_WEIGHTS[6] = {
-        [PAWN] = 0,
-        [KNIGHT] = 1,
-        [BISHOP] = 1,
-        [ROOK] = 2,
-        [QUEEN] = 4,
-        [KING] = 0,
-    };
+    // PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+    constexpr uint16_t PHASE_WEIGHTS[6] = { 0, 1, 1, 2, 4, 0 };
 
     constexpr int32_t MAX_PHASE = 256;
     constexpr int32_t TOTAL_PHASE =
@@ -35,43 +29,17 @@ namespace hidden {
         FILE_G | FILE_H
     };
 
+    // OPENING and ENDGAME
+    // PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
     constexpr int32_t MATERIAL_BONUS[PHASES][PIECE_SIZE] = {
         // Alpha Zero evaluation for classical position in OPENING
-        [OPENING] = {
-            [PAWN] = 100,
-            [KNIGHT] = 305,
-            [BISHOP] = 333,
-            [ROOK] = 563,
-            [QUEEN] = 950,
-            [KING] = 0 // 50'000,
-        },
-        [ENDGAME] = {
-            [PAWN] = 120,
-            [KNIGHT] = 300,
-            [BISHOP] = 310,
-            [ROOK] = 500,
-            [QUEEN] = 960,
-            [KING] = 0 // 50'000,
-        }
+        {100, 305, 333, 563, 950, 0},
+        {120, 300, 310, 500, 960, 0}
     };
 
     constexpr int16_t MOBILITY_BONUS[PHASES][PIECE_SIZE] = {
-        [OPENING] = {
-            [PAWN] = 0,
-            [KNIGHT] = 0,
-            [BISHOP] = 4,
-            [ROOK] = 3,
-            [QUEEN] = 1,
-            [KING] = 0,
-        },
-        [ENDGAME] = {
-            [PAWN] = 1,
-            [KNIGHT] = 1,
-            [BISHOP] = 5,
-            [ROOK] = 2,
-            [QUEEN] = 1,
-            [KING] = 1,
-        }
+        {0, 0, 4, 3, 1, 0},
+        {1, 1, 5, 2, 1, 1}
     };
 
     // constexpr int32_t WEAK_COLOR[PHASES] {-15, 0};
@@ -109,20 +77,12 @@ namespace hidden {
     int32_t _evaluate_mobility(const Board &board, Color color, GamePhase phase);
 
     int32_t _phase_evaluation(const Board &board, Color color, GamePhase phase);
-    int32_t _fast_phase_evaluation(const Board &board, Color color, GamePhase phase);
     int32_t _calculate_phase(const Board &board);
 
 } // hidden
 
-    enum Evaluation {
-        FAST,
-        STATIC
-    };
-
     void init();
     int32_t get_material(PieceType type);
-
-    template<Evaluation eval>
     int32_t evaluate(const Board &board, Color color);
 } // Eval
 

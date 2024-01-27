@@ -3,6 +3,8 @@
 
 #include "board.hpp"
 #include "history.hpp"
+#include "order_info.hpp"
+
 #include <chrono>
 #include <atomic>
 
@@ -14,6 +16,7 @@ namespace hidden {
     extern int32_t _best_score;
     extern Move _best_move;
     extern History _history;
+    extern OrderInfo _order_info;
 
     extern int32_t _time_allocated_ms;
     extern bool _without_time;
@@ -27,6 +30,7 @@ namespace hidden {
     int32_t _negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta);
     int32_t _quiescence_search(const Board &board, int32_t alpha, int32_t beta);
 
+    void log_info(int depth, int elapsed);
     void new_search();
     bool check_limits();
 
@@ -37,7 +41,6 @@ namespace hidden {
     bool set_depth(int16_t n);
 
     Move *get_best_move();
-    int32_t get_score();
     void iter_deep(const History &history, const Board &board, bool debug = false);
 }
 

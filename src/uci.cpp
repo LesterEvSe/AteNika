@@ -5,7 +5,6 @@
 #include <thread>
 #include <atomic>
 #include <exception>
-#include <memory>
 
 namespace {
     std::atomic<bool> lock(false);
@@ -13,7 +12,7 @@ namespace {
 
     Board board;
     History history;
-    std::unique_ptr<Book> book;
+    Book *book;
 
     void go(bool debug) {
         lock = true;
@@ -36,8 +35,9 @@ namespace {
     void create_book(const std::string &book_path) {
         lock = true;
         try {
-            book = std::make_unique<Book>(Book(book_path));
+            book = Book::get_instance(book_path);
         } catch(const std::exception &e) {
+            book = nullptr;
             std::cerr << e.what() << std::endl;
         }
         lock = false;
@@ -45,17 +45,20 @@ namespace {
 }
 
 void Uci::init(std::string book_path) {
-    if (book_path.empty()) return;
-    std::thread new_book([&book_path] {create_book(book_path); });
+    if (book_path.empty()) {
+        book = nullptr;
+        return;
+    }
+    std::thread new_book([book_path] {create_book(book_path); });
     new_book.detach();
+
+    std::cout << "Please wait while the moves database is initialized\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
 void Uci::start() {
-    std::cout << "Please, wait for the initialization of the move database\n\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    while (lock);
-
-    std::cout << "AteNica by LesterEvSe\n";
+    while (lock); // Waiting for book initialization
+    std::cout << "\nAteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
@@ -63,8 +66,7 @@ void Uci::start() {
     std::string input, command;
 
     while(1) {
-        std::cout << "AteNica> ";
-        std::getline(std::cin, input); // check how it works
+        std::getline(std::cin, input);
         std::istringstream iss(input);
         iss >> command;
 
@@ -74,7 +76,7 @@ void Uci::start() {
                 std::cout << (input == "godeb" ? "A move from the book\n" : "");
                 std::cout << "Engine's move: " << book->get_random() << std::endl;
             } else {
-                std::thread search([&command] { go(command == "godeb"); });
+                std::thread search([command] { go(command == "godeb"); });
                 search.detach();
             }
 
@@ -82,6 +84,8 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             history.clear();
+            if (book)
+                book->reset();
 
         } else if (command == "depth" || command == "time") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
@@ -154,15 +158,14 @@ void Uci::start() {
             if (book && book->has_move())
                 book->next_move(command);
 
-            board.make(move);
+            if (history.add_pos(board.get_zob_hash()))
+                board.make(move);
+            else
+                std::cout << "Impossible move. Draw" << std::endl;
             if (board.get_ply() == 0)
                 history.clear();
-            else
-                history.add_pos(board.get_zob_hash());
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }
-    
     while (lock); // waiting for finished the thread
-    std::cout << "See you later!" << std::endl;
 }
