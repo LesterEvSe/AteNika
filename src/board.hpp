@@ -72,6 +72,7 @@ public:
     [[nodiscard]] Color get_curr_move() const;
     [[nodiscard]] Color get_opponent_move() const;
 
+    [[nodiscard]] bitboard get_attacks_for_cell(Color color, PieceType type, uint8_t cell) const;
     [[nodiscard]] bitboard get_pieces(Color color, PieceType type) const;
     [[nodiscard]] bitboard get_side_pieces(Color color) const;
     [[nodiscard]] bitboard get_all_pieces() const;
