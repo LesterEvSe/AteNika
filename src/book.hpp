@@ -1,5 +1,6 @@
 #ifndef ATENIKA_BOOK_HPP
 #define ATENIKA_BOOK_HPP
+#define _CRT_SECURE_NO_WARNINGS // for MSVC compiler error with strerror
 
 #include "trie_node.hpp"
 #include <string>
