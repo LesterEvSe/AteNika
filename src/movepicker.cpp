@@ -4,7 +4,7 @@
 #include "eval.hpp"
 #include "Ttable.hpp"
 
-MovePicker::MovePicker(MoveList *move_list, const Board &board) :
+MovePicker::MovePicker(MoveList *move_list, const Board &board, const OrderInfo &order_info) :
     m_move_list(*move_list), m_curr_node(0)
 {
     ZobristHash zob_hash = board.get_zob_hash();
@@ -38,8 +38,13 @@ MovePicker::MovePicker(MoveList *move_list, const Board &board) :
                 score += 50;
                 break;
             default:
+                score += order_info.get_history(board.get_curr_move(), m_move_list[i].get_from_cell(), m_move_list[i].get_to_cell());
                 break;
         }
+        if (m_move_list[i] == order_info.get_killer1())
+            score += OrderInfo::KILLER1_BONUS;
+        else if (m_move_list[i] == order_info.get_killer2())
+            score += OrderInfo::KILLER2_BONUS;
         m_move_list[i].set_score(score);
     }
 }

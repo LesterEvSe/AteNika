@@ -3,6 +3,8 @@
 
 #include "board.hpp"
 #include "history.hpp"
+#include "order_info.hpp"
+
 #include <chrono>
 #include <atomic>
 
@@ -14,6 +16,7 @@ namespace hidden {
     extern int32_t _best_score;
     extern Move _best_move;
     extern History _history;
+    extern OrderInfo _order_info;
 
     extern int32_t _time_allocated_ms;
     extern bool _without_time;

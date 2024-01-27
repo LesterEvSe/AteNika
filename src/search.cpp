@@ -10,6 +10,7 @@ Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
 int64_t Search::hidden::_nodes;
 History Search::hidden::_history;
+OrderInfo Search::hidden::_order_info;
 
 int32_t Search::hidden::_time_allocated_ms;
 bool Search::hidden::_without_time;
@@ -25,6 +26,7 @@ void Search::init() {
     hidden::_best_score = 0;
     hidden::_best_move = Move();
     hidden::_history = History();
+    hidden::_order_info = OrderInfo();
 
     hidden::_time_allocated_ms = 3 * 1000;
     hidden::_without_time = false;
@@ -41,6 +43,7 @@ void Search::hidden::new_search() {
     _best_score = 0;
     _best_move = Move();
     _stop = false;
+    _order_info = OrderInfo();
 }
 
 bool Search::hidden::check_limits() {
@@ -95,22 +98,35 @@ void Search::iter_deep(const History &history, const Board &board, bool debug) {
             hidden::_best_score = board.king_in_check(board.get_curr_move()) ? -INF : 0;
             return;
         }
-        MovePicker move_picker = MovePicker(&legal_moves, board);
+        MovePicker move_picker = MovePicker(&legal_moves, board, hidden::_order_info);
 
         int32_t alpha = -INF;
         int32_t beta = INF;
 
         Move curr_best_move = legal_moves[0];
+        bool full_window = true;
+
         while (move_picker.has_next()) {
             Move move = move_picker.get_next();
             Board temp = board;
             temp.make(move);
-            int32_t score = -hidden::_negamax(temp, i, -beta, -alpha);
+
+            ++hidden::_order_info;
+            int32_t score;
+            if (full_window)
+                score = -hidden::_negamax(temp, i, -beta, -alpha);
+            else {
+                score = -hidden::_negamax(temp, i, -alpha - 1, -alpha);
+                if (score > alpha)
+                    score = -hidden::_negamax(temp, i, -beta, -alpha);
+            }
+            --hidden::_order_info;
 
             if (hidden::check_limits())
                 break;
 
             if (score > alpha) {
+                full_window = false;
                 alpha = score;
                 curr_best_move = move;
 
@@ -180,7 +196,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     if ((depth + king_threat) <= 0)
         return _quiescence_search(board, alpha, beta);
 
-    MovePicker move_picker = MovePicker(&legal_moves, board);
+    MovePicker move_picker = MovePicker(&legal_moves, board, _order_info);
     Move curr_best_move = legal_moves[0];
     int32_t start_alpha = alpha;
     bool full_window = true;
@@ -190,6 +206,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
         Board temp = board;
         temp.make(move);
 
+        ++_order_info;
         int32_t score;
         if (full_window)
             score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
@@ -198,7 +215,13 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
             if (score > alpha)
                 score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
         }
+        --_order_info;
+
         if (score >= beta) {
+            _order_info.update_killers(move);
+            if (!(move.get_flag() & Move::CAPTURE))
+                _order_info.inc_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(), depth);
+
             TTEntry entry = TTEntry(move, score, depth, LOWER);
             Transposition::set(temp.get_zob_hash(), entry);
             return beta;

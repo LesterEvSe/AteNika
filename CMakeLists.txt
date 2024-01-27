@@ -38,6 +38,7 @@ set(PROJECT_SOURCES
     src/pgn_parser.cpp
     src/book.cpp
     src/trie_node.cpp
+    src/order_info.cpp
 )
 
 set(PROJECT_HEADERS
