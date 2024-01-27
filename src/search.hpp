@@ -30,6 +30,7 @@ namespace hidden {
     int32_t _negamax(const Board &board, int16_t depth, int32_t alpha, int32_t beta);
     int32_t _quiescence_search(const Board &board, int32_t alpha, int32_t beta);
 
+    void log_info(int depth, int elapsed);
     void new_search();
     bool check_limits();
 
@@ -40,7 +41,6 @@ namespace hidden {
     bool set_depth(int16_t n);
 
     Move *get_best_move();
-    int32_t get_score();
     void iter_deep(const History &history, const Board &board, bool debug = false);
 }
 

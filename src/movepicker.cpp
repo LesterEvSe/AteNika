@@ -23,19 +23,12 @@ MovePicker::MovePicker(MoveList *move_list, const Board &board, const OrderInfo 
         switch (m_move_list[i].get_flag()) {
             case Move::CAPTURE_PROMOTION:
                 score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());
+            // planned fallthrough
             case Move::CAPTURE:
                 score += MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_move_piece()][m_move_list[i].get_captured_piece()];
-                m_move_list[i].set_score(score);
                 break;
             case Move::PROMOTION:
                 score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());
-                m_move_list[i].set_score(score);
-                break;
-            case Move::KSIDE_CASTLING:
-                score += 50;
-                break;
-            case Move::QSIDE_CASTLING:
-                score += 50;
                 break;
             default:
                 score += order_info.get_history(board.get_curr_move(), m_move_list[i].get_from_cell(), m_move_list[i].get_to_cell());

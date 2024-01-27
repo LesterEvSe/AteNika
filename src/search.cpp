@@ -34,6 +34,25 @@ void Search::init() {
     hidden::_seeking_depth = 20;
 }
 
+void Search::hidden::log_info(int depth, int elapsed) {
+    // cp - centi-pawns
+    // nps - nodes per second;
+
+    std::string score;
+    if (_best_score == INF)
+        score = "mate " + std::to_string(_best_score);
+    else if (_best_score == -INF)
+        score = "mate -" + std::to_string(_best_score);
+    else
+        score = std::to_string(_best_score);
+
+    // Sometimes I have an error in Linux
+    // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
+    // It's divide by zero error, so I increment elapsed ms, to avoid this problem
+    std::cout << depth << " nodes: " << (long long)_nodes << "; elapsed: " << elapsed << "ms; ";
+    std::cout << "cp: " << score << "; nps: " << (long long)(_nodes*1000 / ++elapsed) << std::endl;
+}
+
 void Search::stop() {
     hidden::_stop = true;
 }
@@ -60,10 +79,6 @@ bool Search::hidden::check_limits() {
 
 Move *Search::get_best_move() {
     return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
-}
-
-int32_t Search::get_score() {
-    return hidden::_best_score;
 }
 
 bool Search::set_time(int32_t time_allocated_ms) {
@@ -138,11 +153,10 @@ void Search::iter_deep(const History &history, const Board &board, bool debug) {
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
-        if (debug)
-            std::cout << (int)i << " nodes: " << (long long)hidden::_nodes << "; elapsed: " << (int)elapsed << "ms" << std::endl;
-
         if (hidden::_stop)
             break;
+        if (debug)
+            hidden::log_info(i, elapsed);
 
         TTEntry entry = TTEntry(curr_best_move, alpha, i, EXACT);
         Transposition::set(board.get_zob_hash(), entry);

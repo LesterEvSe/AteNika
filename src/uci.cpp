@@ -5,7 +5,6 @@
 #include <thread>
 #include <atomic>
 #include <exception>
-#include <memory>
 
 namespace {
     std::atomic<bool> lock(false);
@@ -62,12 +61,11 @@ void Uci::start() {
     std::cout << "\nAteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    board = Board();
+    board = Board("8/8/8/3k4/1B2B3/7K/8/8 b - - 0");
     history = History();
     std::string input, command;
 
     while(1) {
-        std::cout << "AteNica> ";
         std::getline(std::cin, input);
         std::istringstream iss(input);
         iss >> command;
@@ -162,7 +160,7 @@ void Uci::start() {
             if (history.add_pos(board.get_zob_hash()))
                 board.make(move);
             else
-                std::cout << "Draw" << std::endl;
+                std::cout << "Impossible move. Draw" << std::endl;
             if (board.get_ply() == 0)
                 history.clear();
         } else
@@ -171,8 +169,5 @@ void Uci::start() {
     
     while (lock); // waiting for finished the thread
     std::cout << "See you later!" << std::endl;
-
-    #ifdef _MSC_VER
     std::this_thread::sleep_for(std::chrono::seconds(5));
-    #endif
 }
