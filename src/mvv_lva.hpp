@@ -8,8 +8,8 @@ namespace MvvLva {
     // LVA - Least Valuable Attacker
     extern uint8_t mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
 
-    constexpr int32_t CAPTURE_BONUS = 4000;
-    constexpr int32_t PROMOTION_BONUS = 3000;
+    constexpr int32_t CAPTURE_BONUS = 2000;
+    constexpr int32_t PROMOTION_BONUS = 1000;
 
     void init();
 }

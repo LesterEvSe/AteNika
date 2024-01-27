@@ -217,17 +217,6 @@ int32_t Eval::hidden::_phase_evaluation(const Board &board, Color color, GamePha
     return eval;
 }
 
-int32_t Eval::hidden::_fast_phase_evaluation(const Board &board, Color color, GamePhase phase) {
-    int32_t eval = 0;
-    eval += _evaluate_material(board, color, phase);
-    eval += _evaluate_mobility(board, color, phase);
-    eval -= _evaluate_mobility(board, get_opposite_move(color), phase);
-
-    eval += board.get_pst().get_eval(color, phase);
-    eval -= board.get_pst().get_eval(board.get_opponent_move(), phase);
-    return eval;
-}
-
 int32_t Eval::hidden::_calculate_phase(const Board &board) {
     int32_t phase = TOTAL_PHASE;
     for (uint8_t i = 1; i < PIECE_SIZE-1; ++i) {
@@ -241,20 +230,9 @@ int32_t Eval::get_material(PieceType type) {
     return hidden::MATERIAL_BONUS[OPENING][type];
 }
 
-template int32_t Eval::evaluate<Eval::FAST>(const Board &board, Color color);
-template int32_t Eval::evaluate<Eval::STATIC>(const Board &board, Color color);
-
-// To speed up code and eliminate unnecessary runtime checks
-template<Eval::Evaluation eval>
 int32_t Eval::evaluate(const Board &board, Color color) {
-    int32_t opening, endgame;
-    if (eval == FAST) {
-        opening = hidden::_fast_phase_evaluation(board, color, OPENING);
-        endgame = hidden::_fast_phase_evaluation(board, color, ENDGAME);
-    } else {
-        opening = hidden::_phase_evaluation(board, color, OPENING);
-        endgame = hidden::_phase_evaluation(board, color, ENDGAME);
-    }
+    int32_t opening = hidden::_phase_evaluation(board, color, OPENING);
+    int32_t endgame = hidden::_phase_evaluation(board, color, ENDGAME);
 
     int32_t phase = hidden::_calculate_phase(board);
     return (opening * (hidden::MAX_PHASE - phase) + endgame * phase) / hidden::MAX_PHASE;

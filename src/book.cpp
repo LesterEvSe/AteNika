@@ -34,7 +34,7 @@ Book::Book(const std::string &path) : head(nullptr) {
 
             // The depth is great enough that it could be considered the best move ever
             if (Transposition::in_table(key)) continue;
-            TTEntry entry = TTEntry(move, Eval::evaluate<Eval::STATIC>(board, board.get_curr_move()), 300, EXACT);
+            TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
             Transposition::set(board.get_zob_hash(), entry);
         }
     }

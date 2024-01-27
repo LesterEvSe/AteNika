@@ -159,11 +159,12 @@ void Uci::start() {
             if (book && book->has_move())
                 book->next_move(command);
 
-            board.make(move);
+            if (history.add_pos(board.get_zob_hash()))
+                board.make(move);
+            else
+                std::cout << "Draw" << std::endl;
             if (board.get_ply() == 0)
                 history.clear();
-            else
-                history.add_pos(board.get_zob_hash());
         } else
             std::cout << "Incorrect command, try again" << std::endl;
     }

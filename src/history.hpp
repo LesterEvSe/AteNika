@@ -12,7 +12,7 @@ public:
     History() : m_size(0) {}
     void operator=(const History &history);
 
-    void add_pos(const ZobristHash &zob_hash);
+    bool add_pos(const ZobristHash &zob_hash);
     void clear();
     [[nodiscard]] bool rule_of_threes(const ZobristHash &zob_hash) const;
 };

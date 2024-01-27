@@ -183,13 +183,21 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
     MovePicker move_picker = MovePicker(&legal_moves, board);
     Move curr_best_move = legal_moves[0];
     int32_t start_alpha = alpha;
+    bool full_window = true;
 
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        int32_t score;
+        if (full_window)
+            score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        else {
+            score = -_negamax(temp, depth - 1 + king_threat, -alpha - 1, -alpha);
+            if (score > alpha)
+                score = -_negamax(temp, depth - 1 + king_threat, -beta, -alpha);
+        }
         if (score >= beta) {
             TTEntry entry = TTEntry(move, score, depth, LOWER);
             Transposition::set(temp.get_zob_hash(), entry);
@@ -198,6 +206,7 @@ int32_t Search::hidden::_negamax(const Board &board, int16_t depth, int32_t alph
 
         // new best move
         if (score > alpha) {
+            full_window = false;
             alpha = score;
             curr_best_move = move;
         }
@@ -219,7 +228,7 @@ int32_t Search::hidden::_quiescence_search(const Board &board, int32_t alpha, in
     if (legal_moves.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
-    int32_t static_eval = Eval::evaluate<Eval::STATIC>(board, board.get_curr_move());
+    int32_t static_eval = Eval::evaluate(board, board.get_curr_move());
     ++_nodes;
 
     QMovePicker q_move_picker = QMovePicker(&legal_moves);

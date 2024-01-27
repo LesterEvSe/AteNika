@@ -13,15 +13,34 @@ MovePicker::MovePicker(MoveList *move_list, const Board &board) :
     if (Transposition::in_table(zob_hash))
         best_move = Transposition::get(zob_hash).get_best_move();
 
-    Color curr = board.get_curr_move();
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
-        if (best_move == m_move_list[i])
+        if (best_move == m_move_list[i]) {
             m_move_list[i].set_score(INF);
-        else {
-            int32_t extra = m_move_list[i].get_flag() == Move::QSIDE_CASTLING ||
-                m_move_list[i].get_flag() == Move::KSIDE_CASTLING ? 50 : 0;
-            m_move_list[i].set_score(Eval::evaluate<Eval::FAST>(board, curr) + extra);
+            continue;
         }
+
+        int32_t score = 0;
+        switch (m_move_list[i].get_flag()) {
+            case Move::CAPTURE_PROMOTION:
+                score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());
+            case Move::CAPTURE:
+                score += MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_move_piece()][m_move_list[i].get_captured_piece()];
+                m_move_list[i].set_score(score);
+                break;
+            case Move::PROMOTION:
+                score += MvvLva::PROMOTION_BONUS + Eval::get_material(m_move_list[i].get_promotion_piece());
+                m_move_list[i].set_score(score);
+                break;
+            case Move::KSIDE_CASTLING:
+                score += 50;
+                break;
+            case Move::QSIDE_CASTLING:
+                score += 50;
+                break;
+            default:
+                break;
+        }
+        m_move_list[i].set_score(score);
     }
 }
 
