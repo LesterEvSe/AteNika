@@ -17,8 +17,11 @@ MovePicker::MovePicker(MoveList *move_list, const Board &board) :
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
         if (best_move == m_move_list[i])
             m_move_list[i].set_score(INF);
-        else
-            m_move_list[i].set_score(Eval::evaluate<Eval::FAST>(board, curr));
+        else {
+            int32_t extra = m_move_list[i].get_flag() == Move::QSIDE_CASTLING ||
+                m_move_list[i].get_flag() == Move::KSIDE_CASTLING ? 50 : 0;
+            m_move_list[i].set_score(Eval::evaluate<Eval::FAST>(board, curr) + extra);
+        }
     }
 }
 

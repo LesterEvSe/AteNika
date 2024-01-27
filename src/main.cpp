@@ -1,8 +1,8 @@
+#include "zobrist_hash.hpp"
 #include "rays.hpp"
 #include "mvv_lva.hpp"
 #include "pst.hpp"
 #include "eval.hpp"
-#include "board.hpp"
 #include "uci.hpp"
 #include "pgn_parser.hpp"
 

@@ -13,7 +13,7 @@ namespace {
 
     Board board;
     History history;
-    std::unique_ptr<Book> book;
+    Book *book;
 
     void go(bool debug) {
         lock = true;
@@ -36,9 +36,10 @@ namespace {
     void create_book(const std::string &book_path) {
         lock = true;
         try {
-            book = std::make_unique<Book>(Book(book_path));
+            book = Book::get_instance(book_path);
         } catch(const std::exception &e) {
             std::cerr << e.what() << std::endl;
+            book = nullptr;
         }
         lock = false;
     }
@@ -85,6 +86,7 @@ void Uci::start() {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
             history.clear();
+            book->reset();
 
         } else if (command == "depth" || command == "time") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }

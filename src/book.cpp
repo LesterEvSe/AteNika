@@ -13,7 +13,7 @@ Book::Book(const std::string &path) : head(nullptr) {
     if (!file.is_open())
         throw std::runtime_error(path + " " + strerror(errno));
 
-    head = std::make_shared<TrieNode>();
+    head = curr = std::make_shared<TrieNode>();
     std::string line;
 
     while (std::getline(file, line)) {
@@ -21,19 +21,19 @@ Book::Book(const std::string &path) : head(nullptr) {
         std::string command;
 
         Board board = Board();
-        std::shared_ptr<TrieNode> curr = head;
+        std::shared_ptr<TrieNode> node = head;
 
         while (iss >> command) {
             Move move = Move(board, command);
-            ZobristHash temp = board.get_zob_hash();
+            ZobristHash key = board.get_zob_hash();
             board.make(move);
 
-            if (!(*curr)[command])
-                curr->add(command);
-            curr = (*curr)[command];
+            if (!(*node)[command])
+                node->add(command);
+            node = (*node)[command];
 
             // The depth is great enough that it could be considered the best move ever
-            if (Transposition::in_table(temp)) continue;
+            if (Transposition::in_table(key)) continue;
             TTEntry entry = TTEntry(move, Eval::evaluate<Eval::STATIC>(board, board.get_curr_move()), 300, EXACT);
             Transposition::set(board.get_zob_hash(), entry);
         }
@@ -41,6 +41,20 @@ Book::Book(const std::string &path) : head(nullptr) {
     file.close();
 }
 
-bool Book::has_move() const                     { return head != nullptr;    }
-void Book::next_move(const std::string &move)   { head = (*head)[move];      }
-std::string Book::get_random() const            { return head->get_random(); }
+Book *Book::get_instance(const std::string &path) {
+    static Book instance = Book(path);
+    return &instance;
+}
+
+void Book::reset() { 
+    curr = head;
+}
+bool Book::has_move() const { 
+    return curr != nullptr;
+}
+void Book::next_move(const std::string &move) {
+    curr = (*curr)[move];
+}
+std::string Book::get_random() const {
+    return curr->get_random();
+}
