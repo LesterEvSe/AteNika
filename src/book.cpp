@@ -24,18 +24,17 @@ Book::Book(const std::string &path) : head(nullptr) {
         std::shared_ptr<TrieNode> node = head;
 
         while (iss >> command) {
-            Move move = Move(board, command);
-            ZobristHash key = board.get_zob_hash();
-            board.make(move);
-
             if (!(*node)[command])
                 node->add(command);
             node = (*node)[command];
 
-            // The depth is great enough that it could be considered the best move ever
-            if (Transposition::in_table(key)) continue;
-            TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
-            Transposition::set(board.get_zob_hash(), entry);
+            Move move = Move(board, command);
+            if (!Transposition::in_table(board.get_zob_hash())) {
+                // The depth is great enough that it could be considered the best move ever
+                TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
+                Transposition::set(board.get_zob_hash(), entry);
+            }
+            board.make(move);
         }
     }
     file.close();

@@ -31,17 +31,6 @@ namespace {
             std::cout << "\nEngine's move: " << static_cast<std::string>(*Search::get_best_move()) << std::endl;
         lock = false;
     }
-
-    void create_book(const std::string &book_path) {
-        lock = true;
-        try {
-            book = Book::get_instance(book_path);
-        } catch(const std::exception &e) {
-            book = nullptr;
-            std::cerr << e.what() << std::endl;
-        }
-        lock = false;
-    }
 }
 
 void Uci::init(std::string book_path) {
@@ -49,15 +38,17 @@ void Uci::init(std::string book_path) {
         book = nullptr;
         return;
     }
-    std::thread new_book([book_path] {create_book(book_path); });
-    new_book.detach();
-
     std::cout << "Please wait while the moves database is initialized\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    try {
+        book = Book::get_instance(book_path);
+    } catch(const std::exception &e) {
+        book = nullptr;
+        std::cout << e.what() << std::endl;
+        std::cout << "Starting without book" << std::endl;
+    }
 }
 
 void Uci::start() {
-    while (lock); // Waiting for book initialization
     std::cout << "\nAteNica by LesterEvSe\n";
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
