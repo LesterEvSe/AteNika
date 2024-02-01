@@ -62,7 +62,7 @@ Board::Board(std::string short_fen) {
     // Order is important!
     // m_hash and m_pst are initialized, after the rest of the Board fields are initialized
     m_hash.set_hash(*this);
-    m_pst.set_score(*this);
+//    m_pst.set_score(*this);
 }
 
 void Board::update_bitboards() {
@@ -108,7 +108,6 @@ bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
 
 uint8_t Board::get_ply()          const { return m_ply;  }
-PieceTables Board::get_pst()      const { return m_pst;  }
 ZobristHash Board::get_zob_hash() const { return m_hash; }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
 
@@ -211,13 +210,13 @@ bool Board::under_attack(Color defender, uint8_t cell) const {
 }
 
 void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
-    m_pst.add_piece(color, piece, cell);
+//    m_pst.add_piece(color, piece, cell);
     set1(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
 
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
-    m_pst.remove_piece(color, piece, cell);
+//    m_pst.remove_piece(color, piece, cell);
     set0(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }

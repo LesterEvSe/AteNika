@@ -21,24 +21,14 @@ set(PROJECT_SOURCES
     src/board.cpp
     src/move.cpp
     src/movegen.cpp
-    src/movepicker.cpp
-    src/rays.cpp
+        src/rays.cpp
     src/uint96.cpp
     src/zobrist_hash.cpp
     src/move_list.cpp
-    src/eval.cpp
-    src/pst.cpp
-    src/Ttable.cpp
-    src/search.cpp
-    src/history.cpp
-    src/bitfunc.cpp
-    src/mvv_lva.cpp
-    src/quiescence_movepick.cpp
-    src/uci.cpp
-    src/pgn_parser.cpp
+        src/bitfunc.cpp
+        src/pgn_parser.cpp
     src/book.cpp
     src/trie_node.cpp
-    src/order_info.cpp
 )
 
 set(PROJECT_HEADERS
@@ -47,10 +37,10 @@ set(PROJECT_HEADERS
 )
 
 # Build application by default
-option(BUILD_TESTS "Build tests" OFF)
-if (NOT BUILD_TESTS)
+#option(BUILD_TESTS "Build tests" OFF)
+#if (NOT BUILD_TESTS)
     add_executable(AteNika src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
-else()
+#else()
     # Comment this command, if you enter custom path
     execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -74,4 +64,4 @@ else()
         ${GTEST_ROOT}/build/lib/libgtest.a
         ${GTEST_ROOT}/build/lib/libgtest_main.a
     )
-endif()
+#endif()

@@ -1,8 +1,8 @@
 #include "book.hpp"
 #include "board.hpp"
 #include "move.hpp"
-#include "Ttable.hpp"
-#include "eval.hpp"
+//#include "Ttable.hpp"
+//#include "eval.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -29,11 +29,11 @@ Book::Book(const std::string &path) : head(nullptr) {
             node = (*node)[command];
 
             Move move = Move(board, command);
-            if (!Transposition::in_table(board.get_zob_hash())) {
-                // The depth is great enough that it could be considered the best move ever
-                TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
-                Transposition::set(board.get_zob_hash(), entry);
-            }
+//            if (!Transposition::in_table(board.get_zob_hash())) {
+//                // The depth is great enough that it could be considered the best move ever
+//                TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
+//                Transposition::set(board.get_zob_hash(), entry);
+//            }
             board.make(move);
         }
     }
