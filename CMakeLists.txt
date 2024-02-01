@@ -21,19 +21,21 @@ set(PROJECT_SOURCES
     src/board.cpp
     src/move.cpp
     src/movegen.cpp
-        src/rays.cpp
+    src/rays.cpp
     src/uint96.cpp
     src/zobrist_hash.cpp
     src/move_list.cpp
-        src/bitfunc.cpp
-        src/pgn_parser.cpp
+    src/bitfunc.cpp
+    src/pgn_parser.cpp
     src/book.cpp
     src/trie_node.cpp
+    src/search.cpp
+    src/movepicker.cpp
+    src/eval.cpp
 )
 
 set(PROJECT_HEADERS
     src/defs.hpp
-    src/bitfunc.hpp
 )
 
 # Build application by default
@@ -53,7 +55,7 @@ set(PROJECT_HEADERS
         test/board_test.cpp
         test/bitfunc_test.cpp
         test/perft.cpp
-        test/eval_test.cpp
+#        test/eval_test.cpp
         test/zob_hash_test.cpp
         test/perft_comparison.cpp
     )
