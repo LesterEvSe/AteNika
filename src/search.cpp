@@ -4,27 +4,32 @@
 #include "eval.hpp"
 
 Move Search::hidden::_best_move;
-int32_t Search::hidden::_best_score;
 
-int32_t Search::hidden::_nodes;
+int16_t Search::hidden::_depth;
+int64_t Search::hidden::_nodes;
+std::chrono::time_point<std::chrono::steady_clock> Search::hidden::_start;
 
-/*
-int NegaMax(int depth, int alpha, int beta, int node, int color) {
-    if (depth < 1) {
-        ++NegaMaxNodes;
-        return color * nums[node];
-    }
-
-    for (int i = 0; i < 2; ++i) {
-        int score = -NegaMax(depth - 1, -beta, -alpha, (node << 1) | i, -color);
-        if (score >= beta)
-            return beta;
-        if (score > alpha)
-            alpha = score;
-    }
-    return alpha;
+void Search::init() {
+    hidden::_depth = 10;
 }
-*/
+
+void Search::hidden::_debug(int depth, int best_score, int elapsed) {
+    // cp - centi-pawns
+    // nps - nodes per second
+
+    std::string score;
+    if (best_score == INF)
+        score = "mate ";
+    else if (best_score == -INF)
+        score = "mate -";
+    score += std::to_string(best_score);
+
+    // Sometimes I have an error in Linux
+    // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
+    // It's divide by zero error, so I increment elapsed ms, to avoid this problem
+    std::cout << depth << " nodes: " << (long long)_nodes << "; elapsed: " << elapsed << "ms; ";
+    std::cout << "cp: " << score << "; nps: " << (long long)(_nodes*1000 / ++elapsed) << std::endl;
+}
 
 int32_t Search::hidden::_negamax(Board &board, uint16_t depth, int32_t alpha, int32_t beta) {
     ++_nodes;
@@ -39,7 +44,6 @@ int32_t Search::hidden::_negamax(Board &board, uint16_t depth, int32_t alpha, in
         return board.king_in_check(board.get_curr_move()) ? -INF : 0;
 
     MovePicker move_picker = MovePicker(&move_list);
-
     Move curr_best = Move();
 
     while (move_picker.has_next()) {
@@ -62,10 +66,17 @@ int32_t Search::hidden::_negamax(Board &board, uint16_t depth, int32_t alpha, in
     return alpha;
 }
 
-void Search::iter_deep(Board &board) {
+void Search::iter_deep(Board &board, bool debug) {
     hidden::_best_move = Move();
-    hidden::_nodes = hidden::_best_score = 0;
+    hidden::_nodes = 0;
+    hidden::_start = std::chrono::steady_clock::now();
 
-    hidden::_best_score = hidden::_negamax(board, 7, -INF, INF);
-    std::cout << (std::string)hidden::_best_move << ' ' << (int)hidden::_nodes << std::endl;
+    for (int16_t i = 1; i <= hidden::_depth; ++i) {
+        int32_t best_score = hidden::_negamax(board, i, -INF, INF);
+
+        int32_t elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+        if (debug)
+            hidden::_debug(i, best_score, elapsed);
+    }
 }

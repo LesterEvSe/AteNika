@@ -16,10 +16,11 @@ int main() {
     ZobristHash::init();
     Rays::init();
     Attacks::init(); // Must be init after Rays
+    Search::init();
 
     Board board = Board();
     std::cout << board;
-    Search::iter_deep(board);
+    Search::iter_deep(board, true);
 
 //    MvvLva::init();
 //    PieceTables::init();
