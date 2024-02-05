@@ -13,8 +13,8 @@ namespace hidden {
     extern int64_t _nodes;
     extern std::chrono::time_point<std::chrono::steady_clock> _start;
 
-    void _debug(int depth, int best_score, int elapsed);
-    int32_t _negamax(Board &board, uint16_t depth, int32_t alpha, int32_t beta);
+    void _debug(const Board &board, int depth, int best_score, int elapsed);
+    int32_t _negamax(Board &board, int16_t ply, int16_t depth, int32_t alpha, int32_t beta);
 
 } // hidden
 

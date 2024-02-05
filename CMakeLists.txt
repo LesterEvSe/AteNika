@@ -32,6 +32,7 @@ set(PROJECT_SOURCES
     src/search.cpp
     src/movepicker.cpp
     src/eval.cpp
+    src/ttable.cpp
 )
 
 set(PROJECT_HEADERS
