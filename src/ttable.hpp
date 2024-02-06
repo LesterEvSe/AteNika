@@ -13,6 +13,7 @@ namespace hidden {
 
 } // hidden
     void add(const ZobristHash &zob, Move move);
+    bool in_table(const ZobristHash &zob);
     Move get(const ZobristHash &zob);
 } // Ttable
 

@@ -2,6 +2,7 @@
 #include "rays.hpp"
 #include "board.hpp"
 #include "movegen.hpp"
+#include "movepicker.hpp"
 
 // using Stockfish 16 to calculation the expected value
 /**
