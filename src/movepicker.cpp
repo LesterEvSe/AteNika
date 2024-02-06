@@ -1,4 +1,5 @@
 #include "movepicker.hpp"
+#include "mvv_lva.hpp"
 
 MovePicker::MovePicker(MoveList *move_list):
     m_move_list(*move_list), m_curr_node(0)
@@ -6,11 +7,18 @@ MovePicker::MovePicker(MoveList *move_list):
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
         int32_t score;
         switch (m_move_list[i].get_flag()) {
-            case Move::CAPTURE: score = 200; break;
-            case Move::PROMOTION: score = 100; break;
-            case Move::KSIDE_CASTLING: score = 50; break;
-            case Move::QSIDE_CASTLING: score = 50; break;
-            default: score = 0; break;
+            case Move::CAPTURE_PROMOTION:
+                score = MvvLva::PROMOTION_BONUS;
+            case Move::EN_PASSANT:
+            case Move::CAPTURE:
+                score += MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
+                break;
+            case Move::PROMOTION:
+                score = MvvLva::PROMOTION_BONUS;
+                break;
+            default: // The castling will be here for now
+                score = 0; // score + add for quiet move
+                break;
         }
         m_move_list[i].set_score(score);
     }

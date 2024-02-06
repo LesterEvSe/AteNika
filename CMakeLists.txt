@@ -33,6 +33,7 @@ set(PROJECT_SOURCES
     src/movepicker.cpp
     src/eval.cpp
     src/ttable.cpp
+    src/mvv_lva.cpp
 )
 
 set(PROJECT_HEADERS
@@ -60,7 +61,7 @@ set(PROJECT_HEADERS
         test/zob_hash_test.cpp
         test/perft_comparison.cpp
         test/movepicker_test.cpp
-            test/mate_test.cpp
+        test/mate_test.cpp
     )
     add_executable(AteNikaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 

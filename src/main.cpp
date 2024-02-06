@@ -2,7 +2,7 @@
 #include "zobrist_hash.hpp"
 #include "rays.hpp"
 #include "attacks.hpp"
-//#include "mvv_lva.hpp"
+#include "mvv_lva.hpp"
 //#include "pst.hpp"
 //#include "eval.hpp"
 //#include "uci.hpp"
@@ -16,9 +16,9 @@ int main() {
     ZobristHash::init();
     Rays::init();
     Attacks::init(); // Must be init after Rays
+    MvvLva::init();
     Search::init();
 
-    // TODO Deal with print PV nodes, PV search and similar stuff
     Board board = Board();
     board.display_all();
     Search::iter_deep(board, true);

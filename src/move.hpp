@@ -6,7 +6,7 @@
 
 class Board;
 
-// Used only 4 bytes
+// Used only 8 bytes
 class Move {
 public:
     // Order is important!
