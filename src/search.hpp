@@ -13,8 +13,8 @@ namespace hidden {
     extern int16_t _depth;
     extern bool _stop;
 
-    extern float _fh; // cut-off at n move. The moves are accumulating
-    extern float _fhf; // cut-off at first move
+    extern int64_t _fh; // cut-off at n move. The moves are accumulating
+    extern int64_t _fhf; // cut-off at first move
 
     // Search
     extern Move _best_move;
@@ -32,6 +32,8 @@ namespace hidden {
     void init();
     std::string get_mate();
     Move get_best_move();
+
+    bool set_depth(int16_t depth);
 
     void iter_deep(Board &board, bool debug);
 } // Search

@@ -9,8 +9,8 @@ int32_t Search::hidden::_ms_allocated;
 int16_t Search::hidden::_depth;
 bool Search::hidden::_stop;
 
-float Search::hidden::_fh; // fail high
-float Search::hidden::_fhf; // fail high first
+int64_t Search::hidden::_fh; // fail high
+int64_t Search::hidden::_fhf; // fail high first
 
 Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
@@ -32,6 +32,13 @@ std::string Search::get_mate() {
     return hidden::_mate;
 }
 
+bool Search::set_depth(int16_t depth) {
+    if (depth < 0 || depth > 100) return false;
+    hidden::_depth = depth;
+    return true;
+}
+
+
 void Search::hidden::_debug(const Board &board, int depth, int elapsed)
 {
     std::string score;
@@ -42,14 +49,14 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
 
     // cp  - centi-pawns
     // nps - nodes per second
-    // moc - move ordering coefficient TODO delete later
+    // moq - move ordering quality TODO delete later
 
     // Sometimes I have an error in Linux
     // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
     // It's divide by zero error, so I increment elapsed ms, to avoid this problem
     std::cout << depth << " nodes " << (long long)_nodes << " time " << elapsed << "ms ";
-    std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed) << " moc ";
-    std::cout << std::fixed << std::setprecision(2) << _fhf/_fh << " pv ";
+    std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed) << " moq ";
+    std::cout << (int)(100.0 * _fhf/_fh) << "% pv ";
 
     Board temp = board;
     // Set a counter, so we don't go over the limit
@@ -93,31 +100,41 @@ int32_t Search::hidden::_negamax(Board &board, int16_t ply, int16_t depth, int32
     Move curr_best = Move();
     int32_t old_alpha = alpha;
 
-    bool first = true;
+    // PVS - Principal Variation Search
+    // https://www.chessprogramming.org/Principal_Variation_Search
+    bool full_window = true;
+    bool first_move = true;
     ++ply;
+
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(temp, ply, depth-1, -beta, -alpha);
+        int32_t score;
+        if (full_window)
+            score = -_negamax(temp, ply, depth-1, -beta, -alpha);
+        else {
+            score = -_negamax(temp, ply, depth-1, -alpha-1, -alpha);
+            if (score > alpha)
+                score = -_negamax(temp, ply, depth-1, -beta, -alpha);
+        }
 
         if (score > alpha) {
             if (score >= beta) {
-                if (first) ++_fhf;
+                if (first_move) ++_fhf;
                 ++_fh;
                 return beta;
             }
             alpha = score;
             curr_best = move;
+            full_window = false;
         }
-        first = false;
+        first_move = false;
     }
 
     if (alpha != old_alpha)
         Ttable::add(board.get_zob_hash(), curr_best);
-
-    // here saving move in HashTable
     return alpha;
 }
 

@@ -13,6 +13,7 @@ public:
         Rays::init();
         Attacks::init();
         Search::init();
+        Search::set_depth(16);
     }
 };
 
@@ -38,6 +39,7 @@ TEST_F(MateFixture, mate_in_3_vice_lesson_60) {
     // Assert
     ASSERT_EQ("WM3", Search::get_mate());
 }
+
 
 // The tests are taken from https://github.com/TerjeKir/EngineTests/tree/master/testfiles
 
@@ -72,6 +74,7 @@ TEST_F(MateFixture, white_mate_in_one_5) {
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
+
 // Black Mate in 1
 TEST_F(MateFixture, black_mate_in_one_1) {
     Board board = Board("r3k1nr/p1p2p1p/2pP4/8/7q/7b/PPPP3P/RNBQ2KR b kq - 0");
@@ -103,13 +106,14 @@ TEST_F(MateFixture, black_mate_in_one_5) {
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
+
 // White Mate in 3
 TEST_F(MateFixture, white_mate_in_two_1) {
     Board board = Board("1k3r2/4R1Q1/p2q1r2/8/2p1Bb2/5R2/pP5P/K7 w - - 0");
-    std::cout << board;
-    Search::iter_deep(board, true);
+    Search::iter_deep(board, false);
     ASSERT_EQ("WM3", Search::get_mate());
 }
+
 
 // White Mate in 7
 TEST_F(MateFixture, white_mate_in_seven_1) {
@@ -141,6 +145,7 @@ TEST_F(MateFixture, white_mate_in_seven_5) {
     Search::iter_deep(board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
+
 
 // Black Mate in 7
 TEST_F(MateFixture, black_mate_in_seven_1) {
