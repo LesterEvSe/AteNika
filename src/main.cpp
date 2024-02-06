@@ -19,10 +19,10 @@ int main() {
     Search::init();
 
     // TODO Deal with print PV nodes, PV search and similar stuff
-    Board board = Board("2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - - 0");
-//    Board board = Board("2rr3k/pp3pp1/1nnqbNQp/3pN3/2pP4/2P5/PPB4P/R4RK1 w - - 0");
+    Board board = Board();
     board.display_all();
     Search::iter_deep(board, true);
+    std::cout << (std::string)Search::get_best_move();
 
 //    MvvLva::init();
 //    PieceTables::init();

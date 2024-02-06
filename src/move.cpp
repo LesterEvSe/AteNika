@@ -54,6 +54,7 @@ bool operator==(const Move &left, const Move &right) {
 }
 
 Move::operator std::string() const {
+    if (m_flag == NULL_MOVE) return "NULL MOVE";
     char piece;
     switch (m_promotion_piece) {
         case KNIGHT: piece = 'n'; break;

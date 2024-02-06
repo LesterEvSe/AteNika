@@ -16,27 +16,30 @@ Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
 std::chrono::time_point<std::chrono::steady_clock> Search::hidden::_start;
 
+std::string Search::hidden::_mate; // for mate check
+
 void Search::init() {
     hidden::_restart();
     hidden::_ms_allocated = 5000;
-    hidden::_depth = 8;
+    hidden::_depth = 7;
 }
 
 Move Search::get_best_move() {
     return hidden::_best_move;
 }
 
-std::string Search::get_best_score() {
-    if (hidden::_best_score > 2'000'000'000)
-        return "white mate in " + std::to_string(INF - hidden::_best_score);
-    else if (hidden::_best_score < -2'000'000'000)
-        return "black mate in " + std::to_string(INF + hidden::_best_score);
-    else
-        return std::to_string(hidden::_best_score);
+std::string Search::get_mate() {
+    return hidden::_mate;
 }
 
 void Search::hidden::_debug(const Board &board, int depth, int elapsed)
 {
+    std::string score;
+    if (hidden::_best_score > 2'000'000'000)
+        score = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
+    else
+        score = "cp " + std::to_string(hidden::_best_score);
+
     // cp  - centi-pawns
     // nps - nodes per second
     // moc - move ordering coefficient TODO delete later
@@ -45,11 +48,12 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
     // It's divide by zero error, so I increment elapsed ms, to avoid this problem
     std::cout << depth << " nodes " << (long long)_nodes << " time " << elapsed << "ms ";
-    std::cout << "cp " << get_best_score() << " nps " << (long long)(_nodes*1000 / ++elapsed) << " moc ";
+    std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed) << " moc ";
     std::cout << std::fixed << std::setprecision(2) << _fhf/_fh << " pv ";
 
     Board temp = board;
-    while (Ttable::in_table(temp.get_zob_hash())) {
+    // Set a counter, so we don't go over the limit
+    for (int16_t i = 0; i < depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
         Move move = Ttable::get(temp.get_zob_hash());
         std::cout << (std::string)move << ' ';
         temp.make(move);
@@ -64,11 +68,12 @@ void Search::hidden::_restart() {
     // 1, to exclude divide by zero
     _fh = 1;
     _fhf = 0;
+    _mate = "";
 
     _best_move = Move();
 }
 
-int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta)
+int32_t Search::hidden::_negamax(Board &board, int16_t ply, int16_t depth, int32_t alpha, int32_t beta)
 {
     ++_nodes;
     if (depth < 1)
@@ -82,19 +87,20 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     // get size in O(1)
     // checkmate or stalemate
     if (move_list.size() == 0)
-        return board.king_in_check(board.get_curr_move()) ? -INF + board.get_ply() : 0;
+        return board.king_in_check(board.get_curr_move()) ? -INF + ply : 0;
 
     MovePicker move_picker = MovePicker(&move_list);
     Move curr_best = Move();
     int32_t old_alpha = alpha;
 
     bool first = true;
+    ++ply;
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
         Board temp = board;
         temp.make(move);
 
-        int32_t score = -_negamax(temp, depth-1, -beta, -alpha);
+        int32_t score = -_negamax(temp, ply, depth-1, -beta, -alpha);
 
         if (score > alpha) {
             if (score >= beta) {
@@ -120,14 +126,17 @@ void Search::iter_deep(Board &board, bool debug) {
     hidden::_start = std::chrono::steady_clock::now();
 
     for (int16_t i = 1; i <= hidden::_depth; ++i) {
-        hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
+        hidden::_best_score = hidden::_negamax(board, 0, i, -INF, INF);
+        hidden::_best_move = Ttable::get(board.get_zob_hash());
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
         if (debug)
             hidden::_debug(board, i, elapsed);
 
-        if (hidden::_best_score < -2'000'000'000 || hidden::_best_score > 2'000'000'000)
+        if (hidden::_best_score > 2'000'000'000) {
+            hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
             break;
+        }
     }
 }
