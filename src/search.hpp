@@ -1,7 +1,7 @@
 #ifndef ATENIKA_SEARCH_HPP
 #define ATENIKA_SEARCH_HPP
 
-#include "move.hpp"
+#include "order_info.hpp"
 #include <chrono>
 
 namespace Search {
@@ -17,6 +17,7 @@ namespace hidden {
     extern int64_t _fhf; // cut-off at first move
 
     // Search
+    extern OrderInfo _order_info;
     extern Move _best_move;
     extern int32_t _best_score;
     extern std::chrono::time_point<std::chrono::steady_clock> _start;
@@ -25,7 +26,7 @@ namespace hidden {
 
     void _debug(const Board &board, int depth, int elapsed);
     void _restart();
-    int32_t _negamax(Board &board, int16_t ply, int16_t depth, int32_t alpha, int32_t beta);
+    int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta);
 
 } // hidden
 

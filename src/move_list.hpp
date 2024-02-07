@@ -14,6 +14,7 @@ public:
     MoveList() : m_size(0), m_moves{ Move() } {}
     [[nodiscard]] uint8_t size() const;
 
+    // & is need for m_move_list[i].set_score in movepicker constructor
     Move &operator[](uint8_t index);
     void emplace_back(const Move &move);
 };

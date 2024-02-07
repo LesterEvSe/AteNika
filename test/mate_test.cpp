@@ -17,17 +17,22 @@ public:
     }
 };
 
-//TEST_F(MateFixture, white_mate_in__) {
-//    Board board = Board("");
-//    Search::iter_deep(board, false);
-//    ASSERT_EQ("WM", Search::get_mate());
-//}
+// Templates for test
+/*
+TEST_F(MateFixture, white_mate_in__) {
+    Board board = Board("");
+    Search::iter_deep(board, false);
+    ASSERT_EQ("WM", Search::get_mate());
+}
+*/
 
-//TEST_F(MateFixture, black_mate_in__) {
-//    Board board = Board("");
-//    Search::iter_deep(board, false);
-//    ASSERT_EQ("BM", Search::get_mate());
-//}
+/*
+TEST_F(MateFixture, black_mate_in__) {
+    Board board = Board("");
+    Search::iter_deep(board, false);
+    ASSERT_EQ("BM", Search::get_mate());
+}
+*/
 
 TEST_F(MateFixture, mate_in_3_vice_lesson_60) {
     // Arrange

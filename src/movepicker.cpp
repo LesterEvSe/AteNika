@@ -1,7 +1,7 @@
 #include "movepicker.hpp"
 #include "mvv_lva.hpp"
 
-MovePicker::MovePicker(MoveList *move_list):
+MovePicker::MovePicker(MoveList *move_list, OrderInfo &order_info):
     m_move_list(*move_list), m_curr_node(0)
 {
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
@@ -17,7 +17,13 @@ MovePicker::MovePicker(MoveList *move_list):
                 score = MvvLva::PROMOTION_BONUS;
                 break;
             default: // The castling will be here for now
-                score = 0; // score + add for quiet move
+//                score = 0;
+                if (m_move_list[i] == order_info.get_killer1())
+                    score = OrderInfo::KILLER1_BONUS;
+                else if (m_move_list[i] == order_info.get_killer2())
+                    score = OrderInfo::KILLER2_BONUS;
+                else
+                    score = 0; // score + add for quiet move
                 break;
         }
         m_move_list[i].set_score(score);

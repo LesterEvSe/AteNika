@@ -42,7 +42,7 @@ private:
     int32_t m_score;
 
 public:
-    Move() : m_flag(NULL_MOVE) {}
+    Move();
     // example e4e5 d8c6 or something else
     explicit Move(const Board &board, const std::string &move);
 
