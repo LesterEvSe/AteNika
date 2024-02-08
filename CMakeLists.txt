@@ -34,8 +34,8 @@ set(PROJECT_SOURCES
     src/eval.cpp
     src/ttable.cpp
     src/mvv_lva.cpp
-        src/order_info.cpp
-        src/order_info.hpp
+    src/order_info.cpp
+    src/pst.cpp
 )
 
 set(PROJECT_HEADERS

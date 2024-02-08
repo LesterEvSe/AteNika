@@ -113,8 +113,15 @@ TEST_F(MateFixture, black_mate_in_one_5) {
 
 
 // White Mate in 3
-TEST_F(MateFixture, white_mate_in_two_1) {
+TEST_F(MateFixture, white_mate_in_three_1) {
     Board board = Board("1k3r2/4R1Q1/p2q1r2/8/2p1Bb2/5R2/pP5P/K7 w - - 0");
+    Search::iter_deep(board, false);
+    ASSERT_EQ("WM3", Search::get_mate());
+}
+
+TEST_F(MateFixture, white_mate_in_three_2) {
+    Board board = Board("5Kbk/6pp/6P1/8/8/8/8/7R w - - 0");
+    std::cout << board;
     Search::iter_deep(board, false);
     ASSERT_EQ("WM3", Search::get_mate());
 }

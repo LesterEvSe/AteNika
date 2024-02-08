@@ -90,7 +90,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     if (depth < 1)
         return Eval::evaluate(board); // quiescence search here
 
-    if (board.get_ply() >= 100)
+    if (board.get_ply() >= MAX_PLY)
         return 0;
 
     MoveList move_list = Movegen(board).get_legal_moves();
@@ -138,6 +138,9 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
             alpha = score;
             curr_best = move;
             full_window = false;
+
+            if (!(move.get_flag() & Move::CAPTURE))
+                _order_info.add_history(curr_best.get_from_cell(), curr_best.get_to_cell(), depth);
         }
         first_move = false;
     }

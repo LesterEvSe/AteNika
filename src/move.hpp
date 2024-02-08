@@ -23,27 +23,37 @@ public:
     };
 
 private:
-    // Move representation
-    union {
-        struct {
-            uint8_t m_from: 6;
-            uint8_t m_to: 6;
+    struct {
+        uint8_t m_from: 6;
+        uint8_t m_to: 6;
 
-            Flag m_flag: 5;
-            PieceType m_move_piece: 3;
-            PieceType m_captured_piece: 3;
-            PieceType m_promotion_piece: 3;
-        };
-
-        // For comparison
-        int32_t m_move_repr;
+        Flag m_flag: 5;
+        PieceType m_move_piece: 3;
+        PieceType m_captured_piece: 3;
+        PieceType m_promotion_piece: 3;
     };
+
+    // Move representation
+//    union {
+//        struct {
+//            uint8_t m_from: 6;
+//            uint8_t m_to: 6;
+//
+//            Flag m_flag: 5;
+//            PieceType m_move_piece: 3;
+//            PieceType m_captured_piece: 3;
+//            PieceType m_promotion_piece: 3;
+//        };
+//
+//        // For comparison
+//        int32_t m_move_repr;
+//    };
 
     int32_t m_score;
 
 public:
     Move();
-    // example e4e5 d8c6 or something else
+    // example e4e5 g2g1q or something else
     explicit Move(const Board &board, const std::string &move);
 
     Move(uint8_t from,

@@ -23,7 +23,7 @@ MovePicker::MovePicker(MoveList *move_list, OrderInfo &order_info):
                 else if (m_move_list[i] == order_info.get_killer2())
                     score = OrderInfo::KILLER2_BONUS;
                 else
-                    score = 0; // score + add for quiet move
+                    score = order_info.get_history(m_move_list[i].get_from_cell(), m_move_list[i].get_to_cell());
                 break;
         }
         m_move_list[i].set_score(score);

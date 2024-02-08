@@ -4,7 +4,7 @@
 #include "movegen.hpp"
 
 Move::Move() {
-    m_move_repr = 0;
+//    m_move_repr = 0;
     m_flag = NULL_MOVE;
 }
 
@@ -53,16 +53,6 @@ bool Move::isMove(const std::string &move) {
 bool operator<(const Move &left, const Move &right) {
     return left.m_score < right.m_score;
 }
-
-//struct {
-//    uint8_t m_from: 6;
-//    uint8_t m_to: 6;
-//
-//    Flag m_flag: 5;
-//    PieceType m_move_piece: 3;
-//    PieceType m_captured_piece: 3;
-//    PieceType m_promotion_piece: 3;
-//};
 
 bool operator==(const Move &left, const Move &right) {
 //    return left.m_move_repr == right.m_move_repr;
