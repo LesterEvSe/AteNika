@@ -101,7 +101,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
         return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
     // TODO Test Killers heuristic
-    MovePicker move_picker = MovePicker(&move_list, _order_info);
+    MovePicker move_picker = MovePicker(&move_list, board.get_zob_hash(), _order_info);
     Move curr_best = Move();
     int32_t old_alpha = alpha;
 

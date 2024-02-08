@@ -32,7 +32,7 @@ int32_t Eval::evaluate(const Board &board) {
     int32_t endgame = hidden::_eval_for_phase<ENDGAME>(board);
     int32_t phase = hidden::_tapered_eval(board);
     // endgame = endgame * scale_factor(board) / 64;
-    int32_t score = ((opening * phase + (endgame * (128 - phase))) >> 7); // (((mg * p + ((eg * (128 - p)) << 0)) / 128) << 0)
+    int32_t score = ((opening * phase + (endgame * (128 - phase))) >> 7);
 
     // tempo
     score += board.get_curr_move() == WHITE ? 28 : -28;

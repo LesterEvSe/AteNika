@@ -3,11 +3,6 @@
 #include "move_list.hpp"
 #include "movegen.hpp"
 
-Move::Move() {
-//    m_move_repr = 0;
-    m_flag = NULL_MOVE;
-}
-
 Move::Move(const Board &board, const std::string &move) {
     MoveList legal_moves = Movegen(board).get_legal_moves();
     int i;
@@ -55,7 +50,6 @@ bool operator<(const Move &left, const Move &right) {
 }
 
 bool operator==(const Move &left, const Move &right) {
-//    return left.m_move_repr == right.m_move_repr;
     return left.m_from == right.m_from &&
            left.m_to == right.m_to &&
            left.m_flag == right.m_flag &&

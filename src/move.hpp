@@ -32,27 +32,11 @@ private:
         PieceType m_captured_piece: 3;
         PieceType m_promotion_piece: 3;
     };
-
-    // Move representation
-//    union {
-//        struct {
-//            uint8_t m_from: 6;
-//            uint8_t m_to: 6;
-//
-//            Flag m_flag: 5;
-//            PieceType m_move_piece: 3;
-//            PieceType m_captured_piece: 3;
-//            PieceType m_promotion_piece: 3;
-//        };
-//
-//        // For comparison
-//        int32_t m_move_repr;
-//    };
-
     int32_t m_score;
 
 public:
-    Move();
+    Move() : m_flag(NULL_MOVE) {}
+
     // example e4e5 g2g1q or something else
     explicit Move(const Board &board, const std::string &move);
 

@@ -1,10 +1,22 @@
 #include "movepicker.hpp"
 #include "mvv_lva.hpp"
+#include "ttable.hpp"
 
-MovePicker::MovePicker(MoveList *move_list, OrderInfo &order_info):
+MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &order_info):
     m_move_list(*move_list), m_curr_node(0)
 {
+    Move best_move;
+    if (Ttable::in_table(hash))
+        best_move = Ttable::get(hash);
+    else
+        best_move = Move();
+
     for (uint8_t i = 0; i < m_move_list.size(); ++i) {
+        if (m_move_list[i] == best_move) {
+            m_move_list[i].set_score(INF);
+            continue;
+        }
+
         int32_t score;
         switch (m_move_list[i].get_flag()) {
             case Move::CAPTURE_PROMOTION:
