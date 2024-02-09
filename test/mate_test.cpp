@@ -11,6 +11,7 @@ public:
         init_bits_pre_calculation();
         ZobristHash::init();
         Rays::init();
+        PieceTables::init();
         Attacks::init();
         Search::init();
         Search::set_depth(16);

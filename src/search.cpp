@@ -22,7 +22,7 @@ std::string Search::hidden::_mate; // for mate check
 void Search::init() {
     hidden::_restart();
     hidden::_ms_allocated = 5000;
-    hidden::_depth = 5;
+    hidden::_depth = 9;
 }
 
 Move Search::get_best_move() {
@@ -58,7 +58,7 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     std::cout << depth << " nodes " << (long long)_nodes << " time " << elapsed << "ms ";
     std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed);
 
-    std::cout << " moq " << (int)(100.0 * _fhf/_fh) << '%';
+    std::cout << " moq " << (int)(100.0 * _fhf/ (_fh == 0 ? 1 : _fh)) << '%';
     std::cout << " pv ";
 
     Board temp = board;
@@ -76,7 +76,7 @@ void Search::hidden::_restart() {
     _stop = false;
 
     // 1, to exclude divide by zero
-    _fh = 1;
+    _fh = 0;
     _fhf = 0;
     _mate = "";
 
