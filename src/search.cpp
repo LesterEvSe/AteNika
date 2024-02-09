@@ -8,7 +8,7 @@
 int64_t Search::hidden::_nodes;
 int32_t Search::hidden::_ms_allocated;
 int16_t Search::hidden::_depth;
-bool Search::hidden::_stop;
+std::atomic<bool> Search::hidden::_stop;
 
 int64_t Search::hidden::_fh; // fail high
 int64_t Search::hidden::_fhf; // fail high first
@@ -20,10 +20,23 @@ std::chrono::time_point<std::chrono::steady_clock> Search::hidden::_start;
 
 std::string Search::hidden::_mate; // for mate check
 
+void Search::hidden::_restart() {
+    _nodes = 0;
+    _stop = false;
+
+    // 1, to exclude divide by zero
+    _fh = 0;
+    _fhf = 0;
+    _mate = "";
+
+    _order_info = OrderInfo();
+    _best_move = Move();
+}
+
 void Search::init() {
     hidden::_restart();
     hidden::_ms_allocated = 5000;
-    hidden::_depth = 6;
+    hidden::_depth = 7;
 }
 
 Move Search::get_best_move() {
@@ -70,19 +83,6 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
         temp.make(move);
     }
     std::cout << std::endl;
-}
-
-void Search::hidden::_restart() {
-    _nodes = 0;
-    _stop = false;
-
-    // 1, to exclude divide by zero
-    _fh = 0;
-    _fhf = 0;
-    _mate = "";
-
-    _order_info = OrderInfo();
-    _best_move = Move();
 }
 
 void Search::iter_deep(Board &board, bool debug) {

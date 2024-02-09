@@ -3,6 +3,7 @@
 
 #include "order_info.hpp"
 #include <chrono>
+#include <atomic>
 
 namespace Search {
 namespace hidden {
@@ -11,7 +12,7 @@ namespace hidden {
     extern int64_t _nodes;
     extern int32_t _ms_allocated;
     extern int16_t _depth;
-    extern bool _stop;
+    extern std::atomic<bool> _stop;
 
     extern int64_t _fh; // cut-off at n move. The moves are accumulating
     extern int64_t _fhf; // cut-off at first move
