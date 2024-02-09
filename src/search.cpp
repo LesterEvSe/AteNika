@@ -1,6 +1,7 @@
 #include "search.hpp"
 #include "movegen.hpp"
 #include "movepicker.hpp"
+#include "qmovepicker.hpp"
 #include "eval.hpp"
 #include "ttable.hpp"
 
@@ -107,11 +108,12 @@ void Search::iter_deep(Board &board, bool debug) {
 
 int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta)
 {
-    ++_nodes;
+    // check limits here
     if (depth < 1)
-//        return _quiescence(board, alpha, beta);
-        return Eval::evaluate(board); // quiescence search here
+        return _quiescence(board, alpha, beta);
+//        return Eval::evaluate(board); // quiescence search here
 
+    ++_nodes;
     if (board.get_ply() >= MAX_PLY)
         return 0;
 
@@ -173,55 +175,52 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return alpha;
 }
 
-/*
 int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
 {
+    // check limits here
     ++_nodes;
     if (board.get_ply() >= MAX_PLY)
         return 0;
-    int32_t score = Eval::evaluate(board);
 
-    // Standing pat
-    if (score >= beta)
+    // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+    int32_t stand_pat = Eval::evaluate(board);
+    if (stand_pat >= beta)
         return beta;
-    if (score > alpha)
-        alpha = score;
-
-    if (board.get_ply() >= MAX_PLY)
-        return 0;
+    if (stand_pat > alpha)
+        alpha = stand_pat;
 
     MoveList move_list = Movegen(board).get_legal_moves();
-
-    // get size in O(1)
-    // checkmate or stalemate
     if (move_list.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
-    // QMovePicker qmove_picker = QMovePicker(&move_list);
+    QMovePicker q_move_picker = QMovePicker(&move_list, board.get_zob_hash());
     Move curr_best = Move();
     int32_t old_alpha = alpha;
     bool first_move = true;
+    ++_order_info;
 
-    while (qmove_picker.has_next()) {
-        Move move = qmove_picker.get_next();
+    while (q_move_picker.has_next())
+    {
+        Move move = q_move_picker.get_next();
         Board temp = board;
         temp.make(move);
-        score = -_quiescence(temp, -beta, -alpha);
+        stand_pat = -_quiescence(temp, -beta, -alpha);
 
-        if (score > alpha) {
-            if (score >= beta) {
+        if (stand_pat > alpha) {
+            if (stand_pat >= beta) {
+                --_order_info;
                 if (first_move) ++_fhf;
                 ++_fh;
                 return beta;
             }
-            alpha = score;
+            alpha = stand_pat;
             curr_best = move;
         }
         first_move = false;
     }
+    --_order_info;
 
     if (alpha != old_alpha)
         Ttable::add(board.get_zob_hash(), curr_best);
     return alpha;
 }
-*/

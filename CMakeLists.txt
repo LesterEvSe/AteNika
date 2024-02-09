@@ -36,6 +36,7 @@ set(PROJECT_SOURCES
     src/mvv_lva.cpp
     src/order_info.cpp
     src/pst.cpp
+    src/qmovepicker.cpp
 )
 
 set(PROJECT_HEADERS
