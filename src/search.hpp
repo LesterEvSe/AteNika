@@ -27,6 +27,7 @@ namespace hidden {
     void _debug(const Board &board, int depth, int elapsed);
     void _restart();
     int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta);
+    int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
 
 } // hidden
 

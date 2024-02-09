@@ -20,7 +20,7 @@ int main() {
     PieceTables::init();
     Search::init();
 
-    Board board = Board(); //Board("r1b1k2r/ppppnppp/2n2q2/2b5/3Np3/2P1B3/PP3PPP/RN1QKB1R w Kqkq - 0");
+    Board board = Board("r1b1k2r/ppppnppp/2n2q2/2b5/3Np3/2P1B3/PP3PPP/RN1QKB1R w Kqkq - 0");
     board.display_all();
     Search::iter_deep(board, true);
     std::cout << (std::string)Search::get_best_move();

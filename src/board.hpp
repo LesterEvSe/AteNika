@@ -51,7 +51,7 @@ private:
     uint8_t m_castling_rights {0};
 
     ZobristHash m_hash;
-    PieceTables m_pst; // piece square tables
+//    PieceTables m_pst; // piece square tables
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -81,7 +81,7 @@ public:
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] ZobristHash get_zob_hash() const;
     [[nodiscard]] uint8_t get_en_passant() const;
-    [[nodiscard]] int32_t get_pst_score(Color color, GamePhase phase) const;
+//    [[nodiscard]] int32_t get_pst_score(Color color, GamePhase phase) const;
 
     // ks - king side
     // qs - queen side

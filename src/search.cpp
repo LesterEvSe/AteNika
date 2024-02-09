@@ -22,7 +22,7 @@ std::string Search::hidden::_mate; // for mate check
 void Search::init() {
     hidden::_restart();
     hidden::_ms_allocated = 5000;
-    hidden::_depth = 9;
+    hidden::_depth = 6;
 }
 
 Move Search::get_best_move() {
@@ -84,10 +84,32 @@ void Search::hidden::_restart() {
     _best_move = Move();
 }
 
+void Search::iter_deep(Board &board, bool debug) {
+    hidden::_restart();
+    hidden::_start = std::chrono::steady_clock::now();
+
+    for (int16_t i = 1; i <= hidden::_depth; ++i) {
+        hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
+        hidden::_best_move = Ttable::get(board.get_zob_hash());
+
+        int32_t elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+        if (debug)
+            hidden::_debug(board, i, elapsed);
+
+        if (hidden::_best_score > 2'000'000'000) {
+            // for testing
+            hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
+            break;
+        }
+    }
+}
+
 int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta)
 {
     ++_nodes;
     if (depth < 1)
+//        return _quiescence(board, alpha, beta);
         return Eval::evaluate(board); // quiescence search here
 
     if (board.get_ply() >= MAX_PLY)
@@ -151,22 +173,55 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return alpha;
 }
 
-void Search::iter_deep(Board &board, bool debug) {
-    hidden::_restart();
-    hidden::_start = std::chrono::steady_clock::now();
+/*
+int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
+{
+    ++_nodes;
+    if (board.get_ply() >= MAX_PLY)
+        return 0;
+    int32_t score = Eval::evaluate(board);
 
-    for (int16_t i = 1; i <= hidden::_depth; ++i) {
-        hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
-        hidden::_best_move = Ttable::get(board.get_zob_hash());
+    // Standing pat
+    if (score >= beta)
+        return beta;
+    if (score > alpha)
+        alpha = score;
 
-        int32_t elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
-        if (debug)
-            hidden::_debug(board, i, elapsed);
+    if (board.get_ply() >= MAX_PLY)
+        return 0;
 
-        if (hidden::_best_score > 2'000'000'000) {
-            hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
-            break;
+    MoveList move_list = Movegen(board).get_legal_moves();
+
+    // get size in O(1)
+    // checkmate or stalemate
+    if (move_list.size() == 0)
+        return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
+
+    // QMovePicker qmove_picker = QMovePicker(&move_list);
+    Move curr_best = Move();
+    int32_t old_alpha = alpha;
+    bool first_move = true;
+
+    while (qmove_picker.has_next()) {
+        Move move = qmove_picker.get_next();
+        Board temp = board;
+        temp.make(move);
+        score = -_quiescence(temp, -beta, -alpha);
+
+        if (score > alpha) {
+            if (score >= beta) {
+                if (first_move) ++_fhf;
+                ++_fh;
+                return beta;
+            }
+            alpha = score;
+            curr_best = move;
         }
+        first_move = false;
     }
+
+    if (alpha != old_alpha)
+        Ttable::add(board.get_zob_hash(), curr_best);
+    return alpha;
 }
+*/

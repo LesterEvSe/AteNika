@@ -17,19 +17,21 @@ MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &
             continue;
         }
 
+        // Warning!!! The value is not initialized, so we need to set it later
+        // score =
         int32_t score;
         switch (m_move_list[i].get_flag()) {
             case Move::CAPTURE_PROMOTION:
-                score = MvvLva::PROMOTION_BONUS;
+                score = MvvLva::PROMOTION_BONUS + MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
+                break;
             case Move::EN_PASSANT:
             case Move::CAPTURE:
-                score += MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
+                score = MvvLva::CAPTURE_BONUS + MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
                 break;
             case Move::PROMOTION:
                 score = MvvLva::PROMOTION_BONUS;
                 break;
-            default: // The castling will be here for now
-//                score = 0;
+            default:
                 if (m_move_list[i] == order_info.get_killer1())
                     score = OrderInfo::KILLER1_BONUS;
                 else if (m_move_list[i] == order_info.get_killer2())

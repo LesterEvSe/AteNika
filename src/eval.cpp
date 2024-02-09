@@ -15,6 +15,7 @@ int32_t Eval::hidden::_eval_material(const Board &board) {
 int32_t Eval::evaluate(const Board &board) {
     int32_t score = 0;
     score += hidden::_eval_material<WHITE>(board) - hidden::_eval_material<BLACK>(board);
-    score += board.get_pst_score(WHITE, OPENING) - board.get_pst_score(BLACK, OPENING);
+//    score += board.get_pst_score(WHITE, OPENING) - board.get_pst_score(BLACK, OPENING);
+    score += PieceTables::get_score(board);
     return board.get_curr_move() == WHITE ? score : -score;
 }
