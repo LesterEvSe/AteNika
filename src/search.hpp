@@ -1,6 +1,7 @@
 #ifndef ATENIKA_SEARCH_HPP
 #define ATENIKA_SEARCH_HPP
 
+#include "history.hpp"
 #include "order_info.hpp"
 #include <chrono>
 #include <atomic>
@@ -20,6 +21,7 @@ namespace hidden {
     extern int64_t _fhf; // cut-off at first move
 
     // Search
+    extern History _history;
     extern OrderInfo _order_info;
     extern Move _best_move;
     extern int32_t _best_score;
@@ -44,7 +46,7 @@ namespace hidden {
     void set_time(int32_t ms_allocated);
     void set_depth(int16_t depth);
 
-    void iter_deep(Board &board, bool debug);
+    void iter_deep(History &history, Board &board, bool debug);
 } // Search
 
 #endif //ATENIKA_SEARCH_HPP

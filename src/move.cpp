@@ -28,7 +28,6 @@ PieceType Move::get_promotion_piece() const { return m_promotion_piece; }
 int32_t Move::get_score() const {
     return m_score;
 }
-
 void Move::set_score(int32_t val) {
     m_score = val;
 }
@@ -37,8 +36,7 @@ void Move::set_score(int32_t val) {
 bool Move::isMove(const std::string &move) {
     if (move.size() != 4 && move.size() != 5) return false;
 
-    uint8_t i;
-    for (i = 0; i <= 2; i += 2) {
+    for (uint8_t i = 0; i <= 2; i += 2) {
         if (move[i] < 'a' || move[i] > 'h') return false;
         if (move[i+1] < '1' || move[i+1] > '8') return false;
     }
@@ -61,6 +59,7 @@ bool operator==(const Move &left, const Move &right) {
 Move::operator std::string() const {
     if (m_flag == NULL_MOVE) return "NULL MOVE";
     char piece;
+
     switch (m_promotion_piece) {
         case KNIGHT: piece = 'n'; break;
         case BISHOP: piece = 'b'; break;

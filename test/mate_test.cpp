@@ -6,6 +6,9 @@
 // Check mate for n ply
 class MateFixture : public testing::Test
 {
+protected:
+    History history;
+
 public:
     static void SetUpTestCase() {
         init_bits_pre_calculation();
@@ -15,6 +18,7 @@ public:
         Attacks::init();
         Search::init();
         Search::set_depth(16);
+        Search::set_time(INF);
     }
 };
 
@@ -40,7 +44,7 @@ TEST_F(MateFixture, mate_in_3_vice_lesson_60) {
     Board board = Board("2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - - 0");
 
     // Act
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
 
     // Assert
     ASSERT_EQ("WM3", Search::get_mate());
@@ -52,31 +56,31 @@ TEST_F(MateFixture, mate_in_3_vice_lesson_60) {
 // White Mate in 1
 TEST_F(MateFixture, white_mate_in_one_1) {
     Board board = Board("3k3B/7p/p1Q1p3/2n5/6P1/K3b3/PP5q/R7 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_one_2) {
     Board board = Board("4bk2/ppp3p1/2np3p/2b5/2B2Bnq/2N5/PP4PP/4RR1K w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_one_3) {
     Board board = Board("4rkr1/1p1Rn1pp/p3p2B/4Qp2/8/8/PPq2PPP/3R2K1 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_one_4) {
     Board board = Board("5rkr/ppp2p1p/8/3qp3/2pN4/8/PPPQ1PPP/4R1K1 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history,board, false);
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_one_5) {
     Board board = Board("rk5r/p1q2ppp/Qp1B1n2/2p5/2P5/6P1/PP3PBP/4R1K1 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM1", Search::get_mate());
 }
 
@@ -84,31 +88,31 @@ TEST_F(MateFixture, white_mate_in_one_5) {
 // Black Mate in 1
 TEST_F(MateFixture, black_mate_in_one_1) {
     Board board = Board("r3k1nr/p1p2p1p/2pP4/8/7q/7b/PPPP3P/RNBQ2KR b kq - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_one_2) {
     Board board = Board("r2r2k1/ppp2pp1/5q1p/4p3/4bn2/2PB2N1/P1PQ1P1P/R4RK1 b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_one_3) {
     Board board = Board("r3k3/bppbq2r/p2p3p/3Pp2n/P1N1Pp2/2P2P1P/1PB3PN/R2QR2K b q - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_one_4) {
     Board board = Board("r4k1N/2p3pp/p7/1pbPn3/6b1/1P1P3P/1PP2qPK/RNB4Q b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_one_5) {
     Board board = Board("r6r/pppk1ppp/8/2b5/2P5/2Nb1N2/PPnK1nPP/1RB2B1R b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM1", Search::get_mate());
 }
 
@@ -116,14 +120,13 @@ TEST_F(MateFixture, black_mate_in_one_5) {
 // White Mate in 3
 TEST_F(MateFixture, white_mate_in_three_1) {
     Board board = Board("1k3r2/4R1Q1/p2q1r2/8/2p1Bb2/5R2/pP5P/K7 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM3", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_three_2) {
     Board board = Board("5Kbk/6pp/6P1/8/8/8/8/7R w - - 0");
-    std::cout << board;
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM3", Search::get_mate());
 }
 
@@ -131,31 +134,31 @@ TEST_F(MateFixture, white_mate_in_three_2) {
 // White Mate in 7
 TEST_F(MateFixture, white_mate_in_seven_1) {
     Board board = Board("2R2nk1/5pp1/4p3/p3P1pP/3PQ3/8/rq3P2/2R3K1 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_seven_2) {
     Board board = Board("2R5/3r1pk1/p2N3p/1pK1PPp1/8/6P1/PP2b2P/8 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_seven_3) {
     Board board = Board("2R5/6kp/p2R2p1/1p2p3/q3n3/6N1/P5PP/5K2 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_seven_4) {
     Board board = Board("2R5/kpQ5/p4r2/6p1/q1p2p2/P3n3/KPP5/8 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, white_mate_in_seven_5) {
     Board board = Board("2Rr1qk1/5ppp/p2N4/P7/5Q2/8/1r4PP/5BK1 w - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("WM7", Search::get_mate());
 }
 
@@ -163,31 +166,31 @@ TEST_F(MateFixture, white_mate_in_seven_5) {
 // Black Mate in 7
 TEST_F(MateFixture, black_mate_in_seven_1) {
     Board board = Board("3Rr2k/pp4pb/2p4p/2P1n3/1P1Q3P/4r1q1/PB4B1/5RK1 b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_seven_2) {
     Board board = Board("3k2r1/3b2pR/p2pppN1/7Q/1pn1P3/4q3/PPP3B1/1K1R2r1 b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_seven_3) {
     Board board = Board("3k4/1pp3b1/4b2p/1p3qp1/3Pn3/2P1RN2/r5P1/1Q2R1K1 b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_seven_4) {
     Board board = Board("3k4/R7/5N2/1p2n3/6p1/P1N2bP1/1r6/5K2 b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM7", Search::get_mate());
 }
 
 TEST_F(MateFixture, black_mate_in_seven_5) {
     Board board = Board("3q3k/6pp/3P3n/8/5B2/8/3Q1PP1/6RK b - - 0");
-    Search::iter_deep(board, false);
+    Search::iter_deep(history, board, false);
     ASSERT_EQ("BM7", Search::get_mate());
 }
 

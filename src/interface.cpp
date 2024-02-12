@@ -12,10 +12,11 @@ namespace
     std::atomic<bool> quit(false);
 
     Board board;
+    History history;
 
     void go(bool debug) {
         lock = true;
-        Search::iter_deep(board, debug);
+        Search::iter_deep(history, board, debug);
 
         if (quit) {
             lock = false;
@@ -39,7 +40,14 @@ void Uci::start()
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
+    history = History();
     std::string input, command;
+
+    auto check_lock = [](){
+        if (!lock) return false;
+        std::cout << "This command is not available now" << std::endl;
+        return true;
+    };
 
     while (true) {
         std::getline(std::cin, input);
@@ -62,16 +70,27 @@ void Uci::start()
             */
 
         } else if (input == "newgame") {
-            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            if (check_lock()) continue;
+            // if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
+            history.clear();
+
             /*
             history.clear();
             if (book)
                 book->reset();
             */
 
+        } else if (command == "setfen") {
+            if (check_lock()) continue;
+            std::string fenstr;
+            std::getline(iss, fenstr);
+
+            board = Board(fenstr);
+            history.clear();
+
         } else if (command == "depth" || command == "time") {
-            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            if (check_lock()) continue;
             std::string value;
             std::getline(iss, value);
 
@@ -98,7 +117,7 @@ void Uci::start()
                 Search::set_time(number * 1000);
 
         } else if (input == "d" || input == "info") {
-            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            if (check_lock()) continue;
             if (input == "d")
                 std::cout << board;
             else
@@ -116,6 +135,7 @@ void Uci::start()
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
             std::cout << "newgame - start new game" << std::endl;
+            std::cout << "setfen fen_str - set up the position described in fenstring (assuming the string is correct)" << std::endl;
             std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
             std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)" << std::endl;
             std::cout << "d - display the current position" << std::endl;
@@ -128,7 +148,7 @@ void Uci::start()
             std::cout << "E.g., a7a8q, d2d1r" << std::endl;
 
         } else if (Move::isMove(input)) {
-            if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            if (check_lock()) continue;
 
             Move move;
             try {
@@ -137,6 +157,12 @@ void Uci::start()
                 std::cout << e.what() << std::endl;
                 continue;
             }
+            if (history.add_pos(board.get_zob_hash()))
+                board.make(move);
+            else
+                std::cout << "Impossible move. Draw" << std::endl;
+            if (board.get_ply() == 0)
+                history.clear();
 
             /*
             if (book && book->has_move())
@@ -150,7 +176,7 @@ void Uci::start()
                 history.clear();
             */
         } else
-            std::cout << "Incorrect command, try again" << std::endl;
+            std::cout << "Incorrect command. Type \"help\" for more information." << std::endl;
     }
     while (lock); // waiting for finished the thread
 }

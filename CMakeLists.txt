@@ -38,6 +38,7 @@ set(PROJECT_SOURCES
     src/pst.cpp
     src/qmovepicker.cpp
     src/interface.cpp
+    src/history.cpp
 )
 
 set(PROJECT_HEADERS
@@ -49,7 +50,7 @@ set(PROJECT_HEADERS
 #if (NOT BUILD_TESTS)
     add_executable(AteNika src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 #else()
-    # Comment this command, if you enter custom path
+    # Comment this command, if you enter custom username
     execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # You just need to change the path to the google-test folder to run everything else
