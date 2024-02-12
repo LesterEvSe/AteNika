@@ -5,14 +5,18 @@
 #include "eval.hpp"
 #include "ttable.hpp"
 
+// Limits
 int64_t Search::hidden::_nodes;
 int32_t Search::hidden::_ms_allocated;
+bool Search::hidden::_without_time;
 int16_t Search::hidden::_depth;
 std::atomic<bool> Search::hidden::_stop;
 
+int16_t Search::hidden::_check_gap;
 int64_t Search::hidden::_fh; // fail high
 int64_t Search::hidden::_fhf; // fail high first
 
+// Search
 OrderInfo Search::hidden::_order_info;
 Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
@@ -24,7 +28,7 @@ void Search::hidden::_restart() {
     _nodes = 0;
     _stop = false;
 
-    // 1, to exclude divide by zero
+    _check_gap = 0;
     _fh = 0;
     _fhf = 0;
     _mate = "";
@@ -36,21 +40,45 @@ void Search::hidden::_restart() {
 void Search::init() {
     hidden::_restart();
     hidden::_ms_allocated = 5000;
+    hidden::_without_time = true;
     hidden::_depth = 7;
 }
 
-Move Search::get_best_move() {
-    return hidden::_best_move;
+bool Search::hidden::_check_limits() {
+    if (_stop) return true;
+    if (!(++_check_gap & 1024)) return false;
+
+    _check_gap = 0;
+    int32_t elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+
+    if (_without_time || elapsed < _ms_allocated) return false;
+    return _stop = true;
 }
 
+Move *Search::get_best_move() {
+    return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
+}
 std::string Search::get_mate() {
     return hidden::_mate;
 }
 
-bool Search::set_depth(int16_t depth) {
-    if (depth < 0 || depth > 100) return false;
-    hidden::_depth = depth;
-    return true;
+void Search::stop() {
+    hidden::_stop = true;
+}
+
+void Search::set_time(int32_t ms_allocated) {
+    if (ms_allocated == INF)
+        hidden::_without_time = true;
+    else if (ms_allocated > 0) {
+        hidden::_without_time = false;
+        hidden::_ms_allocated = ms_allocated;
+    }
+}
+
+void Search::set_depth(int16_t depth) {
+    if (depth > 0)
+        hidden::_depth = depth;
 }
 
 
@@ -64,12 +92,13 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
 
     // cp  - centi-pawns
     // nps - nodes per second
-    // moq - move ordering quality TODO delete later
+    // moq - move ordering quality
 
     // Sometimes I have an error in Linux
     // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
     // It's divide by zero error, so I increment elapsed ms, to avoid this problem
-    std::cout << depth << " nodes " << (long long)_nodes << " time " << elapsed << "ms ";
+    std::cout << depth << " nodes " << (long long)_nodes;
+    std::cout << " time " << elapsed << "ms ";
     std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed);
 
     std::cout << " moq " << (int)(100.0 * _fhf/ (_fh == 0 ? 1 : _fh)) << '%';
@@ -91,24 +120,30 @@ void Search::iter_deep(Board &board, bool debug) {
 
     for (int16_t i = 1; i <= hidden::_depth; ++i) {
         hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
-        hidden::_best_move = Ttable::get(board.get_zob_hash());
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+        if (hidden::_stop)
+            break;
         if (debug)
             hidden::_debug(board, i, elapsed);
 
+        hidden::_best_move = Ttable::get(board.get_zob_hash());
         if (hidden::_best_score > 2'000'000'000) {
             // for testing
             hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
             break;
         }
+
+        if (!hidden::_without_time && elapsed >= (hidden::_ms_allocated / 2))
+            break;
     }
 }
 
 int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta)
 {
-    // check limits here
+    if (_check_limits())
+        return 0;
     if (depth < 1)
         return _quiescence(board, alpha, beta);
 //        return Eval::evaluate(board); // quiescence search here
@@ -178,6 +213,9 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
 {
     // check limits here
+    if (_check_limits())
+        return 0;
+
     ++_nodes;
     if (board.get_ply() >= MAX_PLY)
         return 0;

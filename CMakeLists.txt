@@ -37,7 +37,7 @@ set(PROJECT_SOURCES
     src/order_info.cpp
     src/pst.cpp
     src/qmovepicker.cpp
-    src/uci.cpp
+    src/interface.cpp
 )
 
 set(PROJECT_HEADERS
@@ -64,7 +64,7 @@ set(PROJECT_HEADERS
 #        test/eval_test.cpp
         test/zob_hash_test.cpp
         test/perft_comparison.cpp
-            test/mate_test.cpp
+        test/mate_test.cpp
     )
     add_executable(AteNikaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
 
