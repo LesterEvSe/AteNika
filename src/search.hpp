@@ -40,11 +40,14 @@ namespace hidden {
 
     void init();
     void stop(); // stop search if time has expired
-    std::string get_mate();
-    Move *get_best_move();
 
     void set_time(int32_t ms_allocated);
     void set_depth(int16_t depth);
+
+    std::string get_mate();
+    Move *get_best_move();
+    std::string get_allocated_sec();
+    int32_t get_search_depth();
 
     void iter_deep(History &history, Board &board, bool debug);
 } // Search

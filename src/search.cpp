@@ -58,11 +58,17 @@ bool Search::hidden::_check_limits() {
     return _stop = true;
 }
 
+std::string Search::get_mate() {
+    return hidden::_mate;
+}
 Move *Search::get_best_move() {
     return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
 }
-std::string Search::get_mate() {
-    return hidden::_mate;
+std::string Search::get_allocated_sec() {
+    return hidden::_without_time ? "infinity" : std::to_string(hidden::_ms_allocated/1000) + " sec";
+}
+int32_t Search::get_search_depth() {
+    return hidden::_depth;
 }
 
 void Search::stop() {

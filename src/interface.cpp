@@ -1,6 +1,7 @@
 #include "interface.hpp"
 #include "board.hpp"
 #include "search.hpp"
+#include "eval.hpp"
 
 #include <sstream>
 #include <thread>
@@ -103,10 +104,10 @@ void Uci::start()
             int16_t number;
             try {
                 number = static_cast<int16_t>(std::stoi(value, &pos));
-                if (pos != value.size()) throw std::runtime_error("Incorrect command, try again");
+                if (pos != value.size()) throw std::runtime_error("");
 
             } catch (const std::exception &e) {
-                std::cout << e.what() << std::endl;
+                std::cerr << "Incorrect command, try again" << std::endl;
                 continue;
             }
 
@@ -120,8 +121,16 @@ void Uci::start()
             if (check_lock()) continue;
             if (input == "d")
                 std::cout << board;
-            else
+            else {
                 board.display_all();
+                std::cout << "Search Time: " << Search::get_allocated_sec() << std::endl;
+                std::cout << "Search Depth: " << static_cast<int>(Search::get_search_depth()) << " nodes" << std::endl;
+            }
+
+        } else if (input == "eval") {
+            if (check_lock()) continue;
+            std::cout << "Static Evaluation: " << Eval::evaluate(board) << " cp" << std::endl;
+
         } else if (input == "stop") {
             if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
@@ -140,6 +149,7 @@ void Uci::start()
             std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)" << std::endl;
             std::cout << "d - display the current position" << std::endl;
             std::cout << "info - display information about search and more precise about board" << std::endl;
+            std::cout << "eval - static evaluation of current position" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl << std::endl;
 
