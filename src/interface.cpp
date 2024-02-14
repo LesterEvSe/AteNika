@@ -13,11 +13,10 @@ namespace
     std::atomic<bool> quit(false);
 
     Board board;
-    History history;
 
     void go(bool debug) {
         lock = true;
-        Search::iter_deep(history, board, debug);
+        Search::iter_deep(board, debug);
 
         if (quit) {
             lock = false;
@@ -25,12 +24,13 @@ namespace
         }
 
         std::cout << "\nEngine's move: ";
-        if (!Search::get_best_move())
+        Move *move = Search::get_best_move();
+        if (move == nullptr)
             std::cout << "no moves" << std::endl;
         else
             // std::endl required, otherwise,
             // it will be output only after entering the next command
-            std::cout << static_cast<std::string>(*Search::get_best_move()) << std::endl;
+            std::cout << static_cast<std::string>(*move) << std::endl;
         lock = false;
     }
 }
@@ -41,7 +41,6 @@ void Uci::start()
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
-    history = History();
     std::string input, command;
 
     auto check_lock = [](){
@@ -74,7 +73,6 @@ void Uci::start()
             if (check_lock()) continue;
             // if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
-            history.clear();
 
             /*
             history.clear();
@@ -86,9 +84,7 @@ void Uci::start()
             if (check_lock()) continue;
             std::string fenstr;
             std::getline(iss, fenstr);
-
             board = Board(fenstr);
-            history.clear();
 
         } else if (command == "depth" || command == "time") {
             if (check_lock()) continue;
@@ -162,16 +158,10 @@ void Uci::start()
             Move move;
             try {
                 move = Move(board, command);
+                board.make(move);
             } catch (std::exception &e) {
                 std::cout << e.what() << std::endl;
-                continue;
             }
-            if (history.add_pos(board.get_zob_hash()))
-                board.make(move);
-            else
-                std::cout << "Impossible move. Draw" << std::endl;
-            if (board.get_ply() == 0)
-                history.clear();
 
             /*
             if (book && book->has_move())

@@ -21,7 +21,6 @@ namespace hidden {
     extern int64_t _fhf; // cut-off at first move
 
     // Search
-    extern History _history;
     extern OrderInfo _order_info;
     extern Move _best_move;
     extern int32_t _best_score;
@@ -49,7 +48,7 @@ namespace hidden {
     std::string get_allocated_sec();
     int32_t get_search_depth();
 
-    void iter_deep(History &history, Board &board, bool debug);
+    void iter_deep(Board &board, bool debug);
 } // Search
 
 #endif //ATENIKA_SEARCH_HPP

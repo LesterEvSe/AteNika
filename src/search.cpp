@@ -17,7 +17,6 @@ int64_t Search::hidden::_fh; // fail high
 int64_t Search::hidden::_fhf; // fail high first
 
 // Search
-History Search::hidden::_history;
 OrderInfo Search::hidden::_order_info;
 Move Search::hidden::_best_move;
 int32_t Search::hidden::_best_score;
@@ -122,9 +121,8 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     std::cout << std::endl;
 }
 
-void Search::iter_deep(History &history, Board &board, bool debug) {
+void Search::iter_deep(Board &board, bool debug) {
     hidden::_restart();
-    hidden::_history = history;
     hidden::_start = std::chrono::steady_clock::now();
 
     for (int16_t i = 1; i <= hidden::_depth; ++i) {
@@ -160,8 +158,8 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     ++_nodes;
     ZobristHash zob_hash = board.get_zob_hash();
 
-    // TODO fix threefold rule check (can't see it)
-    if (board.get_ply() >= MAX_PLY || _history.threefold_repetition(zob_hash))
+    // TODO threefold rule here
+    if (board.get_ply() >= MAX_PLY)
         return 0;
 
     MoveList move_list = Movegen(board).get_legal_moves();
@@ -229,7 +227,9 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
 
     ++_nodes;
     ZobristHash zob_hash = board.get_zob_hash();
-    if (board.get_ply() >= MAX_PLY || _history.threefold_repetition(zob_hash))
+
+    // TODO threefold rule here
+    if (board.get_ply() >= MAX_PLY)
         return 0;
 
     // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
