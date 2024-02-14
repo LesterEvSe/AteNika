@@ -111,10 +111,9 @@ void Uci::start()
                 continue;
             }
 
-            if (command == "depth") {
+            if (command == "depth")
                 Search::set_depth(number);
-                Search::set_time(INF);
-            } else
+            else
                 Search::set_time(number * 1000);
 
         } else if (input == "d" || input == "info") {

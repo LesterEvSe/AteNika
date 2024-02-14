@@ -22,7 +22,7 @@ private:
 
     // ply is half move
     // The moves that can be brought back.
-    // If >= 50 moves, there will be a draw
+    // If >= 50 full moves, there will be a draw
     uint8_t m_ply;
 
     // If it does not exist, then 0
