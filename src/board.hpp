@@ -102,7 +102,7 @@ public:
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void make(const Move &move);
-    void unmake_move();
+    void unmake(const Move &move);
 
     [[nodiscard]] std::string get_fen() const;
     friend std::ostream& operator<<(std::ostream &out, const Board &board);

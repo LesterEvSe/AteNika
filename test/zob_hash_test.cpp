@@ -11,7 +11,6 @@ public:
     }
 };
 
-// Trouble with zobrist hash
 TEST_F(ZobHashTestFixture, make_move_block) {
     Board board = Board("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3");
     Board expected = Board("r6r/1b2k2q/5b2/8/7B/8/8/R3K2R w KQ - 4");

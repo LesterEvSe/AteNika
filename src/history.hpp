@@ -6,7 +6,6 @@
 
 struct HistoryNode {
     uint96 hash;
-    Move move;
     uint8_t ply;
     uint8_t ep; // en_passant_cell
     uint8_t castling_rights;
@@ -19,7 +18,7 @@ namespace hidden {
 
 } // hidden
     void init();
-    void add_and_inc(const ZobristHash &zob_hash, Move move, uint8_t ply, uint8_t ep, uint8_t castling_rights);
+    void add_and_inc(const ZobristHash &zob_hash, uint8_t ply, uint8_t ep, uint8_t castling_rights);
     const HistoryNode &get_and_dec();
     bool threefold_rule(const Board &board);
     void clear();

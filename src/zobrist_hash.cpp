@@ -26,7 +26,6 @@ void ZobristHash::init() {
         QS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
         KS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
     }
-
     WHITE_MOVE = {dist64(gen64), dist32(gen32)};
 }
 
@@ -35,23 +34,6 @@ void ZobristHash::set_hash(const Board &board) {
         xor_move();
     if (board.get_en_passant())
         xor_en_passant(get_file(board.get_en_passant()));
-
-    if (board.get_white_ks_castle()) {
-        m_hash ^= KS_CASTLE[WHITE];
-        m_castling_rights |= 1;
-    }
-    if (board.get_white_qs_castle()) {
-        m_hash ^= QS_CASTLE[WHITE];
-        m_castling_rights |= 2;
-    }
-    if (board.get_black_ks_castle()) {
-        m_hash ^= KS_CASTLE[BLACK];
-        m_castling_rights |= 4;
-    }
-    if (board.get_black_qs_castle()) {
-        m_hash ^= QS_CASTLE[BLACK];
-        m_castling_rights |= 8;
-    }
 
     for (uint8_t i = 0; i < PIECE_SIZE; ++i) {
         bitboard white_pieces = board.get_pieces(WHITE, PIECES[i]);
@@ -83,45 +65,13 @@ bool operator==(const ZobristHash &left, const ZobristHash &right) {
 void ZobristHash::xor_piece(Color col, PieceType piece, uint8_t cell) {
     m_hash ^= PIECE_KEYS[col][piece][cell];
 }
-
 void ZobristHash::xor_move() {
     m_hash ^= WHITE_MOVE;
 }
-
-void ZobristHash::xor_en_passant(int8_t file) {
-    m_hash ^= EN_PASSANT_FILE[file];
-    m_ep_file = file;
+void ZobristHash::xor_en_passant(uint8_t ep_cell) {
+    m_hash ^= EN_PASSANT_FILE[get_file(ep_cell)];
 }
-
-void ZobristHash::clear_en_passant() {
-    if (m_ep_file != 0x8) {
-        m_hash ^= EN_PASSANT_FILE[m_ep_file];
-        m_ep_file = 0x8;
-    }
-}
-
 void ZobristHash::xor_white_ks_castling() { m_hash ^= KS_CASTLE[WHITE]; }
 void ZobristHash::xor_white_qs_castling() { m_hash ^= QS_CASTLE[WHITE]; }
 void ZobristHash::xor_black_ks_castling() { m_hash ^= KS_CASTLE[BLACK]; }
 void ZobristHash::xor_black_qs_castling() { m_hash ^= QS_CASTLE[BLACK]; }
-
-void ZobristHash::update_castling_rights(uint8_t castling) {
-    uint8_t temp = m_castling_rights ^ castling;
-
-    if (temp & 1) {
-        m_castling_rights &= 0b1110;
-        m_hash ^= KS_CASTLE[WHITE];
-    }
-    if (temp & 2) {
-        m_castling_rights &= 0b1101;
-        m_hash ^= QS_CASTLE[WHITE];
-    }
-    if (temp & 4) {
-        m_castling_rights &= 0b1011;
-        m_hash ^= KS_CASTLE[BLACK];
-    }
-    if (temp & 8) {
-        m_castling_rights &= 0b0111;
-        m_hash ^= QS_CASTLE[BLACK];
-    }
-}

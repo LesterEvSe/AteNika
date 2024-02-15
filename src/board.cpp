@@ -227,17 +227,13 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 
 void Board::make(const Move &move)
 {
-    History::add_and_inc(m_hash, move, m_ply, m_en_passant_cell, m_castling_rights);
+    History::add_and_inc(m_hash, m_ply, m_en_passant_cell, m_castling_rights);
 
     // En passant is available on 1 move only
     if (m_en_passant_cell) {
-        m_hash.xor_en_passant(get_file(m_en_passant_cell));
+        m_hash.xor_en_passant(m_en_passant_cell);
         m_en_passant_cell = ZERO;
     }
-    /*
-    m_en_passant_cell = ZERO;
-    m_hash.clear_en_passant();
-    */
     ++m_ply;
 
     uint8_t to = move.get_to_cell();
@@ -248,10 +244,12 @@ void Board::make(const Move &move)
         case Move::CAPTURE:
             remove_piece(get_opponent_move(), move.get_captured_piece(), to);
             break;
+
         case Move::LONG_PAWN_MOVE:
             m_en_passant_cell = (m_player_move == WHITE) ? to-8 : to+8;
-            m_hash.xor_en_passant(get_file(m_en_passant_cell));
+            m_hash.xor_en_passant(m_en_passant_cell);
             break;
+
         case Move::QSIDE_CASTLING: {
             uint8_t rook_cell;
             if (m_player_move == WHITE) {
@@ -291,6 +289,7 @@ void Board::make(const Move &move)
             remove_piece(m_player_move, move.get_move_piece(), to);
             add_piece(m_player_move, move.get_promotion_piece(), to);
             break;
+
         default: // Move::QUIET
             m_ply = (move.get_move_piece() == PAWN) ? ZERO : m_ply;
             break;
@@ -304,49 +303,25 @@ void Board::make(const Move &move)
     m_hash.xor_move();
 
     m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
-//    m_hash.update_castling_rights(m_castling_rights);
 }
 
-/*
-struct HistoryNode {
-    ZobristHash zob_hash;
-    Move move;
-    uint8_t ply;
-    uint8_t ep; // en_passant_cell
-    uint8_t castling_rights;
-};
-*/
-
-// TODO trouble with Move::PROMOTION and add/remove piece (there change m_hash)
-void Board::unmake_move() {
+void Board::unmake(const Move &move) {
     // Recover important data from history
     const HistoryNode &hnode = History::get_and_dec();
     m_hash = hnode.hash;
     m_ply = hnode.ply;
     m_en_passant_cell = hnode.ep;
     m_castling_rights = hnode.castling_rights; // or we can do |=
+
     m_player_move = get_opponent_move();
-
-
-    Move move = hnode.move;
     uint8_t to = move.get_to_cell();
-    /*
-    add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
-    remove_piece(m_player_move, move.get_move_piece(), to);
-    */
 
     switch (move.get_flag()) {
         case Move::CAPTURE:
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
-            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], to);
 
-            set(m_pieces[get_opponent_move()][move.get_captured_piece()], move.get_to_cell());
-            /*
-            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
-            remove_piece(m_player_move, move.get_move_piece(), to);
-
-            add_piece(get_opponent_move(), move.get_captured_piece(), to);
-            */
+            set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
             break;
         case Move::QSIDE_CASTLING: {
 
@@ -380,7 +355,7 @@ void Board::unmake_move() {
             */
 
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
-            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], to);
 
             uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
             set(m_pieces[m_player_move][ROOK], rook_cell);
@@ -404,16 +379,16 @@ void Board::unmake_move() {
             break;
         }
         case Move::CAPTURE_PROMOTION: // Fall through to use PROMOTION code
-            set(m_pieces[get_opponent_move()][move.get_captured_piece()], move.get_to_cell());
+            set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
         case Move::PROMOTION:
 
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
-            reset(m_pieces[m_player_move][move.get_promotion_piece()], move.get_to_cell());
+            reset(m_pieces[m_player_move][move.get_promotion_piece()], to);
             break;
-        default: // Move::QUIET
+        default: // Move::QUIET and Move::LONG_PAWN_MOVE
             // new code here
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
-            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], to);
             break;
     }
     update_bitboards();
