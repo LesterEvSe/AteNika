@@ -32,7 +32,7 @@ Book::Book(const std::string &path) : head(nullptr) {
 //            if (!Transposition::in_table(board.get_zob_hash())) {
 //                // The depth is great enough that it could be considered the best move ever
 //                TTEntry entry = TTEntry(move, Eval::evaluate(board, board.get_curr_move()), 300, EXACT);
-//                Transposition::set(board.get_zob_hash(), entry);
+//                Transposition::reset(board.get_zob_hash(), entry);
 //            }
             board.make(move);
         }

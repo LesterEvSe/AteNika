@@ -4,7 +4,7 @@ Briefly about the name. **AteNika** are the names of two ancient Greek goddesses
 
 ## Build and Run
 On **Windows**, all you need to do is run the code from any available IDE with C++20.  
-**Another way**. You can create a new project via VS, add all files from src and book.txt there, and then load these files into the project. This way you can run and customize the project with VS directly
+**Another way**. You can create a new project via VS, add_and_inc all files from src and book.txt there, and then load these files into the project. This way you can run and customize the project with VS directly
 
 For **Unix-like** systems follow this steps:
 ``` Bash

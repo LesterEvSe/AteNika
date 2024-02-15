@@ -138,7 +138,7 @@ void PieceTables::set_scores(const Board &board)
     }
 }
 
-void PieceTables::add(Color color, PieceType piece, uint8_t sq) {
+void PieceTables::add_and_inc(Color color, PieceType piece, uint8_t sq) {
     m_scores[color][OPENING] += piece_sq_tables[color][OPENING][piece][sq];
 }
 void PieceTables::remove(Color color, PieceType piece, uint8_t sq) {

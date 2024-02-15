@@ -5,7 +5,7 @@
 #include "zobrist_hash.hpp"
 
 struct HistoryNode {
-    ZobristHash zob_hash;
+    uint96 hash;
     Move move;
     uint8_t ply;
     uint8_t ep; // en_passant_cell
@@ -14,13 +14,13 @@ struct HistoryNode {
 
 namespace History {
 namespace hidden {
-    extern uint16_t _counter;
+    extern int16_t _counter;
     extern HistoryNode _history[MAX_MOVES];
 
 } // hidden
-
-    void add(const ZobristHash &zob_hash, Move move, uint8_t ply, uint8_t ep, uint8_t castling_rights);
-    HistoryNode &get_and_dec();
+    void init();
+    void add_and_inc(const ZobristHash &zob_hash, Move move, uint8_t ply, uint8_t ep, uint8_t castling_rights);
+    const HistoryNode &get_and_dec();
     bool threefold_rule(const Board &board);
     void clear();
 } // History

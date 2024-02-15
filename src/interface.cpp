@@ -77,7 +77,7 @@ void Uci::start()
             /*
             history.clear();
             if (book)
-                book->reset();
+                book->set();
             */
 
         } else if (command == "setfen") {
@@ -139,7 +139,7 @@ void Uci::start()
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
             std::cout << "newgame - start new game" << std::endl;
-            std::cout << "setfen fen_str - set up the position described in fenstring (assuming the string is correct)" << std::endl;
+            std::cout << "setfen fen_str - reset up the position described in fenstring (assuming the string is correct)" << std::endl;
             std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
             std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)" << std::endl;
             std::cout << "d - display the current position" << std::endl;
@@ -149,7 +149,7 @@ void Uci::start()
             std::cout << "quit - exit the program" << std::endl << std::endl;
 
             std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl;
-            std::cout << "Or for promotion piece add last symbol q (queen), n (knight), b (bishop) or r (rook)." << std::endl;
+            std::cout << "Or for promotion piece add_and_inc last symbol q (queen), n (knight), b (bishop) or r (rook)." << std::endl;
             std::cout << "E.g., a7a8q, d2d1r" << std::endl;
 
         } else if (Move::isMove(input)) {

@@ -18,8 +18,8 @@ inline uint8_t count_bits(uint64_t board) {
     return memo_bits[board & MAX_VAL] + memo_bits[(board >> 16) & MAX_VAL] +
         memo_bits[(board >> 32) & MAX_VAL] + memo_bits[(board >> 48) & MAX_VAL];
 }
-inline void set0(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
-inline void set1(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
+inline void set(bitboard &bb, uint8_t cell)   { bb |= ONE << cell; }
+inline void reset(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
 
 /**
  * bitScanForward/LSB

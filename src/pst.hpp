@@ -16,7 +16,7 @@ public:
 //    void set_scores(const Board &board);
 //
 //
-//    void add(Color color, PieceType piece, uint8_t sq);
+//    void add_and_inc(Color color, PieceType piece, uint8_t sq);
 //    void remove(Color color, PieceType piece, uint8_t sq);
 //    [[nodiscard]] int32_t get(Color color, GamePhase phase) const;
 };

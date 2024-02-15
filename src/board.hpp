@@ -50,6 +50,8 @@ private:
     // 1000 - black queenside
     uint8_t m_castling_rights {0};
 
+    int temp_counter = 0;
+
     ZobristHash m_hash;
 //    PieceTables m_pst; // piece square tables
 
@@ -100,6 +102,7 @@ public:
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
 
     void make(const Move &move);
+    void unmake_move();
 
     [[nodiscard]] std::string get_fen() const;
     friend std::ostream& operator<<(std::ostream &out, const Board &board);

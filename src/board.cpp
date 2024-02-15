@@ -1,10 +1,13 @@
 #include "board.hpp"
+#include "history.hpp"
 #include <sstream> // for std::istringstream in constructor
 
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
-Board::Board(std::string short_fen) {
+Board::Board(std::string short_fen)
+{
+    History::clear();
     std::istringstream iss(short_fen);
     std::string pieces;
     iss >> pieces;
@@ -211,22 +214,30 @@ bool Board::under_attack(Color defender, uint8_t cell) const {
 }
 
 void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
-//    m_pst.add(color, piece, cell);
-    set1(m_pieces[color][piece], cell);
+//    m_pst.add_and_inc(color, piece, cell);
+    set(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
 
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 //    m_pst.remove(color, piece, cell);
-    set0(m_pieces[color][piece], cell);
+    reset(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
 
+void Board::make(const Move &move)
+{
+    History::add_and_inc(m_hash, move, m_ply, m_en_passant_cell, m_castling_rights);
 
-void Board::make(const Move &move) {
     // En passant is available on 1 move only
+    if (m_en_passant_cell) {
+        m_hash.xor_en_passant(get_file(m_en_passant_cell));
+        m_en_passant_cell = ZERO;
+    }
+    /*
     m_en_passant_cell = ZERO;
     m_hash.clear_en_passant();
+    */
     ++m_ply;
 
     uint8_t to = move.get_to_cell();
@@ -242,13 +253,29 @@ void Board::make(const Move &move) {
             m_hash.xor_en_passant(get_file(m_en_passant_cell));
             break;
         case Move::QSIDE_CASTLING: {
-            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+            uint8_t rook_cell;
+            if (m_player_move == WHITE) {
+                rook_cell = a1;
+                m_hash.xor_white_qs_castling();
+            } else {
+                rook_cell = a8;
+                m_hash.xor_black_qs_castling();
+            }
+//            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell + 3);
             break;
         }
         case Move::KSIDE_CASTLING: {
-            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+            uint8_t rook_cell;
+            if (m_player_move == WHITE) {
+                rook_cell = h1;
+                m_hash.xor_white_ks_castling();
+            } else {
+                rook_cell = h8;
+                m_hash.xor_black_ks_castling();
+            }
+//            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell - 2);
             break;
@@ -277,7 +304,119 @@ void Board::make(const Move &move) {
     m_hash.xor_move();
 
     m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
-    m_hash.update_castling_rights(m_castling_rights);
+//    m_hash.update_castling_rights(m_castling_rights);
+}
+
+/*
+struct HistoryNode {
+    ZobristHash zob_hash;
+    Move move;
+    uint8_t ply;
+    uint8_t ep; // en_passant_cell
+    uint8_t castling_rights;
+};
+*/
+
+// TODO trouble with Move::PROMOTION and add/remove piece (there change m_hash)
+void Board::unmake_move() {
+    // Recover important data from history
+    const HistoryNode &hnode = History::get_and_dec();
+    m_hash = hnode.hash;
+    m_ply = hnode.ply;
+    m_en_passant_cell = hnode.ep;
+    m_castling_rights = hnode.castling_rights; // or we can do |=
+    m_player_move = get_opponent_move();
+
+
+    Move move = hnode.move;
+    uint8_t to = move.get_to_cell();
+    /*
+    add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+    remove_piece(m_player_move, move.get_move_piece(), to);
+    */
+
+    switch (move.get_flag()) {
+        case Move::CAPTURE:
+            set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+
+            set(m_pieces[get_opponent_move()][move.get_captured_piece()], move.get_to_cell());
+            /*
+            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+            remove_piece(m_player_move, move.get_move_piece(), to);
+
+            add_piece(get_opponent_move(), move.get_captured_piece(), to);
+            */
+            break;
+        case Move::QSIDE_CASTLING: {
+
+            /*
+            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+            remove_piece(m_player_move, move.get_move_piece(), to);
+
+            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+            add_piece(m_player_move, ROOK, rook_cell);
+            remove_piece(m_player_move, ROOK, rook_cell + 3);
+            break;
+            */
+
+            set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], to);
+
+            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+            set(m_pieces[m_player_move][ROOK], rook_cell);
+            reset(m_pieces[m_player_move][ROOK], rook_cell + 3);
+
+            break;
+        }
+        case Move::KSIDE_CASTLING: {
+            /*
+            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+            remove_piece(m_player_move, move.get_move_piece(), to);
+
+            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+            add_piece(m_player_move, ROOK, rook_cell);
+            remove_piece(m_player_move, ROOK, rook_cell - 2);
+            */
+
+            set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+
+            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+            set(m_pieces[m_player_move][ROOK], rook_cell);
+            reset(m_pieces[m_player_move][ROOK], rook_cell - 2);
+            break;
+        }
+        case Move::EN_PASSANT: {
+            /*
+            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+            remove_piece(m_player_move, move.get_move_piece(), to);
+
+            uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
+            add_piece(get_opponent_move(), PAWN, captured_pawn);
+            */
+
+            set(m_pieces[m_player_move][PAWN], move.get_from_cell());
+            reset(m_pieces[m_player_move][PAWN], move.get_to_cell());
+
+            uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
+            set(m_pieces[get_opponent_move()][PAWN], captured_pawn);
+            break;
+        }
+        case Move::CAPTURE_PROMOTION: // Fall through to use PROMOTION code
+            set(m_pieces[get_opponent_move()][move.get_captured_piece()], move.get_to_cell());
+        case Move::PROMOTION:
+
+            set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+            reset(m_pieces[m_player_move][move.get_promotion_piece()], move.get_to_cell());
+            break;
+        default: // Move::QUIET
+            // new code here
+            set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+            reset(m_pieces[m_player_move][move.get_move_piece()], move.get_to_cell());
+            break;
+    }
+    update_bitboards();
 }
 
 std::string Board::get_fen() const {

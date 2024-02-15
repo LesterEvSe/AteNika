@@ -3,7 +3,7 @@
 #include "move_list.hpp"
 #include "movegen.hpp"
 
-Move::Move(const Board &board, const std::string &move) {
+Move::Move(Board &board, const std::string &move) {
     MoveList legal_moves = Movegen(board).get_legal_moves();
     int i;
 

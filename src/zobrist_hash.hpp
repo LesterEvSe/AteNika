@@ -42,12 +42,18 @@ public:
     void set_hash(const Board &board);
     [[nodiscard]] uint96 get_hash() const;
     friend bool operator==(const ZobristHash &left, const ZobristHash &right);
+    void operator=(const uint96 &hash);
 
     void xor_piece(Color col, PieceType piece, uint8_t cell);
     void xor_move();
 
     void xor_en_passant(int8_t file);
     void clear_en_passant();
+
+    void xor_white_ks_castling();
+    void xor_white_qs_castling();
+    void xor_black_ks_castling();
+    void xor_black_qs_castling();
     void update_castling_rights(uint8_t castling);
 };
 

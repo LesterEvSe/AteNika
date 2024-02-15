@@ -19,7 +19,7 @@ public:
         EN_PASSANT = 5,
         CAPTURE = 8,
         PROMOTION = 16,
-        CAPTURE_PROMOTION = 24 // if Capture 1000 and Promotion 10000 bits set
+        CAPTURE_PROMOTION = 24 // if Capture 1000 and Promotion 10000 bits reset
     };
 
 private:
@@ -38,7 +38,7 @@ public:
     Move() : m_flag(NULL_MOVE) {}
 
     // example e4e5 g2g1q or something else
-    explicit Move(const Board &board, const std::string &move);
+    explicit Move(Board &board, const std::string &move);
 
     Move(uint8_t from,
          uint8_t to,

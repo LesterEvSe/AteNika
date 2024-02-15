@@ -71,9 +71,14 @@ uint96 ZobristHash::get_hash() const {
     return m_hash;
 }
 
+void ZobristHash::operator=(const uint96 &hash) {
+    m_hash = hash;
+}
+
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
     return left.m_hash == right.m_hash;
 }
+
 
 void ZobristHash::xor_piece(Color col, PieceType piece, uint8_t cell) {
     m_hash ^= PIECE_KEYS[col][piece][cell];
@@ -94,6 +99,11 @@ void ZobristHash::clear_en_passant() {
         m_ep_file = 0x8;
     }
 }
+
+void ZobristHash::xor_white_ks_castling() { m_hash ^= KS_CASTLE[WHITE]; }
+void ZobristHash::xor_white_qs_castling() { m_hash ^= QS_CASTLE[WHITE]; }
+void ZobristHash::xor_black_ks_castling() { m_hash ^= KS_CASTLE[BLACK]; }
+void ZobristHash::xor_black_qs_castling() { m_hash ^= QS_CASTLE[BLACK]; }
 
 void ZobristHash::update_castling_rights(uint8_t castling) {
     uint8_t temp = m_castling_rights ^ castling;

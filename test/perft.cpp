@@ -4,6 +4,8 @@
 #include "movegen.hpp"
 #include "movepicker.hpp"
 
+#include "history.hpp"
+
 // using Stockfish 16 to calculation the expected value
 /**
  * position fen (fen_pos)
@@ -15,7 +17,7 @@
 class PerftFixture : public testing::Test
 {
 protected:
-    static int64_t perft(const Board &board, int depth) {
+    static int64_t perft(Board &board, int depth) {
         MoveList move_list = Movegen(board).get_legal_moves();
 
         // In order not to constantly subtract 1,
@@ -25,10 +27,20 @@ protected:
 
         int64_t legal_moves = 0;
         for (uint8_t i = 0; i < move_list.size(); ++i) {
+
+            /*
             Board temp = board;
             temp.make(move_list[i]);
 
             int64_t moves = perft(temp, depth);
+            legal_moves += moves;
+            */
+
+
+            board.make(move_list[i]);
+            int64_t moves = perft(board, depth);
+            board.unmake_move();
+
             legal_moves += moves;
         }
         return legal_moves;
@@ -37,6 +49,8 @@ protected:
 public:
     static void SetUpTestCase() {
         init_bits_pre_calculation();
+        History::init();
+        ZobristHash::init();
         Rays::init();
         Attacks::init();
     }
@@ -105,6 +119,8 @@ TEST_F(PerftFixture, trouble_position_2) {
         ASSERT_EQ(expect[i], actual[i]);
 }
 
+// TODO Check this pos
+// expect 191, actual 235
 TEST_F(PerftFixture, trouble_position_3) {
     Board board = Board("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0");
     const uint8_t size = 6;

@@ -33,12 +33,22 @@ void Movegen::gen_moves() {
 
 void Movegen::gen_legal_moves() {
     Color curr_player = m_board.get_curr_move();
+    Board &temp = const_cast<Board&>(m_board);
+
     for (uint8_t i = 0; i < m_moves.size(); ++i) {
+
+        /*
         Board temp = m_board;
         temp.make(m_moves[i]);
 
         if (!temp.king_in_check(curr_player))
             m_legal_moves.emplace_back(m_moves[i]);
+        */
+
+        temp.make(m_moves[i]);
+        if (!m_board.king_in_check(curr_player))
+            m_legal_moves.emplace_back(m_moves[i]);
+        temp.unmake_move();
     }
 }
 

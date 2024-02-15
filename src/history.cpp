@@ -1,26 +1,36 @@
 #include "history.hpp"
 #include "board.hpp"
+#include <cstring>
 
-uint16_t History::hidden::_counter = 0;
+int16_t History::hidden::_counter = 0;
 HistoryNode History::hidden::_history[MAX_MOVES];
 
-void History::add(const ZobristHash &zob_hash, Move move, uint8_t ply, uint8_t ep, uint8_t castling_rights) {
-    hidden::_history[hidden::_counter].zob_hash = zob_hash;
+void History::init() {
+    hidden::_counter = 0;
+    std::memset(hidden::_history, 0, sizeof(hidden::_history));
+}
+
+void History::add_and_inc(const ZobristHash &zob_hash, Move move, uint8_t ply, uint8_t ep, uint8_t castling_rights) {
+//    std::cout << 'i' << (int)hidden::_counter << ' ';
+//    hidden::_history[hidden::_counter++] = {zob_hash, move, ply, ep, castling_rights}; // more readable view
+
+    hidden::_history[hidden::_counter].hash = zob_hash.get_hash();
     hidden::_history[hidden::_counter].move = move;
     hidden::_history[hidden::_counter].ply = ply;
     hidden::_history[hidden::_counter].ep = ep;
     hidden::_history[hidden::_counter++].castling_rights = castling_rights;
 }
-HistoryNode &History::get_and_dec() {
+const HistoryNode &History::get_and_dec() {
+//    std::cout << 'd' << (int)hidden::_counter << ' ';
     return hidden::_history[--hidden::_counter];
 }
 bool History::threefold_rule(const Board &board) {
-    bits96 hash = (bits96)board.get_zob_hash().get_hash();
+    uint96 hash = board.get_zob_hash().get_hash();
     uint8_t repetitions = 0;
     uint16_t ind = hidden::_counter-1;
 
     for (uint8_t ply = board.get_ply(); ply > 0; --ply)
-        if ((bits96)hidden::_history[ind--].zob_hash.get_hash() == hash)
+        if (hidden::_history[ind--].hash == hash)
             ++repetitions;
     return repetitions >= 3;
 }
