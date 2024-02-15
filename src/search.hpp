@@ -16,7 +16,6 @@ namespace hidden {
     extern int16_t _depth;
     extern std::atomic<bool> _stop;
 
-    extern int16_t _check_gap;
     extern int64_t _fh; // cut-off at n move. The moves are accumulating
     extern int64_t _fhf; // cut-off at first move
 

@@ -12,7 +12,6 @@ bool Search::hidden::_without_time;
 int16_t Search::hidden::_depth;
 std::atomic<bool> Search::hidden::_stop;
 
-int16_t Search::hidden::_check_gap;
 int64_t Search::hidden::_fh; // fail high
 int64_t Search::hidden::_fhf; // fail high first
 
@@ -28,7 +27,6 @@ void Search::hidden::_restart() {
     _nodes = 0;
     _stop = false;
 
-    _check_gap = 0;
     _fh = 0;
     _fhf = 0;
     _mate = "";
@@ -46,15 +44,17 @@ void Search::init() {
 
 bool Search::hidden::_check_limits() {
     if (_stop) return true;
-    // check every 1024 node
-    if (!(++_check_gap & 1024)) return false;
+    // check every 2048 node (if bit 2^11 is set, then check)
+    if (_nodes & 2047) return false;
 
-    _check_gap = 0;
     int32_t elapsed =
             std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
 
     if (_without_time || elapsed < _ms_allocated) return false;
     return _stop = true;
+}
+void Search::stop() {
+    hidden::_stop = true;
 }
 
 std::string Search::get_mate() {
@@ -68,10 +68,6 @@ std::string Search::get_allocated_sec() {
 }
 int32_t Search::get_search_depth() {
     return hidden::_depth;
-}
-
-void Search::stop() {
-    hidden::_stop = true;
 }
 
 void Search::set_time(int32_t ms_allocated) {
