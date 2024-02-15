@@ -156,10 +156,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 //        return Eval::evaluate(board); // quiescence search here
 
     ++_nodes;
-    ZobristHash zob_hash = board.get_zob_hash();
-
-    // TODO threefold rule here
-    if (board.get_ply() >= MAX_PLY)
+    if (board.get_ply() >= MAX_PLY || History::threefold_rule(board))
         return 0;
 
     MoveList move_list = Movegen(board).get_legal_moves();
@@ -169,7 +166,9 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     if (move_list.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
+    ZobristHash zob_hash = board.get_zob_hash();
     MovePicker move_picker = MovePicker(&move_list, board.get_zob_hash(), _order_info);
+
     Move curr_best = Move();
     int32_t old_alpha = alpha;
 
@@ -181,17 +180,17 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
     while (move_picker.has_next()) {
         Move move = move_picker.get_next();
-        Board temp = board;
-        temp.make(move);
+        board.make(move);
 
         int32_t score;
         if (full_window)
-            score = -_negamax(temp, depth-1, -beta, -alpha);
+            score = -_negamax(board, depth-1, -beta, -alpha);
         else {
-            score = -_negamax(temp, depth-1, -alpha-1, -alpha);
+            score = -_negamax(board, depth-1, -alpha-1, -alpha);
             if (score > alpha)
-                score = -_negamax(temp, depth-1, -beta, -alpha);
+                score = -_negamax(board, depth-1, -beta, -alpha);
         }
+        board.unmake(move);
 
         if (score > alpha) {
             if (score >= beta) {
@@ -215,7 +214,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     --_order_info;
 
     if (alpha != old_alpha)
-        Ttable::add(board.get_zob_hash(), curr_best);
+        Ttable::add(zob_hash, curr_best);
     return alpha;
 }
 
@@ -226,10 +225,7 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
         return 0;
 
     ++_nodes;
-    ZobristHash zob_hash = board.get_zob_hash();
-
-    // TODO threefold rule here
-    if (board.get_ply() >= MAX_PLY)
+    if (board.get_ply() >= MAX_PLY || History::threefold_rule(board))
         return 0;
 
     // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -243,7 +239,9 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     if (move_list.size() == 0)
         return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
-    QMovePicker q_move_picker = QMovePicker(&move_list, board.get_zob_hash());
+    ZobristHash zob_hash = board.get_zob_hash();
+    QMovePicker q_move_picker = QMovePicker(&move_list, zob_hash);
+
     Move curr_best = Move();
     int32_t old_alpha = alpha;
     bool first_move = true;
@@ -252,9 +250,9 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     while (q_move_picker.has_next())
     {
         Move move = q_move_picker.get_next();
-        Board temp = board;
-        temp.make(move);
-        stand_pat = -_quiescence(temp, -beta, -alpha);
+        board.make(move);
+        stand_pat = -_quiescence(board, -beta, -alpha);
+        board.unmake(move);
 
         if (stand_pat > alpha) {
             if (stand_pat >= beta) {
@@ -271,6 +269,6 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     --_order_info;
 
     if (alpha != old_alpha)
-        Ttable::add(board.get_zob_hash(), curr_best);
+        Ttable::add(zob_hash, curr_best);
     return alpha;
 }
