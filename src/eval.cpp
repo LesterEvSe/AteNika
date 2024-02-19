@@ -1,21 +1,33 @@
 #include "eval.hpp"
 
-template<Color color>
-int32_t Eval::hidden::_eval_material(const Board &board) {
-    int32_t score = 0;
-    score += MATERIAL_BONUS[PAWN]   * count_bits(board.get_pieces(color, PAWN));
-    score += MATERIAL_BONUS[KNIGHT] * count_bits(board.get_pieces(color, KNIGHT));
-    score += MATERIAL_BONUS[BISHOP] * count_bits(board.get_pieces(color, BISHOP));
-    score += MATERIAL_BONUS[ROOK]   * count_bits(board.get_pieces(color, ROOK));
-    score += MATERIAL_BONUS[QUEEN]  * count_bits(board.get_pieces(color, QUEEN));
-    return score;
-}
-
-// TODO change all evaluation to standard, because it's working too bad
 int32_t Eval::evaluate(const Board &board) {
     int32_t score = 0;
-    score += hidden::_eval_material<WHITE>(board) - hidden::_eval_material<BLACK>(board);
-//    score += board.get_pst_score(WHITE, OPENING) - board.get_pst_score(BLACK, OPENING);
-    score += PieceTables::get_score(board);
+    int32_t mat_white = 0;
+    int32_t mat_black = 0;
+
+    for (PieceType type : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN})
+    {
+        bitboard white = board.get_pieces(WHITE, type);
+        while (white) {
+            score += hidden::PST[type][hidden::FLIP[pop_lsb(white)]];
+            mat_white += hidden::MATERIAL_BONUS[type];
+        }
+
+        bitboard black = board.get_pieces(BLACK, type);
+        while (black) {
+            score -= hidden::PST[type][pop_lsb(black)];
+            mat_black += hidden::MATERIAL_BONUS[type];
+        }
+    }
+
+
+    score += mat_white > hidden::ENDGAME_MAT ?
+            hidden::KING_M[hidden::FLIP[lsb(board.get_pieces(WHITE, KING))]] :
+            hidden::KING_E[hidden::FLIP[lsb(board.get_pieces(WHITE, KING))]];
+
+    score -= mat_black > hidden::ENDGAME_MAT ?
+             hidden::KING_M[lsb(board.get_pieces(BLACK, KING))] :
+             hidden::KING_E[lsb(board.get_pieces(BLACK, KING))];
+
     return board.get_curr_move() == WHITE ? score : -score;
 }
