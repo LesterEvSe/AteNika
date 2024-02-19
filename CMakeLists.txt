@@ -35,7 +35,6 @@ set(PROJECT_SOURCES
     src/ttable.cpp
     src/mvv_lva.cpp
     src/order_info.cpp
-    src/pst.cpp
     src/qmovepicker.cpp
     src/interface.cpp
     src/history.cpp

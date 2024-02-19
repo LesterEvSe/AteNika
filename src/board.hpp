@@ -5,7 +5,6 @@
 #include "attacks.hpp"
 #include "move.hpp"
 #include "zobrist_hash.hpp"
-#include "pst.hpp"
 
 class Board {
 private:
@@ -83,7 +82,6 @@ public:
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] ZobristHash get_zob_hash() const;
     [[nodiscard]] uint8_t get_en_passant() const;
-//    [[nodiscard]] int32_t get_pst_score(Color color, GamePhase phase) const;
 
     // ks - king side
     // qs - queen side

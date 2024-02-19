@@ -62,10 +62,8 @@ Board::Board(std::string short_fen)
 
     update_bitboards();
 
-    // Order is important!
-    // m_hash and m_pst are initialized, after the rest of the Board fields are initialized
+    // m_hash is initialized, after the rest of the Board fields are initialized
     m_hash.set_hash(*this);
-//    m_pst.set_scores(*this);
 }
 
 void Board::update_bitboards() {
@@ -113,7 +111,6 @@ bitboard Board::get_free_cells()  const { return ~m_all; }
 uint8_t Board::get_ply()          const { return m_ply;  }
 ZobristHash Board::get_zob_hash() const { return m_hash; }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
-//int32_t Board::get_pst_score(Color color, GamePhase phase) const { return m_pst.get(color, phase); }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
 bool Board::get_white_qs_castle() const { return m_castling_rights & 2; }
@@ -214,13 +211,11 @@ bool Board::under_attack(Color defender, uint8_t cell) const {
 }
 
 void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
-//    m_pst.add_and_inc(color, piece, cell);
     set(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
 
 void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
-//    m_pst.remove(color, piece, cell);
     reset(m_pieces[color][piece], cell);
     m_hash.xor_piece(color, piece, cell);
 }
@@ -259,7 +254,7 @@ void Board::make(const Move &move)
                 rook_cell = a8;
                 m_hash.xor_black_qs_castling();
             }
-//            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell + 3);
             break;
@@ -273,7 +268,7 @@ void Board::make(const Move &move)
                 rook_cell = h8;
                 m_hash.xor_black_ks_castling();
             }
-//            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell - 2);
             break;
@@ -452,7 +447,7 @@ std::string Board::get_fen() const {
         fen += FIELD[m_en_passant_cell] + " ";
     else
         fen += "- ";
-    return fen + std::to_string(m_ply);
+    return fen + std::to_string(m_ply) + " " + std::to_string(History::get_ply()/2);
 }
 
 std::ostream &operator<<(std::ostream &out, const Board &board) {

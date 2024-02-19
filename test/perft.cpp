@@ -43,6 +43,7 @@ public:
         ZobristHash::init();
         Rays::init();
         Attacks::init();
+        History::init();
     }
 };
 
