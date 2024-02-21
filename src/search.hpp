@@ -1,7 +1,6 @@
 #ifndef ATENIKA_SEARCH_HPP
 #define ATENIKA_SEARCH_HPP
 
-#include "history.hpp"
 #include "order_info.hpp"
 #include <chrono>
 #include <atomic>

@@ -37,7 +37,6 @@ set(PROJECT_SOURCES
     src/order_info.cpp
     src/qmovepicker.cpp
     src/interface.cpp
-    src/history.cpp
 )
 
 set(PROJECT_HEADERS

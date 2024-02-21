@@ -6,7 +6,14 @@
 #include "move.hpp"
 #include "zobrist_hash.hpp"
 
-// TODO add history straight to the Board
+struct HistoryNode {
+    uint96 hash;
+    uint8_t ply;
+    uint8_t ep; // en_passant_cell
+    uint8_t castling_rights;
+};
+
+// TODO add overall moves to FEN and test it
 class Board {
 private:
     // enums COLOR_SIZE and PIECE_SIZE in defs.hpp
@@ -49,11 +56,13 @@ private:
     // 0100 - black kingside
     // 1000 - black queenside
     uint8_t m_castling_rights {0};
-
-    int temp_counter = 0;
-
     ZobristHash m_hash;
-//    PieceTables m_pst; // piece square tables
+
+    static constexpr uint16_t MAX_MOVES {2048};
+
+    int16_t m_moves {0};
+    HistoryNode m_history[MAX_MOVES];
+
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -99,6 +108,7 @@ public:
     [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
     [[nodiscard]] bool king_in_check(Color color) const;
     [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
+    [[nodiscard]] bool threefold_rule() const;
 
     void make(const Move &move);
     void unmake(const Move &move);

@@ -14,7 +14,6 @@ int main() {
     Rays::init();
     Attacks::init(); // Must be init after Rays
     MvvLva::init();
-    History::init();
     // Eval::init();
     Search::init();
 

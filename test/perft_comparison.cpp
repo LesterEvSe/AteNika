@@ -39,10 +39,6 @@ uint8_t count_bits_popcount(uint64_t num) {
 void check(uint8_t (*bits_count)(uint64_t), const std::vector<uint64_t> &nums) {
     for (size_t i = 0; i < nums.size(); ++i)
         bits_count(nums[i]);
-
-//    for (uint64_t i = 0; i < 50; ++i)
-//        std::cout << (int)bits_count(nums[i]) << ' ';
-//    std::cout << std::endl;
 }
 
 TEST_F(PerftComparison, count_bits_func) {

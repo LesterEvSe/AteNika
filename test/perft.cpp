@@ -4,8 +4,6 @@
 #include "movegen.hpp"
 #include "movepicker.hpp"
 
-#include "history.hpp"
-
 // using Stockfish 16 to calculation the expected value
 /**
  * position fen (fen_pos)
@@ -39,11 +37,9 @@ protected:
 public:
     static void SetUpTestCase() {
         init_bits_pre_calculation();
-        History::init();
         ZobristHash::init();
         Rays::init();
         Attacks::init();
-        History::init();
     }
 };
 

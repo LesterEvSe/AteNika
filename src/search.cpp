@@ -108,7 +108,6 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     std::cout << " pv ";
 
     Board temp = board;
-    int16_t stack_ply = History::get_ply();
 
     // Set a counter, so we don't go over the limit
     for (int16_t i = 0; i < depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
@@ -117,7 +116,6 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
         temp.make(move);
     }
     std::cout << std::endl;
-    History::set_ply(stack_ply);
 }
 
 void Search::iter_deep(Board &board, bool debug) {
@@ -155,7 +153,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
         return _quiescence(board, alpha, beta);
 
     ++_nodes;
-    if (board.get_ply() >= MAX_PLY || History::threefold_rule(board))
+    if (board.get_ply() >= MAX_PLY || board.threefold_rule())
         return 0;
 
     MoveList move_list = Movegen(board).get_legal_moves();
@@ -224,7 +222,7 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
         return 0;
 
     ++_nodes;
-    if (board.get_ply() >= MAX_PLY || History::threefold_rule(board))
+    if (board.get_ply() >= MAX_PLY || board.threefold_rule())
         return 0;
 
     // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat

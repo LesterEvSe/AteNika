@@ -12,7 +12,6 @@ public:
         ZobristHash::init();
         Rays::init();
         Attacks::init();
-        History::init();
         Search::init();
         Search::set_depth(16);
         Search::set_time(INF);

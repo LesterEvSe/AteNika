@@ -1,13 +1,12 @@
 #include "board.hpp"
-#include "history.hpp"
 #include <sstream> // for std::istringstream in constructor
+#include <cstring> // for std::memset
 
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
 Board::Board(std::string short_fen)
 {
-    History::clear();
     std::istringstream iss(short_fen);
     std::string pieces;
     iss >> pieces;
@@ -64,6 +63,7 @@ Board::Board(std::string short_fen)
 
     // m_hash is initialized, after the rest of the Board fields are initialized
     m_hash.set_hash(*this);
+    std::memset(m_history, 0, sizeof(m_history));
 }
 
 void Board::update_bitboards() {
@@ -220,9 +220,20 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
     m_hash.xor_piece(color, piece, cell);
 }
 
+bool Board::threefold_rule() const {
+    uint96 hash = m_hash.get_hash();
+    uint8_t repetitions = 0;
+    uint16_t ind = m_moves;
+
+    for (uint8_t ply = m_ply; ply > 0; --ply)
+        if (m_history[--ind].hash == hash)
+            ++repetitions;
+    return repetitions >= 3;
+}
+
 void Board::make(const Move &move)
 {
-    History::add_and_inc(m_hash, m_ply, m_en_passant_cell, m_castling_rights);
+    m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights };
 
     // En passant is available on 1 move only
     if (m_en_passant_cell) {
@@ -302,7 +313,7 @@ void Board::make(const Move &move)
 
 void Board::unmake(const Move &move) {
     // Recover important data from history
-    const HistoryNode &hnode = History::get_and_dec();
+    const HistoryNode &hnode = m_history[--m_moves];
     m_hash = hnode.hash;
     m_ply = hnode.ply;
     m_en_passant_cell = hnode.ep;
@@ -419,7 +430,7 @@ std::string Board::get_fen() const {
         fen += FIELD[m_en_passant_cell] + " ";
     else
         fen += "- ";
-    return fen + std::to_string(m_ply) + " " + std::to_string(History::get_ply()/2);
+    return fen + std::to_string(m_ply) + " " + std::to_string(m_moves/2);
 }
 
 std::ostream &operator<<(std::ostream &out, const Board &board) {
