@@ -319,17 +319,6 @@ void Board::unmake(const Move &move) {
             set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
             break;
         case Move::QSIDE_CASTLING: {
-
-            /*
-            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
-            remove_piece(m_player_move, move.get_move_piece(), to);
-
-            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
-            add_piece(m_player_move, ROOK, rook_cell);
-            remove_piece(m_player_move, ROOK, rook_cell + 3);
-            break;
-            */
-
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
             reset(m_pieces[m_player_move][move.get_move_piece()], to);
 
@@ -340,15 +329,6 @@ void Board::unmake(const Move &move) {
             break;
         }
         case Move::KSIDE_CASTLING: {
-            /*
-            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
-            remove_piece(m_player_move, move.get_move_piece(), to);
-
-            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
-            add_piece(m_player_move, ROOK, rook_cell);
-            remove_piece(m_player_move, ROOK, rook_cell - 2);
-            */
-
             set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
             reset(m_pieces[m_player_move][move.get_move_piece()], to);
 
@@ -358,14 +338,6 @@ void Board::unmake(const Move &move) {
             break;
         }
         case Move::EN_PASSANT: {
-            /*
-            add_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
-            remove_piece(m_player_move, move.get_move_piece(), to);
-
-            uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
-            add_piece(get_opponent_move(), PAWN, captured_pawn);
-            */
-
             set(m_pieces[m_player_move][PAWN], move.get_from_cell());
             reset(m_pieces[m_player_move][PAWN], move.get_to_cell());
 

@@ -8,23 +8,6 @@
 namespace Eval {
 namespace hidden {
 
-    // PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING (last value don't need)
-    constexpr int32_t MATERIAL_BONUS[PIECE_SIZE] {
-        100, 320, 330, 500, 900, 0
-    };
-
-    constexpr int32_t isolated_pawn = -10;
-    constexpr int32_t passed_pawn[8] = {0, 5, 10, 20, 35, 60, 100, 200}; // Ranks
-
-    constexpr int32_t rook_open_file = 10;
-    constexpr int32_t rook_semi_open_file = 5;
-
-    constexpr int32_t queen_open_file = 5;
-    constexpr int32_t queen_semi_open_file = 3;
-
-    constexpr int32_t bishop_pair = 30;
-
-
     // Without King
     constexpr int32_t PST[PIECE_SIZE-1][64] = {
             // Pawn
@@ -88,6 +71,11 @@ namespace hidden {
             },
     };
 
+    // PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING (last value don't need)
+    constexpr int32_t MATERIAL_BONUS[PIECE_SIZE] {
+            100, 320, 330, 500, 900, 0
+    };
+
     constexpr int32_t ENDGAME_MAT = MATERIAL_BONUS[ROOK] + 2*MATERIAL_BONUS[KNIGHT] + 2*MATERIAL_BONUS[PAWN];
 
     // King middle game
@@ -123,6 +111,29 @@ namespace hidden {
             16,  17,  18,  19,  20,  21,  22,  23,
             8,   9,  10,  11,  12,  13,  14,  15,
             0,   1,   2,   3,   4,   5,   6,   7
+    };
+
+    constexpr int32_t ISOLATED_PAWN = -10;
+    constexpr int32_t PASSED_PAWNS[8] = {0, 5, 10, 20, 35, 60, 100, 200}; // Ranks
+
+    constexpr int32_t ROOK_OPEN_FILE = 10;
+    constexpr int32_t ROOK_SEMI_OPEN_FILE = 5;
+
+    constexpr int32_t QUEEN_OPEN_FILE = 5;
+    constexpr int32_t QUEEN_SEMI_OPEN_FILE = 3;
+
+    constexpr int32_t BISHOP_PAIR = 30;
+
+    // files
+    constexpr bitboard ISOLATED_PAWNS_MASK[8] {
+        FILE_A | FILE_B,
+        FILE_A | FILE_B | FILE_C,
+        FILE_B | FILE_C | FILE_D,
+        FILE_C | FILE_D | FILE_E,
+        FILE_D | FILE_E | FILE_F,
+        FILE_E | FILE_F | FILE_G,
+        FILE_F | FILE_G | FILE_H,
+        FILE_G | FILE_H
     };
 
 } // hidden

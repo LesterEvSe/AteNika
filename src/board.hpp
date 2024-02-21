@@ -6,6 +6,7 @@
 #include "move.hpp"
 #include "zobrist_hash.hpp"
 
+// TODO add history straight to the Board
 class Board {
 private:
     // enums COLOR_SIZE and PIECE_SIZE in defs.hpp

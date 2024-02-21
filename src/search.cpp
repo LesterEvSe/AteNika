@@ -108,6 +108,8 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     std::cout << " pv ";
 
     Board temp = board;
+    int16_t stack_ply = History::get_ply();
+
     // Set a counter, so we don't go over the limit
     for (int16_t i = 0; i < depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
         Move move = Ttable::get(temp.get_zob_hash());
@@ -115,19 +117,18 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
         temp.make(move);
     }
     std::cout << std::endl;
+    History::set_ply(stack_ply);
 }
 
 void Search::iter_deep(Board &board, bool debug) {
     hidden::_restart();
     hidden::_start = std::chrono::steady_clock::now();
-    uint8_t stack_ply = History::get_ply();
 
     for (int16_t i = 1; i <= hidden::_depth; ++i) {
         hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
-        History::set_ply(stack_ply);
 
         if (hidden::_stop)
             break;
@@ -152,7 +153,6 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
         return 0;
     if (depth < 1)
         return _quiescence(board, alpha, beta);
-//        return Eval::evaluate(board); // quiescence search here
 
     ++_nodes;
     if (board.get_ply() >= MAX_PLY || History::threefold_rule(board))
