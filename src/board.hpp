@@ -13,7 +13,6 @@ struct HistoryNode {
     uint8_t castling_rights;
 };
 
-// TODO add overall moves to FEN and test it
 class Board {
 private:
     // enums COLOR_SIZE and PIECE_SIZE in defs.hpp
@@ -48,13 +47,13 @@ private:
         7, 15, 15, 15, 3,  15, 15, 11
     };
 
-    // Using the Fen order
-    //
-    // 4 bits
-    // 0001 - white kingside
-    // 0010 - white queenside
-    // 0100 - black kingside
-    // 1000 - black queenside
+    /* Using the Fen order
+       4 bits
+       0001 - white kingside
+       0010 - white queenside
+       0100 - black kingside
+       1000 - black queenside
+    */
     uint8_t m_castling_rights {0};
     ZobristHash m_hash;
 
@@ -63,18 +62,19 @@ private:
     int16_t m_moves {0};
     HistoryNode m_history[MAX_MOVES];
 
-
     void add_piece(Color color, PieceType piece, uint8_t cell);
     void remove_piece(Color color, PieceType piece, uint8_t cell);
 
 public:
-    // using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
-    // 1. Pieces
-    // 2. White or black move
-    // 3. Castling rights
-    // 4. En passant cell
-    // 5. ply (half moves)
-    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0");
+    /* using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
+       1. Pieces
+       2. White or black move
+       3. Castling rights
+       4. En passant cell
+       5. ply (half moves)
+       6. full moves
+    */
+    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
     void update_bitboards();
 
     // Required for testing

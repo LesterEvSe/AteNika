@@ -59,6 +59,8 @@ Board::Board(std::string short_fen)
     iss >> temp_ply;
     m_ply = temp_ply;
 
+    iss >> temp_ply;
+    m_moves = 2 * temp_ply + (m_player_move == BLACK);
     update_bitboards();
 
     // m_hash is initialized, after the rest of the Board fields are initialized
