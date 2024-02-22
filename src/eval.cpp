@@ -1,27 +1,51 @@
 #include "eval.hpp"
 
+bitboard Eval::hidden::_wp_passed_mask[64];
+bitboard Eval::hidden::_bp_passed_mask[64];
+
+void Eval::init() {
+    for (uint8_t i = 0; i < 8; ++i) {
+        hidden::_wp_passed_mask[i] = (hidden::COL[i] >> 1) & ~FILE_H |
+                                      hidden::COL[i] |
+                                     (hidden::COL[i] << 1) & ~FILE_A;
+        hidden::_bp_passed_mask[56 + i] = hidden::_wp_passed_mask[i];
+
+        hidden::_wp_passed_mask[i] &= ~RANK_1;
+        hidden::_bp_passed_mask[56 + i] &= ~RANK_8;
+    }
+
+    for (uint8_t i = 8; i < 64; ++i) {
+        hidden::_wp_passed_mask[i] = hidden::_wp_passed_mask[i-8] << 8;
+        hidden::_bp_passed_mask[63-i] = hidden::_bp_passed_mask[63-i+8] >> 8;
+    }
+}
+
 int32_t Eval::evaluate(const Board &board) {
     int32_t score = 0;
     int32_t mat_white = 0;
     int32_t mat_black = 0;
+
+    const bitboard bP = board.get_pieces(BLACK, PAWN);
 
     // Pawns
     bitboard pieces = board.get_pieces(WHITE, PAWN);
     while (pieces) {
         uint8_t sq = hidden::FLIP[pop_lsb(pieces)];
         score += (pieces & hidden::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : hidden::ISOLATED_PAWN;
+        score += (bP & hidden::_wp_passed_mask[sq] ? 0 : hidden::PASSED_PAWNS[get_rank(sq)]);
 
-        // TODO add white passed pawns here
         score += hidden::PST[PAWN][sq];
         mat_white += hidden::MATERIAL_BONUS[PAWN];
     }
 
+    const bitboard wP = board.get_pieces(WHITE, PAWN);
     pieces = board.get_pieces(BLACK, PAWN);
+
     while (pieces) {
         uint8_t sq = pop_lsb(pieces);
         score -= (pieces & hidden::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : hidden::ISOLATED_PAWN;
+        score -= (wP & hidden::_bp_passed_mask[sq] ? 0 : hidden::PASSED_PAWNS[7 - get_rank(sq)]);
 
-        // TODO add black passed pawns here
         score -= hidden::PST[PAWN][sq];
         mat_black += hidden::MATERIAL_BONUS[PAWN];
     }

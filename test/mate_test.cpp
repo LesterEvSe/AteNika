@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "rays.hpp"
 #include "board.hpp"
+#include "eval.hpp"
 #include "search.hpp"
 
 // Check mate for n ply
@@ -12,6 +13,7 @@ public:
         ZobristHash::init();
         Rays::init();
         Attacks::init();
+        Eval::init();
         Search::init();
         Search::set_depth(16);
         Search::set_time(INF);

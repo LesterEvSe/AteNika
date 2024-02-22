@@ -136,8 +136,14 @@ namespace hidden {
         FILE_G | FILE_H
     };
 
+    constexpr bitboard COL[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
+
+    extern bitboard _wp_passed_mask[64];
+    extern bitboard _bp_passed_mask[64];
+
 } // hidden
 
+    void init();
     int32_t evaluate(const Board &board);
 } // Eval
 
