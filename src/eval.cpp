@@ -25,29 +25,29 @@ int32_t Eval::evaluate(const Board &board) {
     int32_t mat_white = 0;
     int32_t mat_black = 0;
 
-    const bitboard bP = board.get_pieces(BLACK, PAWN);
+    const bitboard bP = board.get_pieces(BLACK, PAWN); // for white passed (opposite color)
+    const bitboard wP = board.get_pieces(WHITE, PAWN); // for black passed (here too)
+    const bitboard all_pawns = bP | wP; // for open and semi open files for rooks and queens
 
     // Pawns
     bitboard pieces = board.get_pieces(WHITE, PAWN);
     while (pieces) {
-        uint8_t sq = hidden::FLIP[pop_lsb(pieces)];
+        const uint8_t sq = pop_lsb(pieces);
+        score += hidden::PST[PAWN][hidden::FLIP[sq]];
+        mat_white += hidden::MATERIAL_BONUS[PAWN];
+
         score += (pieces & hidden::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : hidden::ISOLATED_PAWN;
         score += (bP & hidden::_wp_passed_mask[sq] ? 0 : hidden::PASSED_PAWNS[get_rank(sq)]);
-
-        score += hidden::PST[PAWN][sq];
-        mat_white += hidden::MATERIAL_BONUS[PAWN];
     }
 
-    const bitboard wP = board.get_pieces(WHITE, PAWN);
     pieces = board.get_pieces(BLACK, PAWN);
-
     while (pieces) {
-        uint8_t sq = pop_lsb(pieces);
-        score -= (pieces & hidden::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : hidden::ISOLATED_PAWN;
-        score -= (wP & hidden::_bp_passed_mask[sq] ? 0 : hidden::PASSED_PAWNS[7 - get_rank(sq)]);
-
+        const uint8_t sq = pop_lsb(pieces);
         score -= hidden::PST[PAWN][sq];
         mat_black += hidden::MATERIAL_BONUS[PAWN];
+
+        score -= (pieces & hidden::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : hidden::ISOLATED_PAWN;
+        score -= (wP & hidden::_bp_passed_mask[sq] ? 0 : hidden::PASSED_PAWNS[7 - get_rank(sq)]);
     }
 
     // Knights
@@ -81,31 +81,57 @@ int32_t Eval::evaluate(const Board &board) {
     }
 
     // Rooks
-    // TODO add rook open and semi open files
     pieces = board.get_pieces(WHITE, ROOK);
     while (pieces) {
-        score += hidden::PST[ROOK][hidden::FLIP[pop_lsb(pieces)]];
+        const uint8_t sq = hidden::FLIP[pop_lsb(pieces)];
+        score += hidden::PST[ROOK][sq];
         mat_white += hidden::MATERIAL_BONUS[ROOK];
+
+        const bitboard file = hidden::COL[get_file(sq)];
+        if (!(all_pawns & file))
+            score += hidden::ROOK_OPEN_FILE;
+        else if (!(wP & file))
+            score += hidden::ROOK_SEMI_OPEN_FILE;
     }
 
     pieces = board.get_pieces(BLACK, ROOK);
     while (pieces) {
-        score -= hidden::PST[ROOK][pop_lsb(pieces)];
+        const uint8_t sq = pop_lsb(pieces);
+        score -= hidden::PST[ROOK][sq];
         mat_black += hidden::MATERIAL_BONUS[ROOK];
+
+        const bitboard file = hidden::COL[get_file(sq)];
+        if (!(all_pawns & file))
+            score -= hidden::ROOK_OPEN_FILE;
+        else if (!(bP & file))
+            score -= hidden::ROOK_SEMI_OPEN_FILE;
     }
 
     // Queens
-    // TODO add queen open and semi open files
     pieces = board.get_pieces(WHITE, QUEEN);
     while (pieces) {
-        score += hidden::PST[QUEEN][hidden::FLIP[pop_lsb(pieces)]];
+        const uint8_t sq = hidden::FLIP[pop_lsb(pieces)];
+        score += hidden::PST[QUEEN][sq];
         mat_white += hidden::MATERIAL_BONUS[QUEEN];
+
+        const bitboard file = hidden::COL[get_file(sq)];
+        if (!(all_pawns & file))
+            score += hidden::QUEEN_OPEN_FILE;
+        else if (!(wP & file))
+            score += hidden::QUEEN_SEMI_OPEN_FILE;
     }
 
     pieces = board.get_pieces(BLACK, QUEEN);
     while (pieces) {
-        score -= hidden::PST[QUEEN][pop_lsb(pieces)];
+        const uint8_t sq = pop_lsb(pieces);
+        score -= hidden::PST[QUEEN][sq];
         mat_black += hidden::MATERIAL_BONUS[QUEEN];
+
+        const bitboard file = hidden::COL[get_file(sq)];
+        if (!(all_pawns & file))
+            score -= hidden::QUEEN_OPEN_FILE;
+        else if (!(bP & file))
+            score -= hidden::QUEEN_SEMI_OPEN_FILE;
     }
 
     // Kings
