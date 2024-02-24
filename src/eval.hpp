@@ -141,6 +141,8 @@ namespace hidden {
     extern bitboard _wp_passed_mask[64];
     extern bitboard _bp_passed_mask[64];
 
+    bool material_draw(const Board &board);
+
 } // hidden
 
     void init();
