@@ -30,7 +30,7 @@ namespace hidden {
     void _restart();
     bool _check_limits();
 
-    int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta);
+    int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
     int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
 
 } // hidden

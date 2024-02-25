@@ -88,6 +88,7 @@ public:
     [[nodiscard]] bitboard get_side_pieces(Color color) const;
     [[nodiscard]] bitboard get_all_pieces() const;
     [[nodiscard]] bitboard get_free_cells() const;
+    [[nodiscard]] bool curr_player_has_big_pieces() const;
 
     [[nodiscard]] uint8_t get_ply() const;
     [[nodiscard]] ZobristHash get_zob_hash() const;
@@ -112,6 +113,8 @@ public:
 
     void make(const Move &move);
     void unmake(const Move &move);
+    void make_null_move();
+    void unmake_null_move();
 
     [[nodiscard]] std::string get_fen() const;
     friend std::ostream& operator<<(std::ostream &out, const Board &board);

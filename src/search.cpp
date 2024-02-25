@@ -123,7 +123,7 @@ void Search::iter_deep(Board &board, bool debug) {
     hidden::_start = std::chrono::steady_clock::now();
 
     for (int16_t i = 1; i <= hidden::_depth; ++i) {
-        hidden::_best_score = hidden::_negamax(board, i, -INF, INF);
+        hidden::_best_score = hidden::_negamax(board, i, -INF, INF, true);
 
         int32_t elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
@@ -145,7 +145,7 @@ void Search::iter_deep(Board &board, bool debug) {
     }
 }
 
-int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta)
+int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move)
 {
     if (_check_limits())
         return 0;
@@ -156,15 +156,33 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     if (board.get_ply() >= MAX_PLY || board.threefold_rule())
         return 0;
 
+    bool in_check = board.king_in_check(board.get_curr_move());
+    // TODO fix bug with small pv
+    if (in_check)
+        ++depth;
+
+    // Greatly speeds up the work. Should be +100 Elo
+    if (null_move && !in_check && board.get_ply() && board.curr_player_has_big_pieces() && depth >= 4) {
+        board.make_null_move();
+        int32_t score = _negamax(board, depth - 4, -alpha - 1, -alpha, false);
+        board.unmake_null_move();
+
+        if (_check_limits())
+            return 0;
+        // to prevent bug with mate
+        if (score >= beta && std::abs(score) < 2'000'000'000)
+            return beta;
+    }
+
     MoveList move_list = Movegen(board).get_legal_moves();
 
     // get size in O(1)
     // checkmate or stalemate
     if (move_list.size() == 0)
-        return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
+        return in_check ? -INF + _order_info.get_ply() : 0;
 
     ZobristHash zob_hash = board.get_zob_hash();
-    MovePicker move_picker = MovePicker(&move_list, board.get_zob_hash(), _order_info);
+    MovePicker move_picker = MovePicker(&move_list, zob_hash, _order_info);
 
     Move curr_best = Move();
     int32_t old_alpha = alpha;
@@ -181,11 +199,11 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
         int32_t score;
         if (full_window)
-            score = -_negamax(board, depth-1, -beta, -alpha);
+            score = -_negamax(board, depth-1, -beta, -alpha, true);
         else {
-            score = -_negamax(board, depth-1, -alpha-1, -alpha);
+            score = -_negamax(board, depth-1, -alpha-1, -alpha, true);
             if (score > alpha)
-                score = -_negamax(board, depth-1, -beta, -alpha);
+                score = -_negamax(board, depth-1, -beta, -alpha, true);
         }
         board.unmake(move);
 

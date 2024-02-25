@@ -109,9 +109,13 @@ bitboard Board::get_pieces(Color color, PieceType type)  const { return m_pieces
 bitboard Board::get_side_pieces(Color color)             const { return m_side[color]; }
 bitboard Board::get_all_pieces()  const { return m_all;  }
 bitboard Board::get_free_cells()  const { return ~m_all; }
+bool Board::curr_player_has_big_pieces() const {
+    return m_pieces[m_player_move][KNIGHT] | m_pieces[m_player_move][BISHOP] |
+           m_pieces[m_player_move][ROOK]   | m_pieces[m_player_move][QUEEN];
+}
 
-uint8_t Board::get_ply()          const { return m_ply;  }
-ZobristHash Board::get_zob_hash() const { return m_hash; }
+uint8_t Board::get_ply()          const { return m_ply;   }
+ZobristHash Board::get_zob_hash() const { return m_hash;  }
 uint8_t Board::get_en_passant()   const { return m_en_passant_cell; }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
@@ -372,6 +376,28 @@ void Board::unmake(const Move &move) {
             break;
     }
     update_bitboards();
+}
+
+void Board::make_null_move() {
+    m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights };
+    if (m_en_passant_cell) {
+        m_hash.xor_en_passant(m_en_passant_cell);
+        m_en_passant_cell = ZERO;
+    }
+    ++m_ply;
+
+    m_player_move = get_opponent_move();
+    m_hash.xor_move();
+}
+
+void Board::unmake_null_move() {
+    const HistoryNode &hnode = m_history[--m_moves];
+    m_hash = hnode.hash;
+    --m_ply;
+    m_en_passant_cell = hnode.ep;
+    // It is possible not to reinstate castling rights
+
+    m_player_move = get_opponent_move();
 }
 
 std::string Board::get_fen() const {
