@@ -110,8 +110,8 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     Board temp = board;
 
     // Set a counter, so we don't go over the limit
-    for (int i = 0; i < _depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
-        Move move = Ttable::get(temp.get_zob_hash()).move;
+    for (int i = 0; i < _depth && TTable::in_table(temp.get_zob_hash()); ++i) {
+        Move move = TTable::get(temp.get_zob_hash()).move;
         std::cout << (std::string)move << ' ';
         temp.make(move);
     }
@@ -133,7 +133,7 @@ void Search::iter_deep(Board &board, bool debug) {
         if (debug)
             hidden::_debug(board, i, elapsed);
 
-        hidden::_best_move = Ttable::get(board.get_zob_hash()).move;
+        hidden::_best_move = TTable::get(board.get_zob_hash()).move;
         if (hidden::_best_score > 2'000'000'000) {
             // for testing
             hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
@@ -161,8 +161,10 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     // _depth - depth (curr depth)
     // if curr_depth + TT depth >= _depth, then use, otherwise recalculate
     // MD - depth + TT_depth >= MD simplified to TT_depth >= d. MD - Max Depth
-    const TTEntry &entry = Ttable::get(zob_hash);
-    if (Ttable::in_table(zob_hash) && entry.depth >= depth)
+
+    /*
+    const TTEntry &entry = TTable::get(zob_hash);
+    if (TTable::in_table(zob_hash) && entry.depth >= depth)
     {
         int32_t score = entry.score;
         switch (entry.flag) {
@@ -171,6 +173,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
             case BETA  : if (score >= beta ) { return score; } break;
         }
     }
+    */
 
     bool in_check = board.king_in_check(board.get_curr_move());
     if (in_check)
@@ -236,7 +239,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
                     if (!(move.get_flag() & Move::CAPTURE))
                         _order_info.add_killer(curr_best_move);
 
-                    Ttable::add(zob_hash, {curr_best_move, curr_best_score, depth, BETA});
+                    TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, BETA});
                     return beta;
                 }
                 alpha = score;
@@ -252,9 +255,9 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
     // improve alpha
     if (alpha != old_alpha)
-        Ttable::add(zob_hash, {curr_best_move, curr_best_score, depth, EXACT});
+        TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, EXACT});
     else
-        Ttable::add(zob_hash, {curr_best_move, alpha, depth, ALPHA});
+        TTable::add(zob_hash, {curr_best_move, alpha, depth, ALPHA});
     return alpha;
 }
 
@@ -309,6 +312,6 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     --_order_info;
 
 //    if (alpha != old_alpha)
-//        Ttable::add(zob_hash, curr_best);
+//        TTable::add(zob_hash, curr_best);
     return alpha;
 }

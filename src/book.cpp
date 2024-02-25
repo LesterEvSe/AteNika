@@ -1,7 +1,7 @@
 #include "book.hpp"
 #include "board.hpp"
 #include "move.hpp"
-//#include "Ttable.hpp"
+//#include "TTable.hpp"
 //#include "eval.hpp"
 
 #include <fstream>

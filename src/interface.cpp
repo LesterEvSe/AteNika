@@ -154,7 +154,8 @@ void Uci::start()
 
         } else if (Move::isMove(input)) {
             if (check_lock()) continue;
-
+            if (board.threefold_rule())
+                std::cout << "Tie, repeating the position 3 times" << std::endl;
             Move move;
             try {
                 move = Move(board, command);

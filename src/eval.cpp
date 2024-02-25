@@ -57,8 +57,10 @@ int32_t Eval::evaluate(const Board &board) {
     const bitboard wP = board.get_pieces(WHITE, PAWN); // for black passed (here too)
     const bitboard all_pawns = bP | wP; // for open and semi open files for rooks and queens
 
+    /*
     if (!bP && !wP && hidden::material_draw(board))
         return 0;
+    */
 
     // Pawns
     bitboard pieces = board.get_pieces(WHITE, PAWN);
