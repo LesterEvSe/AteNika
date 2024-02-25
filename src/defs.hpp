@@ -105,9 +105,9 @@ enum GamePhase : uint8_t {
 
 // for transposition table and entry
 enum TTFlag : uint8_t {
-    LOWER,
+    ALPHA,
     EXACT,
-    UPPER
+    BETA
 };
 
 constexpr uint64_t ZERO {0};

@@ -7,7 +7,7 @@ MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &
 {
     Move best_move;
     if (Ttable::in_table(hash))
-        best_move = Ttable::get(hash);
+        best_move = Ttable::get(hash).move;
     else
         best_move = Move();
 

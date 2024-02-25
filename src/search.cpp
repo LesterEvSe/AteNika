@@ -44,7 +44,7 @@ void Search::init() {
 
 bool Search::hidden::_check_limits() {
     if (_stop) return true;
-    // check every 2048 node (if bit 2^11 is set, then check)
+    // check each 2048 node
     if (_nodes & 2047) return false;
 
     int32_t elapsed =
@@ -110,8 +110,8 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     Board temp = board;
 
     // Set a counter, so we don't go over the limit
-    for (int16_t i = 0; i < depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
-        Move move = Ttable::get(temp.get_zob_hash());
+    for (int i = 0; i < _depth && Ttable::in_table(temp.get_zob_hash()); ++i) {
+        Move move = Ttable::get(temp.get_zob_hash()).move;
         std::cout << (std::string)move << ' ';
         temp.make(move);
     }
@@ -133,7 +133,7 @@ void Search::iter_deep(Board &board, bool debug) {
         if (debug)
             hidden::_debug(board, i, elapsed);
 
-        hidden::_best_move = Ttable::get(board.get_zob_hash());
+        hidden::_best_move = Ttable::get(board.get_zob_hash()).move;
         if (hidden::_best_score > 2'000'000'000) {
             // for testing
             hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
@@ -156,8 +156,23 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     if (board.get_ply() >= MAX_PLY || board.threefold_rule())
         return 0;
 
+    ZobristHash zob_hash = board.get_zob_hash();
+
+    // _depth - depth (curr depth)
+    // if curr_depth + TT depth >= _depth, then use, otherwise recalculate
+    // MD - depth + TT_depth >= MD simplified to TT_depth >= d. MD - Max Depth
+    const TTEntry &entry = Ttable::get(zob_hash);
+    if (Ttable::in_table(zob_hash) && entry.depth >= depth)
+    {
+        int32_t score = entry.score;
+        switch (entry.flag) {
+            case ALPHA : if (score <= alpha) { return alpha; } break;
+            case EXACT : return score;
+            case BETA  : if (score >= beta ) { return score; } break;
+        }
+    }
+
     bool in_check = board.king_in_check(board.get_curr_move());
-    // TODO fix bug with small pv
     if (in_check)
         ++depth;
 
@@ -181,10 +196,11 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     if (move_list.size() == 0)
         return in_check ? -INF + _order_info.get_ply() : 0;
 
-    ZobristHash zob_hash = board.get_zob_hash();
+
     MovePicker move_picker = MovePicker(&move_list, zob_hash, _order_info);
 
-    Move curr_best = Move();
+    Move curr_best_move = Move();
+    int32_t curr_best_score = -INF;
     int32_t old_alpha = alpha;
 
     // PVS - Principal Variation Search
@@ -207,29 +223,38 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
         }
         board.unmake(move);
 
-        if (score > alpha) {
-            if (score >= beta) {
-                --_order_info;
-                if (first_move) ++_fhf;
-                ++_fh;
+        if (score > curr_best_score) {
+            curr_best_score = score;
+            curr_best_move = move;
+
+            if (score > alpha) {
+                if (score >= beta) {
+                    --_order_info;
+                    if (first_move) ++_fhf;
+                    ++_fh;
+
+                    if (!(move.get_flag() & Move::CAPTURE))
+                        _order_info.add_killer(curr_best_move);
+
+                    Ttable::add(zob_hash, {curr_best_move, curr_best_score, depth, BETA});
+                    return beta;
+                }
+                alpha = score;
+                full_window = false;
 
                 if (!(move.get_flag() & Move::CAPTURE))
-                    _order_info.add_killer(move);
-                return beta;
+                    _order_info.add_history(curr_best_move.get_from_cell(), curr_best_move.get_to_cell(), depth);
             }
-            alpha = score;
-            curr_best = move;
-            full_window = false;
-
-            if (!(move.get_flag() & Move::CAPTURE))
-                _order_info.add_history(curr_best.get_from_cell(), curr_best.get_to_cell(), depth);
         }
         first_move = false;
     }
     --_order_info;
 
+    // improve alpha
     if (alpha != old_alpha)
-        Ttable::add(zob_hash, curr_best);
+        Ttable::add(zob_hash, {curr_best_move, curr_best_score, depth, EXACT});
+    else
+        Ttable::add(zob_hash, {curr_best_move, alpha, depth, ALPHA});
     return alpha;
 }
 
@@ -283,7 +308,7 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     }
     --_order_info;
 
-    if (alpha != old_alpha)
-        Ttable::add(zob_hash, curr_best);
+//    if (alpha != old_alpha)
+//        Ttable::add(zob_hash, curr_best);
     return alpha;
 }
