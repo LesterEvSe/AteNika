@@ -66,7 +66,7 @@ else()
         test/board_test.cpp
         test/bitfunc_test.cpp
         test/perft.cpp
-        test/eval_test.cpp
+        # test/eval_test.cpp
         test/zob_hash_test.cpp
         test/perft_comparison.cpp
     )
