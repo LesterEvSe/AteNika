@@ -51,13 +51,16 @@ option(BUILD_TESTS "Build tests" OFF)
 if (NOT BUILD_TESTS)
     add_executable(AteNika src/main.cpp ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 else()
-    # Comment this command, if you enter custom path
-    execute_process(COMMAND whoami OUTPUT_VARIABLE CURRENT_USER OUTPUT_STRIP_TRAILING_WHITESPACE)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/heads/main.zip
+    )
+    # For Windows builds: avoid warnings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 
-    # You just need to change the path to the google-test folder to run everything else
-    set(GTEST_ROOT /home/${CURRENT_USER}/googletest)
-
-    include_directories(${GTEST_ROOT}/googletest/include test)
+    include_directories(test)
     set(TEST_SOURCES
         test/attacks_test.cpp
         test/board_test.cpp
@@ -67,11 +70,11 @@ else()
         test/zob_hash_test.cpp
         test/perft_comparison.cpp
     )
+
     add_executable(AteNikaTest ${TEST_SOURCES} ${PROJECT_SOURCES})
+    target_link_libraries(AteNikaTest GTest::gtest_main)
 
     enable_testing()
-    target_link_libraries(AteNikaTest
-        ${GTEST_ROOT}/build/lib/libgtest.a
-        ${GTEST_ROOT}/build/lib/libgtest_main.a
-    )
+    include(GoogleTest)
+    gtest_discover_tests(AteNikaTest)
 endif()
