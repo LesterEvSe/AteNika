@@ -42,20 +42,13 @@ jobs:
           cd build
           ctest --output-on-failure
       
-      - name: Create GitHub Release
-        if: success()
+      - name: Create GitHub Release and Upload Assets
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
           name: Release ${{ github.run_number }}
           body: "Automated release from GitHub Actions"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-      - name: Upload Release Assets
-        if: success()
-        uses: softprops/action-gh-release@v1
-        with:
           files: build/AteNika
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
