@@ -5,7 +5,7 @@
 #include <random>
 #include <chrono>
 
-class PerftComparison : public testing::Test
+class PerftComparisonTest : public testing::Test
 {
 public:
     static void SetUpTestCase() {
@@ -41,7 +41,7 @@ void check(uint8_t (*bits_count)(uint64_t), const std::vector<uint64_t> &nums) {
         bits_count(nums[i]);
 }
 
-TEST_F(PerftComparison, count_bits_func) {
+TEST_F(PerftComparisonTest, count_bits_func) {
     std::random_device rd;
     std::mt19937_64 gen(rd());
     std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());

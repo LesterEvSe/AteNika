@@ -164,8 +164,8 @@ if (ATENIKA_BUILD_TESTS)
         test/bitfunc_test.cpp
         test/board_test.cpp
         test/zob_hash_test.cpp
-        test/perft.cpp
-        test/perft_comparison.cpp
+        test/perft_test.cpp
+        test/perft_comparison_test.cpp
         test/mate_test.cpp
         # test/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )

@@ -2,7 +2,7 @@
 #include "board.hpp"
 #include "rays.hpp"
 
-class ZobHashTestFixture : public ::testing::Test {
+class ZobHashTest : public ::testing::Test {
 public:
     static void SetUpTestCase() {
         Rays::init();
@@ -11,7 +11,7 @@ public:
     }
 };
 
-TEST_F(ZobHashTestFixture, make_move_block) {
+TEST_F(ZobHashTest, make_move_block) {
     Board board = Board("r6r/1b2k1bq/8/8/7B/8/8/R3K2R b KQ - 3");
     Board expected = Board("r6r/1b2k2q/5b2/8/7B/8/8/R3K2R w KQ - 4");
 
@@ -19,7 +19,7 @@ TEST_F(ZobHashTestFixture, make_move_block) {
     ASSERT_EQ(expected, board);
 }
 
-TEST_F(ZobHashTestFixture, make_one_move) {
+TEST_F(ZobHashTest, make_one_move) {
     Board board = Board("b7/8/8/8/8/8/8/1B6 w - - 0");
     Board expected = Board("8/8/8/8/B7/8/8/7b b - - 3");
 
