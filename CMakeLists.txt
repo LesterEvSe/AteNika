@@ -9,9 +9,14 @@ project(AteNika
 include(CheckCXXCompilerFlag)
 include(CheckIPOSupported)
 
+# Writes compile_commands.json into the build directory: the exact command line
+# for every source file. clang-tidy and clangd both need it — they compile the
+# code for real, so they must know the include paths, -std=c++23 and defines.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Options
 
-option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                    OFF)
+option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                     OFF)
 option(ATENIKA_LTO         "Link-time optimization in optimized builds"     ON)
 option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)" OFF)
 option(ATENIKA_WARNINGS    "Enable the warning set"                         ON)

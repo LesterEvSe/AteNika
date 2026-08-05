@@ -1,0 +1,39 @@
+# The hand-laid-out tables in eval.hpp, attacks.hpp, defs.hpp, bitfunc.hpp and
+# board.hpp are wrapped in // clang-format off. Their 8x8 layout is meaningful
+# and clang-format reflows it into an unreadable blob. Keep new tables wrapped.
+
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+# Keeps the one-line accessors in bitfunc.hpp and board.cpp on one line.
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+
+BreakBeforeBraces: Attach
+IndentCaseLabels: true
+AccessModifierOffset: -4
+FixNamespaceComments: true
+
+# Assumes namespaces get collapsed to `namespace X::detail` first; until then
+# the doubly-nested headers indent to 8.
+NamespaceIndentation: All
+
+# Off until the include-order dependencies between board.hpp and
+# zobrist_hash.hpp are untangled.
+SortIncludes: Never
+
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+SpaceAfterCStyleCast: true
+SeparateDefinitionBlocks: Leave
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2

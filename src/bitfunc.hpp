@@ -35,6 +35,7 @@ inline void reset(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
  */
 
 // The method for counting is taken from the website: https://www.chessprogramming.org/BitScan
+// clang-format off
 static constexpr uint8_t BitScan[64] {
     0,  47,  1, 56, 48, 27,  2, 60,
     57, 49, 41, 37, 28, 16,  3, 61,
@@ -45,6 +46,7 @@ static constexpr uint8_t BitScan[64] {
     25, 39, 14, 33, 19, 30,  9, 24,
     13, 18,  8, 12,  7,  6,  5, 63
 };
+// clang-format on
 
 // IMPORTANT NOTE! lsb faster than msb!!!
 inline uint8_t lsb(bitboard bb) { return BitScan[((bb ^ (bb - 1)) * 0x03f79d71b4cb0a89ull) >> 58]; }
