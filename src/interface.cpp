@@ -2,9 +2,11 @@
 #include "board.hpp"
 #include "search.hpp"
 #include "eval.hpp"
+#include "perft.hpp"
 
 #include <sstream>
 #include <thread>
+#include <chrono>
 
 // Local scope
 namespace
@@ -122,6 +124,35 @@ void Uci::start()
                 std::cout << "Search Depth: " << static_cast<int>(Search::get_search_depth()) << " nodes" << std::endl;
             }
 
+        } else if (command == "perft") {
+            if (check_lock()) continue;
+
+            // "perft n" or "perft divide n"
+            std::string arg;
+            iss >> arg;
+            bool div = (arg == "divide");
+            if (div)
+                iss >> arg;
+
+            int depth;
+            try {
+                size_t pos;
+                depth = std::stoi(arg, &pos);
+                if (pos != arg.size() || depth < 1) throw std::runtime_error("");
+            } catch (const std::exception &) {
+                std::cerr << "Usage: perft <depth> | perft divide <depth>" << std::endl;
+                continue;
+            }
+
+            auto start = std::chrono::steady_clock::now();
+            int64_t nodes = div ? Perft::divide(board, depth) : Perft::run(board, depth);
+            int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - start).count();
+
+            if (!div)
+                std::cout << "Nodes searched: " << nodes << std::endl;
+            std::cout << "Time: " << ms << " ms  (" << nodes / (ms + 1) << " knps)" << std::endl;
+
         } else if (input == "eval") {
             if (check_lock()) continue;
             std::cout << "Static Evaluation: " << Eval::evaluate(board) << " cp" << std::endl;
@@ -145,6 +176,8 @@ void Uci::start()
             std::cout << "d - display the current position" << std::endl;
             std::cout << "info - display information about search and more precise about board" << std::endl;
             std::cout << "eval - static evaluation of current position" << std::endl;
+            std::cout << "perft n - count all legal move paths of depth \"n\" from the current position" << std::endl;
+            std::cout << "perft divide n - same, broken down per root move (diff against Stockfish's \"go perft n\")" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
             std::cout << "quit - exit the program" << std::endl << std::endl;
 

@@ -3,6 +3,7 @@
 #include "board.hpp"
 #include "movegen.hpp"
 #include "movepicker.hpp"
+#include "perft.hpp"
 
 // using Stockfish 16 to calculation the expected value
 /**
@@ -15,23 +16,11 @@
 class PerftTest : public testing::Test
 {
 protected:
+    // Delegates to the engine's implementation in src/perft.cpp, so the tests
+    // verify the same code the "perft" command runs. A private copy here would
+    // let the two drift apart and the suite would stop proving anything.
     static int64_t perft(Board &board, int depth) {
-        MoveList move_list = Movegen(board).get_legal_moves();
-
-        // In order not to constantly subtract 1,
-        // when calling the function
-        if (depth-- == 1)
-            return move_list.size();
-
-        int64_t legal_moves = 0;
-        for (uint8_t i = 0; i < move_list.size(); ++i) {
-            board.make(move_list[i]);
-            int64_t moves = perft(board, depth);
-            board.unmake(move_list[i]);
-
-            legal_moves += moves;
-        }
-        return legal_moves;
+        return Perft::run(board, depth);
     }
 
 public:

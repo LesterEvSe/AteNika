@@ -1,6 +1,6 @@
 {
   "clangd.arguments": [
-    "--compile-commands-dir=build/release",
+    "--compile-commands-dir=build/tests",
     "--clang-tidy",
     "--header-insertion=never",
     "--background-index"

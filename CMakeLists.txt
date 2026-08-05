@@ -44,6 +44,7 @@ add_library(atenika_core OBJECT
     src/rays.cpp
     src/attacks.cpp
     src/movegen.cpp
+    src/perft.cpp
 
     # search/
     src/mvv_lva.cpp
@@ -165,16 +166,16 @@ if (ATENIKA_BUILD_TESTS)
     FetchContent_MakeAvailable(googletest)
 
     add_executable(AteNikaTest
-        test/attacks_test.cpp
-        test/bitfunc_test.cpp
-        test/board_test.cpp
-        test/zob_hash_test.cpp
-        test/perft_test.cpp
-        test/perft_comparison_test.cpp
-        test/mate_test.cpp
-        # test/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
+        tests/attacks_test.cpp
+        tests/bitfunc_test.cpp
+        tests/board_test.cpp
+        tests/zob_hash_test.cpp
+        tests/perft_test.cpp
+        tests/perft_comparison_test.cpp
+        tests/mate_test.cpp
+        # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
-    target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/test")
+    target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     target_link_libraries(AteNikaTest PRIVATE atenika_core GTest::gtest GTest::gtest_main)
 
     enable_testing()
