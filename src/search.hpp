@@ -46,6 +46,12 @@ namespace hidden {
     std::string get_allocated_sec();
     int32_t get_search_depth();
 
+    // Needed by bench, which reports node counts and has to save and restore
+    // the user's time settings around a run.
+    int64_t get_nodes();
+    int32_t get_allocated_ms();
+    bool is_without_time();
+
     void iter_deep(Board &board, bool debug);
 } // Search
 

@@ -21,6 +21,11 @@ namespace hidden {
     void add(const ZobristHash &zob, TTEntry entry);
     bool in_table(const ZobristHash &zob);
     const TTEntry &get(const ZobristHash &zob);
+
+    // The table currently outlives every search and every game. bench clears it
+    // between positions so a run depends only on the binary, not on whatever was
+    // searched before it. Also what UCI "ucinewgame" will need in Phase 0C.
+    void clear();
 } // TTable
 
 

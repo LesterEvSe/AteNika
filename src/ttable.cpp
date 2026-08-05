@@ -13,3 +13,7 @@ bool TTable::in_table(const ZobristHash &zob) {
 const TTEntry &TTable::get(const ZobristHash &zob) {
     return hidden::_ttable[(bits96)zob.get_hash()];
 }
+
+void TTable::clear() {
+    hidden::_ttable.clear();
+}

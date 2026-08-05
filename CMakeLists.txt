@@ -53,6 +53,7 @@ add_library(atenika_core OBJECT
     src/movepicker.cpp
     src/qmovepicker.cpp
     src/search.cpp
+    src/bench.cpp
 
     # eval/
     src/eval.cpp

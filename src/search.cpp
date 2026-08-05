@@ -70,6 +70,16 @@ int32_t Search::get_search_depth() {
     return hidden::_depth;
 }
 
+int64_t Search::get_nodes() {
+    return hidden::_nodes;
+}
+int32_t Search::get_allocated_ms() {
+    return hidden::_ms_allocated;
+}
+bool Search::is_without_time() {
+    return hidden::_without_time;
+}
+
 void Search::set_time(int32_t ms_allocated) {
     if (ms_allocated == INF)
         hidden::_without_time = true;

@@ -3,6 +3,7 @@
 #include "search.hpp"
 #include "eval.hpp"
 #include "perft.hpp"
+#include "bench.hpp"
 
 #include <sstream>
 #include <thread>
@@ -124,6 +125,24 @@ void Uci::start()
                 std::cout << "Search Depth: " << static_cast<int>(Search::get_search_depth()) << " nodes" << std::endl;
             }
 
+        } else if (command == "bench") {
+            if (check_lock()) continue;
+
+            // Optional depth override: "bench" or "bench 10"
+            std::string arg;
+            int depth = Bench::DEFAULT_DEPTH;
+            if (iss >> arg) {
+                try {
+                    size_t pos;
+                    depth = std::stoi(arg, &pos);
+                    if (pos != arg.size() || depth < 1) throw std::runtime_error("");
+                } catch (const std::exception &) {
+                    std::cerr << "Usage: bench [depth]" << std::endl;
+                    continue;
+                }
+            }
+            Bench::run(depth);
+
         } else if (command == "perft") {
             if (check_lock()) continue;
 
@@ -176,6 +195,7 @@ void Uci::start()
             std::cout << "d - display the current position" << std::endl;
             std::cout << "info - display information about search and more precise about board" << std::endl;
             std::cout << "eval - static evaluation of current position" << std::endl;
+            std::cout << "bench [n] - fixed position set at fixed depth; the node count fingerprints the search" << std::endl;
             std::cout << "perft n - count all legal move paths of depth \"n\" from the current position" << std::endl;
             std::cout << "perft divide n - same, broken down per root move (diff against Stockfish's \"go perft n\")" << std::endl;
             std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
