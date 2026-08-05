@@ -1,0 +1,80 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "release",
+      "displayName": "Release — portable",
+      "description": "Distributable build. x86-64-v3 baseline (AVX2/BMI2, Haswell and Zen onward) plus LTO. This is what you publish.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_ARCH": "x86-64-v3",
+        "ATENIKA_NATIVE": "OFF",
+        "ATENIKA_LTO": "ON"
+      }
+    },
+    {
+      "name": "native",
+      "displayName": "Release — native",
+      "description": "Tuned for the building machine. Use for local SPRT and benchmarking; the binary may crash on other CPUs, so never distribute it.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_NATIVE": "ON",
+        "ATENIKA_LTO": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "No optimization, no LTO, asserts live. Use for the incremental-hash assertion and anything involving a debugger.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ATENIKA_LTO": "OFF"
+      }
+    },
+    {
+      "name": "tests",
+      "displayName": "Tests",
+      "description": "Optimized build of the GoogleTest suite, so perft finishes in seconds rather than minutes.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_ARCH": "x86-64-v3",
+        "ATENIKA_LTO": "ON",
+        "ATENIKA_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release" },
+    { "name": "native",  "configurePreset": "native"  },
+    { "name": "debug",   "configurePreset": "debug"   },
+    { "name": "tests",   "configurePreset": "tests"   }
+  ],
+
+  "testPresets": [
+    {
+      "name": "tests",
+      "configurePreset": "tests",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "fast",
+      "configurePreset": "tests",
+      "description": "Everything except the perft suite — a few milliseconds, for use as a pre-commit check.",
+      "filter": { "exclude": { "name": "Perft" } },
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

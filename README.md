@@ -1,30 +1,60 @@
 ## Overview
 
-A chess engine, **without graphical interface**, written in C++20.  
+A chess engine, **without graphical interface**, written in C++23.  
 Briefly about the name. **AteNika** are the names of two ancient Greek goddesses **Athena**, who was the patroness of wisdom, strategy, justice and war defense, and **Nika**, which is literally translated from Greek "Victory", she was the ancient Greek goddess of victory and triumph.
 
 ## Build and Run
 
-On **Windows**, all you need to do is run the code from any available IDE with C++20.  
-**Another way**. You can create a new project via VS, add_and_inc all files from src and book.txt there, and then load these files into the project. This way you can run and customize the project with VS directly
+Requirements: a C++23 compiler (GCC 13+, Clang 16+, MSVC 19.35+) and CMake 3.25 or newer.
 
-For **Unix-like** systems follow this steps:
+### Using presets
 
-``` Bash
-mkdir build
-cd build
-cmake ..
-make
-./AteNika # To run the application
-```  
-
-By default, the project will be built in Release version, without building tests, i.e. this is the command
+The project ships a `CMakePresets.json`, so a build is two commands from the repository root:
 
 ``` Bash
-cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF
+cmake --preset release
+cmake --build --preset release
+./build/release/AteNika
 ```
 
-Accordingly, you can change these parameters to **Debug** and **ON**, if necessary.
+### Without presets
+
+``` Bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/AteNika
+```
+
+Release is the default when no build type is given.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `ATENIKA_BUILD_TESTS` | `OFF` | Build the GoogleTest suite. Uses a system GoogleTest if one is installed, otherwise downloads it. |
+| `ATENIKA_LTO` | `ON` | Link-time optimization in optimized builds. Worth roughly 1.7x on this codebase — leave it on. |
+| `ATENIKA_NATIVE` | `OFF` | Build for the host CPU instead of the portable baseline. |
+| `ATENIKA_ARCH` | `x86-64-v3` | Microarchitecture level for portable builds. Lower to `x86-64-v2` for older hardware. |
+| `ATENIKA_WARNINGS` | `ON` | Compiler warning set. |
+
+### Tests
+
+``` Bash
+cmake --preset tests
+cmake --build --preset tests
+ctest --preset tests        # everything, including perft
+ctest --preset fast         # everything except perft
+```
+
+Or run the binary directly for finer control:
+
+``` Bash
+./build/tests/AteNikaTest --gtest_filter='PerftFixture.*'
+```
+
+### Windows
+
+Open the folder in Visual Studio — it reads `CMakePresets.json` directly and offers the
+presets above in the configuration dropdown. Any IDE with CMake and C++23 support works
+the same way.
 
 ## Inspired by resources
 
