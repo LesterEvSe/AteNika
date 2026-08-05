@@ -1,11 +1,2 @@
-build
-test*
-
-# CLion
-.idea
-*-build-*
-
-# VS
-out
-.vs
-*.json
+.vscode/
+build/
