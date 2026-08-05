@@ -321,7 +321,5 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     }
     --_order_info;
 
-//    if (alpha != old_alpha)
-//        TTable::add(zob_hash, curr_best);
     return alpha;
 }

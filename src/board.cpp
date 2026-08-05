@@ -241,7 +241,6 @@ void Board::make(const Move &move)
 {
     m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights };
 
-    // En passant is available on 1 move only
     if (m_en_passant_cell) {
         m_hash.xor_en_passant(m_en_passant_cell);
         m_en_passant_cell = ZERO;

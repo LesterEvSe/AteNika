@@ -17,8 +17,11 @@ namespace
 
     Board board;
 
+    // lock is set by the caller, before the thread starts (not here). Setting it
+    // here left a window where the main loop could see lock == false, decide no
+    // search was running, and return out of Uci::start while this thread was
+    // still touching `board`.
     void go(bool debug) {
-        lock = true;
         Search::iter_deep(board, debug);
 
         if (quit) {
@@ -44,7 +47,7 @@ void Uci::start()
     std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
     board = Board();
-    std::string input, command;
+    std::string input;
 
     auto check_lock = [](){
         if (!lock) return false;
@@ -52,13 +55,25 @@ void Uci::start()
         return true;
     };
 
-    while (true) {
-        std::getline(std::cin, input);
+    // The loop condition is the fix for the spin: on closed stdin getline fails,
+    // leaves input empty and keeps failing forever, so `while (true)` burned a
+    // core printing "Incorrect command". Every match runner closes stdin.
+    while (std::getline(std::cin, input)) {
         std::istringstream iss(input);
+
+        // Declared inside the loop on purpose. When it lived outside and the
+        // line was empty, `iss >> command` failed and left the previous
+        // command in place — pressing Enter after "perft 4" re-entered the perft
+        // branch with no argument.
+        std::string command;
         iss >> command;
+
+        if (command.empty())
+            continue;
 
         if (input == "go" || input == "godeb") {
             if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
+            lock = true;
             std::thread search([command] { go(command == "godeb"); });
             search.detach();
 
@@ -74,7 +89,6 @@ void Uci::start()
 
         } else if (input == "newgame") {
             if (check_lock()) continue;
-            // if (lock) { std::cout << "This command is not available now" << std::endl; continue; }
             board = Board();
 
             /*
@@ -180,11 +194,7 @@ void Uci::start()
             if (!lock) { std::cout << "No search is performed" << std::endl; continue; }
             Search::stop();
         } else if (input == "quit") {
-            if (lock) {
-                quit = true;
-                Search::stop();
-            }
-            break;
+            break; // shutdown is handled once, after the loop
         } else if (input == "help") {
             std::cout << "go - find and print best move" << std::endl;
             std::cout << "godeb - \"go\" command with debug information" << std::endl;
@@ -231,5 +241,13 @@ void Uci::start()
         } else
             std::cout << "Incorrect command. Type \"help\" for more information." << std::endl;
     }
-    while (lock); // waiting for finished the thread
+
+    // Reached by "quit" or by stdin closing. Either way a detached search thread
+    // may still be running, so ask it to stop and wait for it. Sleeping rather
+    // than spinning: the old `while (lock);` busy-waited at 100% CPU.
+    quit = true;
+    while (lock) {
+        Search::stop();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
