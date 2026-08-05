@@ -20,6 +20,7 @@ option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                     OFF)
 option(ATENIKA_LTO         "Link-time optimization in optimized builds"     ON)
 option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)" OFF)
 option(ATENIKA_WARNINGS    "Enable the warning set"                         ON)
+option(ATENIKA_DEBUG_HASH  "Verify the incremental Zobrist key on every make" OFF)
 
 set(ATENIKA_ARCH "x86-64-v3" CACHE STRING "Microarchitecture level for portable builds")
 
@@ -78,6 +79,12 @@ set_target_properties(atenika_core PROPERTIES
 # Search runs on its own thread
 find_package(Threads REQUIRED)
 target_link_libraries(atenika_core PUBLIC Threads::Threads)
+
+# Separate from NDEBUG on purpose: the check must be able to run on an optimized
+# build, because it needs a deep perft walk to reach the rare cases.
+if (ATENIKA_DEBUG_HASH)
+    target_compile_definitions(atenika_core PUBLIC ATENIKA_DEBUG_HASH)
+endif()
 
 
 # Architecture flags

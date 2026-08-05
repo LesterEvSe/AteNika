@@ -262,30 +262,16 @@ void Board::make(const Move &move)
             m_hash.xor_en_passant(m_en_passant_cell);
             break;
 
+        // Castling rights are not hashed here: the diff at the end of make()
+        // covers every way a right can be lost, castling included.
         case Move::QSIDE_CASTLING: {
-            uint8_t rook_cell;
-            if (m_player_move == WHITE) {
-                rook_cell = a1;
-                m_hash.xor_white_qs_castling();
-            } else {
-                rook_cell = a8;
-                m_hash.xor_black_qs_castling();
-            }
-
+            uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell + 3);
             break;
         }
         case Move::KSIDE_CASTLING: {
-            uint8_t rook_cell;
-            if (m_player_move == WHITE) {
-                rook_cell = h1;
-                m_hash.xor_white_ks_castling();
-            } else {
-                rook_cell = h8;
-                m_hash.xor_black_ks_castling();
-            }
-
+            uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
             remove_piece(m_player_move, ROOK, rook_cell);
             add_piece(m_player_move, ROOK, rook_cell - 2);
             break;
@@ -314,8 +300,37 @@ void Board::make(const Move &move)
     m_player_move = get_opponent_move();
     m_hash.xor_move();
 
+    // A right can disappear four ways: the king moves, a rook moves, a rook is
+    // captured on its home square, or the side castles. All four are already
+    // expressed by the CASTLING table, so hash whichever bits it clears rather
+    // than trying to catch each case separately.
+    const uint8_t old_rights = m_castling_rights;
     m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
+
+    const uint8_t lost = old_rights ^ m_castling_rights;
+    if (lost & 1) m_hash.xor_white_ks_castling();
+    if (lost & 2) m_hash.xor_white_qs_castling();
+    if (lost & 4) m_hash.xor_black_ks_castling();
+    if (lost & 8) m_hash.xor_black_qs_castling();
+
+#ifdef ATENIKA_DEBUG_HASH
+    verify_hash(static_cast<std::string>(move));
+#endif
 }
+
+#ifdef ATENIKA_DEBUG_HASH
+// Compares the incrementally maintained key against a full recompute. Enabled by
+// -DATENIKA_DEBUG_HASH so it can run on an optimized build: it needs millions of
+// nodes to reach the odd cases, which a Debug build is far too slow for.
+// Deliberately not assert(), which NDEBUG would strip out of a Release build.
+void Board::verify_hash(const std::string &context) const {
+    ZobristHash recomputed;
+    recomputed.set_hash(*this);
+
+    if (!(recomputed == m_hash))
+        error("Zobrist mismatch after " + context + "\nFEN: " + get_fen() + "\n");
+}
+#endif
 
 void Board::unmake(const Move &move) {
     // Recover important data from history

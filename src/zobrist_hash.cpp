@@ -1,8 +1,8 @@
 #include "zobrist_hash.hpp"
 #include "board.hpp"
 
-std::mt19937_64 ZobristHash::gen64 {PRNG};
-std::mt19937 ZobristHash::gen32 {PRNG};
+std::mt19937_64 ZobristHash::gen64{PRNG};
+std::mt19937 ZobristHash::gen32{PRNG};
 std::uniform_int_distribution<uint64_t> ZobristHash::dist64;
 std::uniform_int_distribution<uint32_t> ZobristHash::dist32;
 
@@ -32,8 +32,15 @@ void ZobristHash::init() {
 void ZobristHash::set_hash(const Board &board) {
     if (board.get_curr_move() == WHITE)
         xor_move();
+
+    // xor_en_passant takes a cell, not a file; it calls get_file itself.
     if (board.get_en_passant())
-        xor_en_passant(get_file(board.get_en_passant()));
+        xor_en_passant(board.get_en_passant());
+
+    if (board.get_white_ks_castle()) xor_white_ks_castling();
+    if (board.get_white_qs_castle()) xor_white_qs_castling();
+    if (board.get_black_ks_castle()) xor_black_ks_castling();
+    if (board.get_black_qs_castle()) xor_black_qs_castling();
 
     for (uint8_t i = 0; i < PIECE_SIZE; ++i) {
         bitboard white_pieces = board.get_pieces(WHITE, PIECES[i]);
@@ -49,13 +56,9 @@ void ZobristHash::set_hash(const Board &board) {
     }
 }
 
-uint96 ZobristHash::get_hash() const {
-    return m_hash;
-}
+uint96 ZobristHash::get_hash() const { return m_hash; }
 
-void ZobristHash::operator=(const uint96 &hash) {
-    m_hash = hash;
-}
+void ZobristHash::operator=(const uint96 &hash) { m_hash = hash; }
 
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
     return left.m_hash == right.m_hash;
@@ -65,12 +68,8 @@ bool operator==(const ZobristHash &left, const ZobristHash &right) {
 void ZobristHash::xor_piece(Color col, PieceType piece, uint8_t cell) {
     m_hash ^= PIECE_KEYS[col][piece][cell];
 }
-void ZobristHash::xor_move() {
-    m_hash ^= WHITE_MOVE;
-}
-void ZobristHash::xor_en_passant(uint8_t ep_cell) {
-    m_hash ^= EN_PASSANT_FILE[get_file(ep_cell)];
-}
+void ZobristHash::xor_move() { m_hash ^= WHITE_MOVE; }
+void ZobristHash::xor_en_passant(uint8_t ep_cell) { m_hash ^= EN_PASSANT_FILE[get_file(ep_cell)]; }
 void ZobristHash::xor_white_ks_castling() { m_hash ^= KS_CASTLE[WHITE]; }
 void ZobristHash::xor_white_qs_castling() { m_hash ^= QS_CASTLE[WHITE]; }
 void ZobristHash::xor_black_ks_castling() { m_hash ^= KS_CASTLE[BLACK]; }

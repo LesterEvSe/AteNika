@@ -18,11 +18,11 @@ private:
     // enums COLOR_SIZE and PIECE_SIZE in defs.hpp
     // The top 15 bitboards to work
     // m_all, black and white pieces (black pawns, white bishops ...)
-    bitboard m_pieces[COLOR_SIZE][PIECE_SIZE] {0};
+    bitboard m_pieces[COLOR_SIZE][PIECE_SIZE]{0};
 
     // white and black, all pieces
-    bitboard m_side[COLOR_SIZE] {0};
-    bitboard m_all {0};
+    bitboard m_side[COLOR_SIZE]{0};
+    bitboard m_all{0};
 
     Color m_player_move;
 
@@ -34,18 +34,35 @@ private:
     // If it does not exist, then 0
     uint8_t m_en_passant_cell;
 
-    // if white rook move, example 7 cell, we lose white kingside CASTLING.
-    // So, m_castling_rights & CASTLING[7] = 1111 & 1101 = 1101
+    /* Mask of the rights that SURVIVE a move touching this square, used as
+           m_castling_rights &= CASTLING[from] & CASTLING[to];
+
+       Only six squares matter; every other entry is 15, which clears nothing.
+
+           a1 = 13 = 1101   white queenside rook leaves -> lose Q
+           e1 = 12 = 1100   white king leaves           -> lose K and Q
+           h1 = 14 = 1110   white kingside rook leaves  -> lose K
+           a8 =  7 = 0111   black queenside rook leaves -> lose q
+           e8 =  3 = 0011   black king leaves           -> lose k and q
+           h8 = 11 = 1011   black kingside rook leaves  -> lose k
+
+       Example: a rook moving off h1 gives
+           m_castling_rights &= CASTLING[h1] = 1111 & 1110 = 1110
+
+       Indexing by `to` as well as `from` is what covers a rook being captured on
+       its home square: a black rook capturing on h1 has to == h1, so white loses
+       the kingside right without having moved anything itself.
+    */
     // clang-format off
     static constexpr uint8_t CASTLING[64] = {
-        13, 15, 15, 15, 12, 15, 15, 14,
+        13, 15, 15, 15, 12, 15, 15, 14,   // a1 .. h1
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
-        7, 15, 15, 15, 3,  15, 15, 11
+        7,  15, 15, 15, 3,  15, 15, 11    // a8 .. h8
     };
     // clang-format on
 
@@ -56,12 +73,12 @@ private:
        0100 - black kingside
        1000 - black queenside
     */
-    uint8_t m_castling_rights {0};
+    uint8_t m_castling_rights{0};
     ZobristHash m_hash;
 
-    static constexpr uint16_t MAX_MOVES {2048};
+    static constexpr uint16_t MAX_MOVES{2048};
 
-    int16_t m_moves {0};
+    int16_t m_moves{0};
     HistoryNode m_history[MAX_MOVES];
 
     void add_piece(Color color, PieceType piece, uint8_t cell);
@@ -76,7 +93,8 @@ public:
        5. ply (half moves)
        6. full moves
     */
-    explicit Board(std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+    explicit Board(
+        std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
     void update_bitboards();
 
     // Required for testing
@@ -115,12 +133,18 @@ public:
 
     void make(const Move &move);
     void unmake(const Move &move);
+
+#ifdef ATENIKA_DEBUG_HASH
+    // unmake restores the key from the history snapshot, so only make can get it
+    // wrong; this verifies make against a full recompute.
+    void verify_hash(const std::string &context) const;
+#endif
     void make_null_move();
     void unmake_null_move();
 
     [[nodiscard]] std::string get_fen() const;
-    friend std::ostream& operator<<(std::ostream &out, const Board &board);
+    friend std::ostream &operator<<(std::ostream &out, const Board &board);
     void display_all() const;
 };
 
-#endif //ATENIKA_BOARD_HPP
+#endif // ATENIKA_BOARD_HPP
