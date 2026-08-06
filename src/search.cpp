@@ -6,24 +6,24 @@
 #include "ttable.hpp"
 
 // Limits
-int64_t Search::hidden::_nodes;
-int32_t Search::hidden::_ms_allocated;
-bool Search::hidden::_without_time;
-int16_t Search::hidden::_depth;
-std::atomic<bool> Search::hidden::_stop;
+int64_t Search::detail::_nodes;
+int32_t Search::detail::_ms_allocated;
+bool Search::detail::_without_time;
+int16_t Search::detail::_depth;
+std::atomic<bool> Search::detail::_stop;
 
-int64_t Search::hidden::_fh; // fail high
-int64_t Search::hidden::_fhf; // fail high first
+int64_t Search::detail::_fh;  // fail high
+int64_t Search::detail::_fhf; // fail high first
 
 // Search
-OrderInfo Search::hidden::_order_info;
-Move Search::hidden::_best_move;
-int32_t Search::hidden::_best_score;
-std::chrono::time_point<std::chrono::steady_clock> Search::hidden::_start;
+OrderInfo Search::detail::_order_info;
+Move Search::detail::_best_move;
+int32_t Search::detail::_best_score;
+std::chrono::time_point<std::chrono::steady_clock> Search::detail::_start;
 
-std::string Search::hidden::_mate; // for mate check
+std::string Search::detail::_mate; // for mate check
 
-void Search::hidden::_restart() {
+void Search::detail::_restart() {
     _nodes = 0;
     _stop = false;
 
@@ -36,72 +36,65 @@ void Search::hidden::_restart() {
 }
 
 void Search::init() {
-    hidden::_restart();
-    hidden::_ms_allocated = 5000;
-    hidden::_without_time = false;
-    hidden::_depth = 10;
+    detail::_restart();
+    detail::_ms_allocated = 5000;
+    detail::_without_time = false;
+    detail::_depth = 10;
 }
 
-bool Search::hidden::_check_limits() {
-    if (_stop) return true;
+bool Search::detail::_check_limits() {
+    if (_stop)
+        return true;
     // check each 2048 node
-    if (_nodes & 2047) return false;
+    if (_nodes & 2047)
+        return false;
 
-    int32_t elapsed =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+    int32_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::steady_clock::now() - detail::_start)
+                          .count();
 
-    if (_without_time || elapsed < _ms_allocated) return false;
+    if (_without_time || elapsed < _ms_allocated)
+        return false;
     return _stop = true;
 }
-void Search::stop() {
-    hidden::_stop = true;
-}
+void Search::stop() { detail::_stop = true; }
 
-std::string Search::get_mate() {
-    return hidden::_mate;
-}
+std::string Search::get_mate() { return detail::_mate; }
 Move *Search::get_best_move() {
-    return hidden::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &hidden::_best_move;
+    return detail::_best_move.get_flag() == Move::NULL_MOVE ? nullptr : &detail::_best_move;
 }
 std::string Search::get_allocated_sec() {
-    return hidden::_without_time ? "infinity" : std::to_string(hidden::_ms_allocated/1000) + " sec";
+    return detail::_without_time ? "infinity"
+                                 : std::to_string(detail::_ms_allocated / 1000) + " sec";
 }
-int32_t Search::get_search_depth() {
-    return hidden::_depth;
-}
+int32_t Search::get_search_depth() { return detail::_depth; }
 
-int64_t Search::get_nodes() {
-    return hidden::_nodes;
-}
-int32_t Search::get_allocated_ms() {
-    return hidden::_ms_allocated;
-}
-bool Search::is_without_time() {
-    return hidden::_without_time;
-}
+int64_t Search::get_nodes() { return detail::_nodes; }
+int32_t Search::get_allocated_ms() { return detail::_ms_allocated; }
+bool Search::is_without_time() { return detail::_without_time; }
 
 void Search::set_time(int32_t ms_allocated) {
     if (ms_allocated == INF)
-        hidden::_without_time = true;
+        detail::_without_time = true;
     else if (ms_allocated > 0) {
-        hidden::_without_time = false;
-        hidden::_ms_allocated = ms_allocated;
+        detail::_without_time = false;
+        detail::_ms_allocated = ms_allocated;
     }
 }
 
 void Search::set_depth(int16_t depth) {
     if (depth > 0)
-        hidden::_depth = depth;
+        detail::_depth = depth;
 }
 
 
-void Search::hidden::_debug(const Board &board, int depth, int elapsed)
-{
+void Search::detail::_debug(const Board &board, int depth, int elapsed) {
     std::string score;
-    if (hidden::_best_score > 2'000'000'000)
-        score = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
+    if (detail::_best_score > 2'000'000'000)
+        score = (board.get_curr_move() == WHITE ? "WM" : "BM") +
+                std::to_string(INF - detail::_best_score);
     else
-        score = "cp " + std::to_string(hidden::_best_score);
+        score = "cp " + std::to_string(detail::_best_score);
 
     // cp  - centi-pawns
     // nps - nodes per second
@@ -110,11 +103,11 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     // Sometimes I have an error in Linux
     // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
     // It's divide by zero error, so I increment elapsed ms, to avoid this problem
-    std::cout << depth << " nodes " << (long long)_nodes;
+    std::cout << depth << " nodes " << (long long) _nodes;
     std::cout << " time " << elapsed << "ms ";
-    std::cout << score << " nps " << (long long)(_nodes*1000 / ++elapsed);
+    std::cout << score << " nps " << (long long) (_nodes * 1000 / ++elapsed);
 
-    std::cout << " moq " << (int)(100.0 * _fhf/ (_fh == 0 ? 1 : _fh)) << '%';
+    std::cout << " moq " << (int) (100.0 * _fhf / (_fh == 0 ? 1 : _fh)) << '%';
     std::cout << " pv ";
 
     Board temp = board;
@@ -122,41 +115,43 @@ void Search::hidden::_debug(const Board &board, int depth, int elapsed)
     // Set a counter, so we don't go over the limit
     for (int i = 0; i < _depth && TTable::in_table(temp.get_zob_hash()); ++i) {
         Move move = TTable::get(temp.get_zob_hash()).move;
-        std::cout << (std::string)move << ' ';
+        std::cout << (std::string) move << ' ';
         temp.make(move);
     }
     std::cout << std::endl;
 }
 
 void Search::iter_deep(Board &board, bool debug) {
-    hidden::_restart();
-    hidden::_start = std::chrono::steady_clock::now();
+    detail::_restart();
+    detail::_start = std::chrono::steady_clock::now();
 
-    for (int16_t i = 1; i <= hidden::_depth; ++i) {
-        hidden::_best_score = hidden::_negamax(board, i, -INF, INF, true);
+    for (int16_t i = 1; i <= detail::_depth; ++i) {
+        detail::_best_score = detail::_negamax(board, i, -INF, INF, true);
 
-        int32_t elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - hidden::_start).count();
+        int32_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::steady_clock::now() - detail::_start)
+                              .count();
 
-        if (hidden::_stop)
+        if (detail::_stop)
             break;
         if (debug)
-            hidden::_debug(board, i, elapsed);
+            detail::_debug(board, i, elapsed);
 
-        hidden::_best_move = TTable::get(board.get_zob_hash()).move;
-        if (hidden::_best_score > 2'000'000'000) {
+        detail::_best_move = TTable::get(board.get_zob_hash()).move;
+        if (detail::_best_score > 2'000'000'000) {
             // for testing
-            hidden::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") + std::to_string(INF - hidden::_best_score);
+            detail::_mate = (board.get_curr_move() == WHITE ? "WM" : "BM") +
+                            std::to_string(INF - detail::_best_score);
             break;
         }
 
-        if (!hidden::_without_time && elapsed >= (hidden::_ms_allocated / 2))
+        if (!detail::_without_time && elapsed >= (detail::_ms_allocated / 2))
             break;
     }
 }
 
-int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move)
-{
+int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta,
+                                 bool null_move) {
     if (_check_limits())
         return 0;
     if (depth < 1)
@@ -190,7 +185,8 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
         ++depth;
 
     // Greatly speeds up the work. Should be +100 Elo
-    if (null_move && !in_check && board.get_ply() && board.curr_player_has_big_pieces() && depth >= 4) {
+    if (null_move && !in_check && board.get_ply() && board.curr_player_has_big_pieces() &&
+        depth >= 4) {
         board.make_null_move();
         int32_t score = _negamax(board, depth - 4, -alpha - 1, -alpha, false);
         board.unmake_null_move();
@@ -228,11 +224,11 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
         int32_t score;
         if (full_window)
-            score = -_negamax(board, depth-1, -beta, -alpha, true);
+            score = -_negamax(board, depth - 1, -beta, -alpha, true);
         else {
-            score = -_negamax(board, depth-1, -alpha-1, -alpha, true);
+            score = -_negamax(board, depth - 1, -alpha - 1, -alpha, true);
             if (score > alpha)
-                score = -_negamax(board, depth-1, -beta, -alpha, true);
+                score = -_negamax(board, depth - 1, -beta, -alpha, true);
         }
         board.unmake(move);
 
@@ -243,7 +239,8 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
             if (score > alpha) {
                 if (score >= beta) {
                     --_order_info;
-                    if (first_move) ++_fhf;
+                    if (first_move)
+                        ++_fhf;
                     ++_fh;
 
                     if (!(move.get_flag() & Move::CAPTURE))
@@ -256,7 +253,8 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
                 full_window = false;
 
                 if (!(move.get_flag() & Move::CAPTURE))
-                    _order_info.add_history(curr_best_move.get_from_cell(), curr_best_move.get_to_cell(), depth);
+                    _order_info.add_history(curr_best_move.get_from_cell(),
+                                            curr_best_move.get_to_cell(), depth);
             }
         }
         first_move = false;
@@ -271,8 +269,7 @@ int32_t Search::hidden::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return alpha;
 }
 
-int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
-{
+int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     // check limits here
     if (_check_limits())
         return 0;
@@ -300,8 +297,7 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
     bool first_move = true;
     ++_order_info;
 
-    while (q_move_picker.has_next())
-    {
+    while (q_move_picker.has_next()) {
         Move move = q_move_picker.get_next();
         board.make(move);
         stand_pat = -_quiescence(board, -beta, -alpha);
@@ -310,7 +306,8 @@ int32_t Search::hidden::_quiescence(Board &board, int32_t alpha, int32_t beta)
         if (stand_pat > alpha) {
             if (stand_pat >= beta) {
                 --_order_info;
-                if (first_move) ++_fhf;
+                if (first_move)
+                    ++_fhf;
                 ++_fh;
                 return beta;
             }

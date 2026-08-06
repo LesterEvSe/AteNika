@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
-#include "rays.hpp"
-#include "attacks.hpp"
 
-class AttacksTest : public testing::Test
-{
+#include "attacks.hpp"
+#include "bitfunc.hpp"
+#include "rays.hpp"
+
+class AttacksTest : public testing::Test {
 public:
     static void SetUpTestCase() {
         // Order is important

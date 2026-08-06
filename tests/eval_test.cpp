@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
+
 #include "rays.hpp"
 #include "eval.hpp"
 
 using namespace Eval;
-using namespace hidden;
+using namespace detail;
 
-class EvalTest : public testing::Test
-{
+class EvalTest : public testing::Test {
 public:
     static void SetUpTestCase() {
         Rays::init();
@@ -17,7 +17,7 @@ public:
 };
 
 // It is hard enough testing only evaluation function,
-// that's why I am testing hidden functions
+// that's why I am testing detail functions
 
 // Doubled rooks test
 TEST_F(EvalTest, doubled_rooks_empty_field) {
@@ -108,8 +108,7 @@ TEST_F(EvalTest, black_passed_pawns) {
 
 TEST_F(EvalTest, white_and_black_king_pawns_shield_true) {
     Board board = Board();
-    bool actual = _king_pawns_shield(board, WHITE) &&
-            _king_pawns_shield(board, BLACK);
+    bool actual = _king_pawns_shield(board, WHITE) && _king_pawns_shield(board, BLACK);
     ASSERT_TRUE(actual);
 }
 

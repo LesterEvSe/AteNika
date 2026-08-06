@@ -6,8 +6,11 @@
 // MATERIAL_BONUS and PST take from https://www.chessprogramming.org/Simplified_Evaluation_Function
 // Other value from https://github.com/bluefeversoft/vice/blob/main/Vice11/src/evaluate.c
 namespace Eval {
-namespace hidden {
+    void init();
+    int32_t evaluate(const Board &board);
+} // namespace Eval
 
+namespace Eval::detail {
     // Without King
     // clang-format off
     constexpr int32_t PST[PIECE_SIZE-1][64] = {
@@ -74,11 +77,10 @@ namespace hidden {
     // clang-format on
 
     // PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING (last value don't need)
-    constexpr int32_t MATERIAL_BONUS[PIECE_SIZE] {
-            100, 320, 330, 500, 900, 0
-    };
+    constexpr int32_t MATERIAL_BONUS[PIECE_SIZE]{100, 320, 330, 500, 900, 0};
 
-    constexpr int32_t ENDGAME_MAT = MATERIAL_BONUS[ROOK] + 2*MATERIAL_BONUS[KNIGHT] + 2*MATERIAL_BONUS[PAWN];
+    constexpr int32_t ENDGAME_MAT =
+        MATERIAL_BONUS[ROOK] + 2 * MATERIAL_BONUS[KNIGHT] + 2 * MATERIAL_BONUS[PAWN];
 
     // King middle game
     // clang-format off
@@ -153,10 +155,6 @@ namespace hidden {
 
     bool material_draw(const Board &board);
 
-} // hidden
+} // namespace Eval::detail
 
-    void init();
-    int32_t evaluate(const Board &board);
-} // Eval
-
-#endif //ATENIKA_EVAL_HPP
+#endif // ATENIKA_EVAL_HPP

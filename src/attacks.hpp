@@ -1,10 +1,20 @@
 #ifndef ATENIKA_ATTACKS_HPP
 #define ATENIKA_ATTACKS_HPP
 
-#include "bitfunc.hpp"
+#include "defs.hpp"
 
 namespace Attacks {
-namespace hidden {
+    void init();
+    bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
+    bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
+    bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
+
+    bitboard get_pawn_attacks(Color color, uint8_t cell);
+    bitboard get_knight_attacks(uint8_t cell);
+    bitboard get_king_attacks(uint8_t cell);
+} // namespace Attacks
+
+namespace Attacks::detail {
     // clang-format off
     constexpr uint8_t _rook_bits[64] = {
         12, 11, 11, 11, 11, 11, 11, 12,
@@ -67,40 +77,30 @@ namespace hidden {
     };
     // clang-format on
 
-   bitboard _get_blockers(uint16_t index, bitboard mask);
+    bitboard _get_blockers(uint16_t index, bitboard mask);
 
-   // 4096 = 2^(max element from _rook_bits array)
-   extern bitboard _rook_mask[64];
-   extern bitboard _rook_attacks[64][4096];
+    // 4096 = 2^(max element from _rook_bits array)
+    extern bitboard _rook_mask[64];
+    extern bitboard _rook_attacks[64][4096];
 
-   // 512 = 2^(max element from _bishop_bits array)
-   extern bitboard _bishop_mask[64];
-   extern bitboard _bishop_attacks[64][512];
+    // 512 = 2^(max element from _bishop_bits array)
+    extern bitboard _bishop_mask[64];
+    extern bitboard _bishop_attacks[64][512];
 
-   extern bitboard _pawn_attacks[COLOR_SIZE][64];
-   extern bitboard _knight_attacks[64];
-   extern bitboard _king_attacks[64];
+    extern bitboard _pawn_attacks[COLOR_SIZE][64];
+    extern bitboard _knight_attacks[64];
+    extern bitboard _king_attacks[64];
 
-   bitboard _calculate_rook_attacks(uint8_t cell, bitboard blockers);
-   bitboard _calculate_bishop_attacks(uint8_t cell, bitboard blockers);
+    bitboard _calculate_rook_attacks(uint8_t cell, bitboard blockers);
+    bitboard _calculate_bishop_attacks(uint8_t cell, bitboard blockers);
 
-   void _init_rook_mask();
-   void _init_bishop_mask();
-   void _init_rook_attacks();
-   void _init_bishop_attacks();
-   void _init_pawn_attacks();
-   void _init_knight_attacks();
-   void _init_king_attacks();
-} // hidden
+    void _init_rook_mask();
+    void _init_bishop_mask();
+    void _init_rook_attacks();
+    void _init_bishop_attacks();
+    void _init_pawn_attacks();
+    void _init_knight_attacks();
+    void _init_king_attacks();
+} // namespace Attacks::detail
 
-    void init();
-    bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
-    bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
-    bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
-
-    bitboard get_pawn_attacks(Color color, uint8_t cell);
-    bitboard get_knight_attacks(uint8_t cell);
-    bitboard get_king_attacks(uint8_t cell);
-} // Attacks
-
-#endif //ATENIKA_ATTACKS_HPP
+#endif // ATENIKA_ATTACKS_HPP

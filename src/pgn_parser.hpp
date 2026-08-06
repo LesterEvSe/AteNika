@@ -4,17 +4,17 @@
 
 #include <string>
 
-// PGN - Portable Game Notation
 namespace PGNParser {
-namespace hidden {
+    void parse(const std::string &path);
+} // namespace PGNParser
+
+// PGN - Portable Game Notation
+namespace PGNParser::detail {
     extern std::string processed_file;
 
     void first_processing(const std::string &path);
     void second_processing();
 
-} // hidden
-    void parse(const std::string &path);
+} // namespace PGNParser::detail
 
-} // PGNParser
-
-#endif //ATENIKA_PGN_PARSER_HPP
+#endif // ATENIKA_PGN_PARSER_HPP

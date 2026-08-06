@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "bitfunc.hpp"
 
 TEST(BitfuncTest, get_cell_func_and_FIELD) {

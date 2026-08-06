@@ -8,9 +8,9 @@
 #include <cstring> // for strerror
 #include <functional>
 
-std::string PGNParser::hidden::processed_file = "../processed_file.txt";
+std::string PGNParser::detail::processed_file = "../processed_file.txt";
 
-void PGNParser::hidden::first_processing(const std::string &path) {
+void PGNParser::detail::first_processing(const std::string &path) {
     std::ifstream from(path);
 
     if (!from.is_open())
@@ -99,7 +99,7 @@ namespace {
     }
 }
 
-void PGNParser::hidden::second_processing() {
+void PGNParser::detail::second_processing() {
     std::ifstream from(processed_file);
 
     if (!from.is_open())
@@ -169,8 +169,8 @@ void PGNParser::hidden::second_processing() {
 
 void PGNParser::parse(const std::string &path) {
     try {
-        hidden::first_processing(path);
-        hidden::second_processing();
+        detail::first_processing(path);
+        detail::second_processing();
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }

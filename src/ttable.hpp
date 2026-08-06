@@ -14,10 +14,6 @@ struct TTEntry {
 };
 
 namespace TTable {
-namespace hidden {
-    extern std::unordered_map<bits96, TTEntry> _ttable;
-
-} // hidden
     void add(const ZobristHash &zob, TTEntry entry);
     bool in_table(const ZobristHash &zob);
     const TTEntry &get(const ZobristHash &zob);
@@ -26,7 +22,12 @@ namespace hidden {
     // between positions so a run depends only on the binary, not on whatever was
     // searched before it. Also what UCI "ucinewgame" will need in Phase 0C.
     void clear();
-} // TTable
+} // namespace TTable
+
+namespace TTable::detail {
+    extern std::unordered_map<bits96, TTEntry> _ttable;
+
+} // namespace TTable::detail
 
 
-#endif //ATENIKA_TTABLE_HPP
+#endif // ATENIKA_TTABLE_HPP

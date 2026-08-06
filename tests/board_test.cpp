@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
+
+#include "bitfunc.hpp"
 #include "board.hpp"
 #include "rays.hpp"
-#include "bitfunc.hpp"
 
-class BoardTest : public ::testing::Test
-{
+class BoardTest : public ::testing::Test {
 protected:
     static Board board;
 
@@ -120,9 +120,7 @@ TEST_F(BoardTest, TestExit) {
     // testing::ExitedWithCode data type
     auto error = testing::ExitedWithCode(1);
 
-    auto lambda = []() -> PieceType {
-        return board.get_piece_at(WHITE, e4);
-    };
+    auto lambda = []() -> PieceType { return board.get_piece_at(WHITE, e4); };
 
     // Act & Assert
     ASSERT_EXIT(lambda(), error, str);

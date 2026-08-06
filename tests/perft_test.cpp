@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
+
 #include "rays.hpp"
 #include "board.hpp"
-#include "movegen.hpp"
-#include "movepicker.hpp"
 #include "perft.hpp"
 
 // using Stockfish 16 to calculation the expected value
@@ -13,15 +12,12 @@
 
 // https://www.chessprogramming.org/Perft_Results for position
 // Perft - PERFomance Test, move path enumeration
-class PerftTest : public testing::Test
-{
+class PerftTest : public testing::Test {
 protected:
     // Delegates to the engine's implementation in src/perft.cpp, so the tests
     // verify the same code the "perft" command runs. A private copy here would
     // let the two drift apart and the suite would stop proving anything.
-    static int64_t perft(Board &board, int depth) {
-        return Perft::run(board, depth);
-    }
+    static int64_t perft(Board &board, int depth) { return Perft::run(board, depth); }
 
 public:
     static void SetUpTestCase() {
@@ -75,7 +71,7 @@ TEST_F(PerftTest, initial_position_1) {
     int64_t expect[] = {20, 400, 8'902, 197'281};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -89,7 +85,7 @@ TEST_F(PerftTest, trouble_position_2) {
     int64_t expect[] = {48, 2'039, 97'862, 4'085'603};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -103,7 +99,7 @@ TEST_F(PerftTest, trouble_position_3) {
     int64_t expect[] = {14, 191, 2'812, 43'238, 674'624, 11'030'083};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -117,7 +113,7 @@ TEST_F(PerftTest, trouble_position_4) {
     int64_t expect[] = {6, 264, 9'467, 422'333, 15'833'292};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -131,7 +127,7 @@ TEST_F(PerftTest, mirrored_trouble_position_4) {
     int64_t expect[] = {6, 264, 9'467, 422'333, 15'833'292};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -145,7 +141,7 @@ TEST_F(PerftTest, trouble_position_5) {
     int64_t expect[] = {44, 1'486, 62'379, 2'103'487, 89'941'194};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -159,7 +155,7 @@ TEST_F(PerftTest, trouble_position_6) {
     int64_t expect[] = {46, 2'079, 89'890, 3'894'594};
 
     for (uint8_t i = 0; i < size; ++i)
-        actual[i] = perft(board, i+1);
+        actual[i] = perft(board, i + 1);
 
     for (uint8_t i = 0; i < size; ++i)
         ASSERT_EQ(expect[i], actual[i]);
@@ -193,7 +189,7 @@ TEST_F(PerftTest, github_test_4) {
 
 TEST_F(PerftTest, github_test_5) {
     Board board = Board("2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b KQ - 3");
-    int64_t actual = perft(board,1);
+    int64_t actual = perft(board, 1);
     ASSERT_EQ(44, actual);
 }
 

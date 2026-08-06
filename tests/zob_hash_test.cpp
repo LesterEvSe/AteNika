@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "board.hpp"
 #include "rays.hpp"
 

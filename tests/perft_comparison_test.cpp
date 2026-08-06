@@ -1,12 +1,13 @@
-#include <gtest/gtest.h>
-#include "rays.hpp"
-#include "attacks.hpp"
-
 #include <random>
 #include <chrono>
 
-class PerftComparisonTest : public testing::Test
-{
+#include <gtest/gtest.h>
+
+#include "attacks.hpp"
+#include "bitfunc.hpp"
+#include "rays.hpp"
+
+class PerftComparisonTest : public testing::Test {
 public:
     static void SetUpTestCase() {
         init_bits_pre_calculation();
@@ -32,9 +33,7 @@ uint8_t count_bits_my_func(uint64_t num) {
     return sum;
 }
 
-uint8_t count_bits_popcount(uint64_t num) {
-    return std::popcount(num);
-}
+uint8_t count_bits_popcount(uint64_t num) { return std::popcount(num); }
 
 void check(uint8_t (*bits_count)(uint64_t), const std::vector<uint64_t> &nums) {
     for (size_t i = 0; i < nums.size(); ++i)
@@ -58,9 +57,12 @@ TEST_F(PerftComparisonTest, count_bits_func) {
     check(count_bits, nums);
     auto end_time3 = std::chrono::steady_clock::now();
 
-    auto duration_popcount = std::chrono::duration_cast<std::chrono::milliseconds>(end_time1 - start_time);
-    auto duration_my_func = std::chrono::duration_cast<std::chrono::milliseconds>(end_time2 - end_time1);
-    auto duration_my_func_better = std::chrono::duration_cast<std::chrono::milliseconds>(end_time3 - end_time2);
+    auto duration_popcount =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end_time1 - start_time);
+    auto duration_my_func =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end_time2 - end_time1);
+    auto duration_my_func_better =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end_time3 - end_time2);
 
     std::cout << "popcount: " << duration_popcount << std::endl;
     std::cout << "my_count (old): " << duration_my_func << std::endl;

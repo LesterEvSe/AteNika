@@ -6,35 +6,6 @@
 #include <atomic>
 
 namespace Search {
-namespace hidden {
-
-    // Limits
-    extern int64_t _nodes;
-    extern int32_t _ms_allocated;
-    extern bool _without_time;
-    extern int16_t _depth;
-    extern std::atomic<bool> _stop;
-
-    extern int64_t _fh; // cut-off at n move. The moves are accumulating
-    extern int64_t _fhf; // cut-off at first move
-
-    // Search
-    extern OrderInfo _order_info;
-    extern Move _best_move;
-    extern int32_t _best_score;
-    extern std::chrono::time_point<std::chrono::steady_clock> _start;
-
-    extern std::string _mate; // for mate check
-
-    void _debug(const Board &board, int depth, int elapsed);
-    void _restart();
-    bool _check_limits();
-
-    int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
-    int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
-
-} // hidden
-
     void init();
     void stop(); // stop search if time has expired
 
@@ -53,6 +24,34 @@ namespace hidden {
     bool is_without_time();
 
     void iter_deep(Board &board, bool debug);
-} // Search
+} // namespace Search
 
-#endif //ATENIKA_SEARCH_HPP
+namespace Search::detail {
+    // Limits
+    extern int64_t _nodes;
+    extern int32_t _ms_allocated;
+    extern bool _without_time;
+    extern int16_t _depth;
+    extern std::atomic<bool> _stop;
+
+    extern int64_t _fh;  // cut-off at n move. The moves are accumulating
+    extern int64_t _fhf; // cut-off at first move
+
+    // Search
+    extern OrderInfo _order_info;
+    extern Move _best_move;
+    extern int32_t _best_score;
+    extern std::chrono::time_point<std::chrono::steady_clock> _start;
+
+    extern std::string _mate; // for mate check
+
+    void _debug(const Board &board, int depth, int elapsed);
+    void _restart();
+    bool _check_limits();
+
+    int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
+    int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
+
+} // namespace Search::detail
+
+#endif // ATENIKA_SEARCH_HPP
