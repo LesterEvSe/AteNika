@@ -19,8 +19,8 @@ namespace MvvLva {
     constexpr int32_t CAPTURE_BONUS = 400'000;
     constexpr int32_t PROMOTION_BONUS = 300'000;
 
-    extern int32_t mvv_lva[PIECE_SIZE-1][PIECE_SIZE];
+    extern int32_t mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
     void init();
-};
+}; // namespace MvvLva
 
-#endif //ATENIKA_MVV_LVA_HPP
+#endif // ATENIKA_MVV_LVA_HPP

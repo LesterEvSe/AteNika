@@ -48,8 +48,8 @@ bool Eval::detail::material_draw(const Board &board) {
         return wN < 3 && bN < 3;
     if (!wN && !bN)
         return std::abs(wB - bB) < 2;
-    if (wN < 3 && !wB || wB == 1 && !wN)
-        return bN < 3 && !bB || bB == 1 && !bN;
+    if ((wN < 3 && !wB) || (wB == 1 && !wN))
+        return (bN < 3 && !bB) || (bB == 1 && !bN);
     return false;
 }
 
@@ -61,11 +61,6 @@ int32_t Eval::evaluate(const Board &board) {
     const bitboard bP = board.get_pieces(BLACK, PAWN); // for white passed (opposite color)
     const bitboard wP = board.get_pieces(WHITE, PAWN); // for black passed (here too)
     const bitboard all_pawns = bP | wP; // for open and semi open files for rooks and queens
-
-    /*
-    if (!bP && !wP && detail::material_draw(board))
-        return 0;
-    */
 
     // Pawns
     bitboard pieces = board.get_pieces(WHITE, PAWN);

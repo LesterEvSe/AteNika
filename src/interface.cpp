@@ -77,25 +77,9 @@ void Uci::start()
             std::thread search([command] { go(command == "godeb"); });
             search.detach();
 
-            /*
-            if (book && book->has_move()) {
-                std::cout << (input == "godeb" ? "A move from the book\n" : "");
-                std::cout << "Engine's move: " << book->get_random() << std::endl;
-            } else {
-                std::thread search([command] { go(command == "godeb"); });
-                search.detach();
-            }
-            */
-
         } else if (input == "newgame") {
             if (check_lock()) continue;
             board = Board();
-
-            /*
-            history.clear();
-            if (book)
-                book->set();
-            */
 
         } else if (command == "setfen") {
             if (check_lock()) continue;
@@ -227,17 +211,6 @@ void Uci::start()
                 std::cout << e.what() << std::endl;
             }
 
-            /*
-            if (book && book->has_move())
-                book->next_move(command);
-
-            if (history.add_pos(board.get_zob_hash()))
-                board.make(move);
-            else
-                std::cout << "Impossible move. Draw" << std::endl;
-            if (board.get_ply() == 0)
-                history.clear();
-            */
         } else
             std::cout << "Incorrect command. Type \"help\" for more information." << std::endl;
     }

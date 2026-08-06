@@ -6,7 +6,6 @@
 #include "eval.hpp"
 #include "search.hpp"
 #include "interface.hpp"
-//#include "pgn_parser.hpp"
 
 int main() {
     init_bits_pre_calculation(); // Must be at the beginning!
@@ -18,8 +17,6 @@ int main() {
     Search::init();
 
     // Data take from https://www.ficsgames.org/download.html
-    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317502.pgn");
-//    Uci::init();
     Uci::start();
     return 0;
 }

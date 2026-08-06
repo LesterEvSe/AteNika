@@ -18,7 +18,6 @@ MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &
         }
 
         // Warning!!! The value is not initialized, so we need to reset it later
-        // score =
         int32_t score;
         switch (m_move_list[i].get_flag()) {
             case Move::CAPTURE_PROMOTION:

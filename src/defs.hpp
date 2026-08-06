@@ -2,8 +2,8 @@
 #define ATENIKA_DEFS_HPP
 
 #include <cstdint>
-#include <string>
 #include <limits> // std::numeric_limits<int32_t>::max()
+#include <string>
 
 /** Arrangements for the presentation of the board (uint64_t) */
 /**
@@ -88,10 +88,10 @@ enum PieceType : uint8_t {
     QUEEN,
     KING,
     PIECE_SIZE, // should be before end
-    NONE // should be at the end
+    NONE        // should be at the end
 };
 
-constexpr PieceType PIECES[] = { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+constexpr PieceType PIECES[] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING};
 
 enum Color : uint8_t {
     BLACK,
@@ -99,22 +99,14 @@ enum Color : uint8_t {
     COLOR_SIZE // should be at the end
 };
 
-enum GamePhase : uint8_t {
-    OPENING,
-    ENDGAME,
-    PHASES
-};
+enum GamePhase : uint8_t { OPENING, ENDGAME, PHASES };
 
 // for transposition table and entry
-enum TTFlag : uint8_t {
-    ALPHA,
-    EXACT,
-    BETA
-};
+enum TTFlag : uint8_t { ALPHA, EXACT, BETA };
 
-constexpr uint64_t ZERO {0};
-constexpr uint64_t ONE  {1};
-constexpr uint8_t MAX_PLY {100}; // fifty full moves rule without pawn moves or without captures
+constexpr uint64_t ZERO{0};
+constexpr uint64_t ONE{1};
+constexpr uint8_t MAX_PLY{100}; // fifty full moves rule without pawn moves or without captures
 constexpr int32_t INF = std::numeric_limits<int32_t>::max();
 
-#endif //ATENIKA_DEFS_HPP
+#endif // ATENIKA_DEFS_HPP

@@ -1,12 +1,12 @@
-#include "pgn_parser.hpp"
-#include "movegen.hpp"
-#include "move.hpp"
-
+#include <cstring> // for strerror
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <cstring> // for strerror
 #include <functional>
+#include <sstream>
+
+#include "move.hpp"
+#include "movegen.hpp"
+#include "pgn_parser.hpp"
 
 std::string PGNParser::detail::processed_file = "../processed_file.txt";
 

@@ -163,23 +163,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
     ZobristHash zob_hash = board.get_zob_hash();
 
-    // _depth - depth (curr depth)
-    // if curr_depth + TT depth >= _depth, then use, otherwise recalculate
-    // MD - depth + TT_depth >= MD simplified to TT_depth >= d. MD - Max Depth
-
-    /*
-    const TTEntry &entry = TTable::get(zob_hash);
-    if (TTable::in_table(zob_hash) && entry.depth >= depth)
-    {
-        int32_t score = entry.score;
-        switch (entry.flag) {
-            case ALPHA : if (score <= alpha) { return alpha; } break;
-            case EXACT : return score;
-            case BETA  : if (score >= beta ) { return score; } break;
-        }
-    }
-    */
-
     bool in_check = board.king_in_check(board.get_curr_move());
     if (in_check)
         ++depth;

@@ -49,8 +49,8 @@ public:
     ) :
         m_from(from),
         m_to(to),
-        m_move_piece(move_piece),
         m_flag(flag),
+        m_move_piece(move_piece),
         m_captured_piece(captured_piece),
         m_promotion_piece(promotion_piece),
         m_score(0) {}

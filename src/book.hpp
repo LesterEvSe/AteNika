@@ -2,14 +2,14 @@
 #define ATENIKA_BOOK_HPP
 #define _CRT_SECURE_NO_WARNINGS // to prevent MSVC compiler error with strerror
 
-#include "trie_node.hpp"
 #include <string>
-#include <random>
+
+#include "trie_node.hpp"
 
 class Book {
 private:
     std::shared_ptr<TrieNode> head, curr;
-    explicit Book(const std::string& path);
+    explicit Book(const std::string &path);
 
 public:
     static Book *get_instance(const std::string &path);
@@ -20,4 +20,4 @@ public:
     void next_move(const std::string &move);
 };
 
-#endif //ATENIKA_BOOK_HPP
+#endif // ATENIKA_BOOK_HPP

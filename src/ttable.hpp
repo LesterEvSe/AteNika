@@ -1,10 +1,11 @@
 #ifndef ATENIKA_TTABLE_HPP
 #define ATENIKA_TTABLE_HPP
 
-#include "uint96.hpp"
-#include "zobrist_hash.hpp"
 #include "move.hpp"
 #include <unordered_map>
+
+#include "uint96.hpp"
+#include "zobrist_hash.hpp"
 
 struct TTEntry {
     Move move;

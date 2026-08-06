@@ -13,8 +13,8 @@ private:
 
 public:
     uint96() : m_first(0), m_second(0) {}
-    uint96(uint64_t most_significant, uint32_t least_significant) :
-        m_first(most_significant), m_second(least_significant) {}
+    uint96(uint64_t most_significant, uint32_t least_significant)
+        : m_first(most_significant), m_second(least_significant) {}
 
     // In that case we do not need a call chain, so nothing need to return
     void operator^=(const uint96 &object);
@@ -26,4 +26,4 @@ public:
     explicit operator std::bitset<96>() const;
 };
 
-#endif //ATENIKA_UINT96_HPP
+#endif // ATENIKA_UINT96_HPP

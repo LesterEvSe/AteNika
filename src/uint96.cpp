@@ -3,7 +3,7 @@
 #include <iomanip>
 
 void uint96::operator^=(const uint96 &object) {
-    m_first  ^= object.m_first;
+    m_first ^= object.m_first;
     m_second ^= object.m_second;
 }
 
