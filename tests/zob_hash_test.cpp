@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "board.hpp"
-#include "rays.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/rays.hpp"
+#include "core/board.hpp"
+#include "core/zobrist_hash.hpp"
 
 class ZobHashTest : public ::testing::Test {
 public:

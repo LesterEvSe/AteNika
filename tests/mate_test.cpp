@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
 
-#include "rays.hpp"
-#include "board.hpp"
-#include "eval.hpp"
-#include "search.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/bitfunc.hpp"
+#include "bitboard/rays.hpp"
+#include "core/board.hpp"
+#include "core/zobrist_hash.hpp"
+#include "eval/eval.hpp"
+#include "search/search.hpp"
 
 // Check mate for n ply
 class MateTest : public testing::Test {
@@ -19,23 +22,6 @@ public:
         Search::set_time(INF);
     }
 };
-
-// Templates for test
-/*
-TEST_F(MateTest, white_mate_in__) {
-    Board board = Board("");
-    Search::iter_deep(board, false);
-    ASSERT_EQ("WM", Search::get_mate());
-}
-*/
-
-/*
-TEST_F(MateTest, black_mate_in__) {
-    Board board = Board("");
-    Search::iter_deep(board, false);
-    ASSERT_EQ("BM", Search::get_mate());
-}
-*/
 
 TEST_F(MateTest, mate_in_3_vice_lesson_60) {
     // Arrange

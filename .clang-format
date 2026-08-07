@@ -27,9 +27,18 @@ FixNamespaceComments: true
 # the doubly-nested headers indent to 8.
 NamespaceIndentation: All
 
-# Off until the include-order dependencies between board.hpp and
-# zobrist_hash.hpp are untangled.
-SortIncludes: Never
+# Standard library, then third-party, then this project. A .cpp's own header is
+# hoisted above all three so the compiler proves it is self-contained.
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeIsMainRegex: '$'
+IncludeCategories:
+  - Regex:    '^<[^/.]+>$'
+    Priority: 1
+  - Regex:    '^<.*>$'
+    Priority: 2
+  - Regex:    '^".*"$'
+    Priority: 3
 
 AlignAfterOpenBracket: Align
 AlignTrailingComments: true

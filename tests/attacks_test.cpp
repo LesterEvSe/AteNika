@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "attacks.hpp"
-#include "bitfunc.hpp"
-#include "rays.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/bitfunc.hpp"
+#include "bitboard/rays.hpp"
 
 class AttacksTest : public testing::Test {
 public:

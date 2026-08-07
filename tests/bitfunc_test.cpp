@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "bitfunc.hpp"
+#include "bitboard/bitfunc.hpp"
 
 TEST(BitfuncTest, get_cell_func_and_FIELD) {
     uint8_t actual = get_cell(FIELD[51]);

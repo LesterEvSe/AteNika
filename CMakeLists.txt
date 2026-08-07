@@ -31,41 +31,35 @@ endif()
 
 # Core library; compiled once, shared by the engine and the test binary
 
-# FIXME: When src/ gains subdirectories, only these pathas change.
 add_library(atenika_core OBJECT
-    # core/
-    src/bitfunc.cpp
-    src/uint96.cpp
-    src/zobrist_hash.cpp
-    src/move.cpp
-    src/move_list.cpp
-    src/board.cpp
+    src/bitboard/bitfunc.cpp
+    src/bitboard/rays.cpp
+    src/bitboard/attacks.cpp
 
-    # movegen/
-    src/rays.cpp
-    src/attacks.cpp
-    src/movegen.cpp
-    src/perft.cpp
+    src/core/uint96.cpp
+    src/core/zobrist_hash.cpp
+    src/core/move.cpp
+    src/core/move_list.cpp
+    src/core/board.cpp
 
-    # search/
-    src/mvv_lva.cpp
-    src/order_info.cpp
-    src/ttable.cpp
-    src/movepicker.cpp
-    src/qmovepicker.cpp
-    src/search.cpp
-    src/bench.cpp
+    src/movegen/movegen.cpp
+    src/movegen/perft.cpp
 
-    # eval/
-    src/eval.cpp
+    src/eval/eval.cpp
 
-    # uci/
-    src/interface.cpp
+    src/search/mvv_lva.cpp
+    src/search/order_info.cpp
+    src/search/ttable.cpp
+    src/search/movepicker.cpp
+    src/search/qmovepicker.cpp
+    src/search/search.cpp
+    src/search/bench.cpp
 
-    # book/
-    src/pgn_parser.cpp
-    src/trie_node.cpp
-    src/book.cpp
+    src/uci/interface.cpp
+
+    src/book/pgn_parser.cpp
+    src/book/trie_node.cpp
+    src/book/book.cpp
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")

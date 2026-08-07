@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "rays.hpp"
-#include "board.hpp"
-#include "perft.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/bitfunc.hpp"
+#include "bitboard/rays.hpp"
+#include "core/board.hpp"
+#include "core/zobrist_hash.hpp"
+#include "movegen/perft.hpp"
 
 // using Stockfish 16 to calculation the expected value
 /**

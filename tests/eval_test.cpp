@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "rays.hpp"
-#include "eval.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/rays.hpp"
+#include "core/board.hpp"
+#include "eval/eval.hpp"
 
 using namespace Eval;
 using namespace detail;
