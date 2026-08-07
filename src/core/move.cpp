@@ -1,5 +1,7 @@
 #include "core/move.hpp"
 
+#include <format>
+
 #include "core/board.hpp"
 #include "core/move_list.hpp"
 #include "movegen/movegen.hpp"
@@ -62,7 +64,7 @@ Move::operator std::string() const {
     case BISHOP: piece = 'b'; break;
     case ROOK: piece = 'r'; break;
     case QUEEN: piece = 'q'; break;
-    default: return FIELD[m_from] + FIELD[m_to];
+    default: return std::format("{}{}", FIELD[m_from], FIELD[m_to]);
   }
-  return FIELD[m_from] + FIELD[m_to] + piece;
+  return std::format("{}{}{}", FIELD[m_from], FIELD[m_to], piece);
 }

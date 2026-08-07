@@ -120,7 +120,7 @@ void Search::detail::_debug(const Board &board, int depth, int elapsed) {
     std::cout << (std::string) move << ' ';
     temp.make(move);
   }
-  std::cout << std::endl;
+  std::cout << '\n';
 }
 
 void Search::iter_deep(Board &board, bool debug) {

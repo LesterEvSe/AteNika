@@ -16,7 +16,7 @@ private:
   // enums COLOR_SIZE and PIECE_SIZE in defs.hpp
   // The top 15 bitboards to work
   // m_all, black and white pieces (black pawns, white bishops ...)
-  bitboard m_pieces[COLOR_SIZE][PIECE_SIZE]{0};
+  bitboard m_pieces[COLOR_SIZE][PIECE_SIZE]{{0}};
 
   // white and black, all pieces
   bitboard m_side[COLOR_SIZE]{0};

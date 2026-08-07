@@ -32,7 +32,6 @@ endif()
 # Core library; compiled once, shared by the engine and the test binary
 
 add_library(atenika_core OBJECT
-    src/bitboard/bitfunc.cpp
     src/bitboard/rays.cpp
     src/bitboard/attacks.cpp
 
@@ -173,7 +172,7 @@ if (ATENIKA_BUILD_TESTS)
         tests/board_test.cpp
         tests/zob_hash_test.cpp
         tests/perft_test.cpp
-        tests/perft_comparison_test.cpp
+        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         tests/mate_test.cpp
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )

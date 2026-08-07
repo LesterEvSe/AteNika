@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "bitboard/attacks.hpp"
-#include "bitboard/bitfunc.hpp"
 #include "bitboard/rays.hpp"
 #include "core/board.hpp"
 #include "core/zobrist_hash.hpp"
@@ -24,7 +23,6 @@ protected:
 
 public:
   static void SetUpTestCase() {
-    init_bits_pre_calculation();
     ZobristHash::init();
     Rays::init();
     Attacks::init();

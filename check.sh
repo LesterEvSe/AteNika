@@ -28,8 +28,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-# clang-analyzer-* can exceed 1 GB per process, so 4 rather than nproc: twelve
-# do not fit in this machine's 15 GB.
+# clang-analyzer-* can exceed 1 GB per process, so 4 rather than nproc.
 if [ -n "$QUICK" ]; then
     JOBS="${JOBS:-$(nproc)}"
 else
@@ -58,6 +57,7 @@ cmake --preset tests > /dev/null || STATUS=1
 # turning them into editor errors. This script is the gate, so it promotes them.
 echo "==> clang-tidy (-j $JOBS${QUICK:+, no analyzer})"
 TIDY_ARGS=(-p build/tests -quiet -j "$JOBS" -warnings-as-errors='*')
+
 # clang-tidy appends a command-line -checks to the .clang-tidy value.
 [ -n "$QUICK" ] && TIDY_ARGS+=(-checks='-clang-analyzer-*')
 [ "$MODE" = tidyfix ] && TIDY_ARGS+=(-fix -format)

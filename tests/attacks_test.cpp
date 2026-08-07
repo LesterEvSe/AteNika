@@ -1,14 +1,12 @@
 #include <gtest/gtest.h>
 
 #include "bitboard/attacks.hpp"
-#include "bitboard/bitfunc.hpp"
 #include "bitboard/rays.hpp"
 
 class AttacksTest : public testing::Test {
 public:
   static void SetUpTestCase() {
     // Order is important
-    init_bits_pre_calculation();
     Rays::init();
     Attacks::init();
   }

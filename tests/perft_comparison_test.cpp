@@ -10,7 +10,6 @@
 class PerftComparisonTest : public testing::Test {
 public:
   static void SetUpTestCase() {
-    init_bits_pre_calculation();
     Rays::init();
     Attacks::init();
   }

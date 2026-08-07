@@ -1,6 +1,7 @@
 #include "core/board.hpp"
 
 #include <cstring> // for std::memset
+#include <format>
 #include <sstream> // for std::istringstream in constructor
 
 #include "bitboard/attacks.hpp"
@@ -179,8 +180,8 @@ PieceType Board::get_piece_at(Color color, uint8_t index) const {
   if (field & m_pieces[color][KING])
     return KING;
 
-  std::string player = color == WHITE ? "white" : "black";
-  error(player + " has not piece at " + FIELD[index] + " cell");
+  std::string_view player = color == WHITE ? "white" : "black";
+  error(std::format("{} has not piece at {} cell", player, FIELD[index]));
   return NONE; // Will never reach this line
 }
 
@@ -485,10 +486,12 @@ std::string Board::get_fen() const {
   else
     fen += ' ';
 
-  if (m_en_passant_cell)
-    fen += FIELD[m_en_passant_cell] + " ";
-  else
+  if (m_en_passant_cell) {
+    fen += FIELD[m_en_passant_cell];
+    fen += ' ';
+  } else {
     fen += "- ";
+  }
   return fen + std::to_string(m_ply) + " " + std::to_string(m_moves / 2);
 }
 
@@ -496,7 +499,7 @@ std::ostream &operator<<(std::ostream &out, const Board &board) {
   out << "   ";
   for (char let = 'A'; let <= 'H'; ++let)
     out << ' ' << let;
-  out << std::endl;
+  out << '\n';
 
   for (int8_t row = 7; row >= 0; --row) {
     out << row + 1 << " |";
@@ -532,18 +535,19 @@ std::ostream &operator<<(std::ostream &out, const Board &board) {
       else
         out << " .";
     }
-    out << std::endl;
+    out << '\n';
   }
   out << "\n   ";
 
   for (char let = 'A'; let <= 'H'; ++let)
     out << ' ' << let;
-  out << std::endl << std::endl;
+  out << "\n\n";
   return out;
 }
 
 void Board::display_all() const {
   std::cout << *this;
-  std::cout << "Fen: " << get_fen() << std::endl;
-  std::cout << "Key: " << m_hash.get_hash() << std::endl << std::endl;
+  std::cout << "Fen: " << get_fen() << '\n';
+  // uint96 has an operator<< but no std::formatter, so this stays a stream insert.
+  std::cout << "Key: " << m_hash.get_hash() << "\n\n";
 }

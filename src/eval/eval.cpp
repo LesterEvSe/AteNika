@@ -9,7 +9,7 @@ bitboard Eval::detail::_bp_passed_mask[64];
 void Eval::init() {
   for (uint8_t i = 0; i < 8; ++i) {
     detail::_wp_passed_mask[i] =
-        (detail::COL[i] >> 1) & ~FILE_H | detail::COL[i] | (detail::COL[i] << 1) & ~FILE_A;
+        ((detail::COL[i] >> 1) & ~FILE_H) | detail::COL[i] | ((detail::COL[i] << 1) & ~FILE_A);
     detail::_bp_passed_mask[56 + i] = detail::_wp_passed_mask[i];
 
     detail::_wp_passed_mask[i] &= ~RANK_1;

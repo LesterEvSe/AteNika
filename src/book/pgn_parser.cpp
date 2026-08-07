@@ -4,6 +4,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <print>
 #include <sstream>
 
 #include "core/move.hpp"
@@ -30,12 +31,12 @@ void PGNParser::detail::first_processing(const std::string &path) {
   while (std::getline(from, curr)) {
     if (prev.size() > 10 && prev.substr(1, 8) == "WhiteElo" && condition(prev.substr(11, 2)) &&
         condition(curr.substr(11, 2))) {
-      to << prev << std::endl;
-      to << curr << std::endl;
+      std::println(to, "{}", prev);
+      std::println(to, "{}", curr);
       add_moves = true;
     }
     if (!curr.empty() && curr[0] == '1' && add_moves) {
-      to << curr << std::endl;
+      std::println(to, "{}", curr);
       add_moves = false;
     }
     std::swap(prev, curr);
@@ -157,16 +158,15 @@ void PGNParser::detail::second_processing() {
       }
 
       if (i == moves.size()) {
-        std::cerr << "\nTrouble in " + processed_file << std::endl;
-        std::cerr << "Line: " << num_line << std::endl;
-        std::cerr << "Move: " << counter / 3 << ' ' << (counter % 3 == 2 ? "White" : "Black")
-                  << std::endl;
+        std::println(std::cerr, "\nTrouble in {}", processed_file);
+        std::println(std::cerr, "Line: {}", num_line);
+        std::println(std::cerr, "Move: {} {}", counter / 3, counter % 3 == 2 ? "White" : "Black");
         throw std::runtime_error("");
       }
       board.make(moves[i]);
     }
     ++num_line;
-    to << std::endl;
+    to << '\n';
   }
   from.close();
   to.close();
@@ -177,6 +177,6 @@ void PGNParser::parse(const std::string &path) {
     detail::first_processing(path);
     detail::second_processing();
   } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
+    std::println(std::cerr, "{}", e.what());
   }
 }
