@@ -4,18 +4,18 @@
 #include "defs.hpp"
 
 namespace Attacks {
-    void init();
-    bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
-    bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
-    bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
+  void init();
+  bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
+  bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
+  bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
 
-    bitboard get_pawn_attacks(Color color, uint8_t cell);
-    bitboard get_knight_attacks(uint8_t cell);
-    bitboard get_king_attacks(uint8_t cell);
+  bitboard get_pawn_attacks(Color color, uint8_t cell);
+  bitboard get_knight_attacks(uint8_t cell);
+  bitboard get_king_attacks(uint8_t cell);
 } // namespace Attacks
 
 namespace Attacks::detail {
-    // clang-format off
+  // clang-format off
     constexpr uint8_t _rook_bits[64] = {
         12, 11, 11, 11, 11, 11, 11, 12,
         11, 10, 10, 10, 10, 10, 10, 11,
@@ -26,9 +26,9 @@ namespace Attacks::detail {
         11, 10, 10, 10, 10, 10, 10, 11,
         12, 11, 11, 11, 11, 11, 11, 12
     };
-    // clang-format on
+  // clang-format on
 
-    // clang-format off
+  // clang-format off
     constexpr uint64_t _rook_magics[64] = {
         0xa8002c000108020ULL, 0x6c00049b0002001ULL, 0x100200010090040ULL, 0x2480041000800801ULL, 0x280028004000800ULL,
         0x900410008040022ULL, 0x280020001001080ULL, 0x2880002041000080ULL, 0xa000800080400034ULL, 0x4808020004000ULL,
@@ -44,9 +44,9 @@ namespace Attacks::detail {
         0x2000009044210200ULL, 0x4080008040102101ULL, 0x40002080411d01ULL, 0x2005524060000901ULL, 0x502001008400422ULL,
         0x489a000810200402ULL, 0x1004400080a13ULL, 0x4000011008020084ULL, 0x26002114058042ULL
     };
-    // clang-format on
+  // clang-format on
 
-    // clang-format off
+  // clang-format off
     constexpr uint8_t _bishop_bits[64] = {
         6, 5, 5, 5, 5, 5, 5, 6,
         5, 5, 5, 5, 5, 5, 5, 5,
@@ -57,9 +57,9 @@ namespace Attacks::detail {
         5, 5, 5, 5, 5, 5, 5, 5,
         6, 5, 5, 5, 5, 5, 5, 6
     };
-    // clang-format on
+  // clang-format on
 
-    // clang-format off
+  // clang-format off
     constexpr uint64_t _bishop_magics[64] = {
         0x89a1121896040240ULL, 0x2004844802002010ULL, 0x2068080051921000ULL, 0x62880a0220200808ULL, 0x4042004000000ULL,
         0x100822020200011ULL, 0xc00444222012000aULL, 0x28808801216001ULL, 0x400492088408100ULL, 0x201c401040c0084ULL,
@@ -75,32 +75,32 @@ namespace Attacks::detail {
         0x822088220820214ULL, 0x40808090012004ULL, 0x910224040218c9ULL, 0x402814422015008ULL, 0x90014004842410ULL,
         0x1000042304105ULL, 0x10008830412a00ULL, 0x2520081090008908ULL, 0x40102000a0a60140ULL,
     };
-    // clang-format on
+  // clang-format on
 
-    bitboard _get_blockers(uint16_t index, bitboard mask);
+  bitboard _get_blockers(uint16_t index, bitboard mask);
 
-    // 4096 = 2^(max element from _rook_bits array)
-    extern bitboard _rook_mask[64];
-    extern bitboard _rook_attacks[64][4096];
+  // 4096 = 2^(max element from _rook_bits array)
+  extern bitboard _rook_mask[64];
+  extern bitboard _rook_attacks[64][4096];
 
-    // 512 = 2^(max element from _bishop_bits array)
-    extern bitboard _bishop_mask[64];
-    extern bitboard _bishop_attacks[64][512];
+  // 512 = 2^(max element from _bishop_bits array)
+  extern bitboard _bishop_mask[64];
+  extern bitboard _bishop_attacks[64][512];
 
-    extern bitboard _pawn_attacks[COLOR_SIZE][64];
-    extern bitboard _knight_attacks[64];
-    extern bitboard _king_attacks[64];
+  extern bitboard _pawn_attacks[COLOR_SIZE][64];
+  extern bitboard _knight_attacks[64];
+  extern bitboard _king_attacks[64];
 
-    bitboard _calculate_rook_attacks(uint8_t cell, bitboard blockers);
-    bitboard _calculate_bishop_attacks(uint8_t cell, bitboard blockers);
+  bitboard _calculate_rook_attacks(uint8_t cell, bitboard blockers);
+  bitboard _calculate_bishop_attacks(uint8_t cell, bitboard blockers);
 
-    void _init_rook_mask();
-    void _init_bishop_mask();
-    void _init_rook_attacks();
-    void _init_bishop_attacks();
-    void _init_pawn_attacks();
-    void _init_knight_attacks();
-    void _init_king_attacks();
+  void _init_rook_mask();
+  void _init_bishop_mask();
+  void _init_rook_attacks();
+  void _init_bishop_attacks();
+  void _init_pawn_attacks();
+  void _init_knight_attacks();
+  void _init_king_attacks();
 } // namespace Attacks::detail
 
 #endif // ATENIKA_ATTACKS_HPP

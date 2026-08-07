@@ -8,35 +8,35 @@
 #include "core/move.hpp"
 
 Book::Book(const std::string &path) : head(nullptr) {
-    std::ifstream file(path);
-    if (!file.is_open())
-        throw std::runtime_error(path + " " + strerror(errno));
+  std::ifstream file(path);
+  if (!file.is_open())
+    throw std::runtime_error(path + " " + strerror(errno));
 
-    head = curr = std::make_shared<TrieNode>();
-    std::string line;
+  head = curr = std::make_shared<TrieNode>();
+  std::string line;
 
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::string command;
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    std::string command;
 
-        Board board = Board();
-        std::shared_ptr<TrieNode> node = head;
+    Board board = Board();
+    std::shared_ptr<TrieNode> node = head;
 
-        while (iss >> command) {
-            if (!(*node)[command])
-                node->add(command);
-            node = (*node)[command];
+    while (iss >> command) {
+      if (!(*node)[command])
+        node->add(command);
+      node = (*node)[command];
 
-            Move move = Move(board, command);
-            board.make(move);
-        }
+      Move move = Move(board, command);
+      board.make(move);
     }
-    file.close();
+  }
+  file.close();
 }
 
 Book *Book::get_instance(const std::string &path) {
-    static Book instance = Book(path);
-    return &instance;
+  static Book instance = Book(path);
+  return &instance;
 }
 
 void Book::reset() { curr = head; }

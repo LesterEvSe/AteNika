@@ -81,22 +81,22 @@ constexpr bitboard RANK_8 = RANK_1 << (8 * 7);
 
 
 enum PieceType : uint8_t {
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING,
-    PIECE_SIZE, // should be before end
-    NONE        // should be at the end
+  PAWN,
+  KNIGHT,
+  BISHOP,
+  ROOK,
+  QUEEN,
+  KING,
+  PIECE_SIZE, // should be before end
+  NONE        // should be at the end
 };
 
 constexpr PieceType PIECES[] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING};
 
 enum Color : uint8_t {
-    BLACK,
-    WHITE,
-    COLOR_SIZE // should be at the end
+  BLACK,
+  WHITE,
+  COLOR_SIZE // should be at the end
 };
 
 enum GamePhase : uint8_t { OPENING, ENDGAME, PHASES };

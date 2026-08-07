@@ -5,15 +5,15 @@
 #include <string>
 
 namespace PGNParser {
-    void parse(const std::string &path);
+  void parse(const std::string &path);
 } // namespace PGNParser
 
 // PGN - Portable Game Notation
 namespace PGNParser::detail {
-    extern std::string processed_file;
+  extern std::string processed_file;
 
-    void first_processing(const std::string &path);
-    void second_processing();
+  void first_processing(const std::string &path);
+  void second_processing();
 
 } // namespace PGNParser::detail
 

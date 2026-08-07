@@ -9,12 +9,12 @@ void OrderInfo::operator++() { ++m_ply; }
 void OrderInfo::operator--() { --m_ply; }
 
 void OrderInfo::add_history(uint8_t from, uint8_t to, int16_t depth) {
-    m_history[from][to] += depth;
+  m_history[from][to] += depth;
 }
 
 void OrderInfo::add_killer(Move move) {
-    m_killers2[m_ply] = m_killers1[m_ply];
-    m_killers1[m_ply] = move;
+  m_killers2[m_ply] = m_killers1[m_ply];
+  m_killers1[m_ply] = move;
 }
 
 

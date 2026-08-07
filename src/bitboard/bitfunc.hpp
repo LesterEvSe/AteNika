@@ -16,8 +16,8 @@ void init_bits_pre_calculation();
 
 // inline uint8_t count_bits(uint64_t field) { return std::popcount(field); }
 inline uint8_t count_bits(uint64_t board) {
-    return memo_bits[board & MAX_VAL] + memo_bits[(board >> 16) & MAX_VAL] +
-           memo_bits[(board >> 32) & MAX_VAL] + memo_bits[(board >> 48) & MAX_VAL];
+  return memo_bits[board & MAX_VAL] + memo_bits[(board >> 16) & MAX_VAL] +
+         memo_bits[(board >> 32) & MAX_VAL] + memo_bits[(board >> 48) & MAX_VAL];
 }
 inline void set(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
 inline void reset(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
@@ -52,47 +52,47 @@ static constexpr uint8_t BitScan[64] {
 // IMPORTANT NOTE! lsb faster than msb!!!
 inline uint8_t lsb(bitboard bb) { return BitScan[((bb ^ (bb - 1)) * 0x03f79d71b4cb0a89ull) >> 58]; }
 inline uint8_t msb(bitboard bb) {
-    bb |= bb >> 1;
-    bb |= bb >> 2;
-    bb |= bb >> 4;
-    bb |= bb >> 8;
-    bb |= bb >> 16;
-    bb |= bb >> 32;
-    return BitScan[(bb * bitboard(0x03f79d71b4cb0a89)) >> 58];
+  bb |= bb >> 1;
+  bb |= bb >> 2;
+  bb |= bb >> 4;
+  bb |= bb >> 8;
+  bb |= bb >> 16;
+  bb |= bb >> 32;
+  return BitScan[(bb * bitboard(0x03f79d71b4cb0a89)) >> 58];
 }
 
 inline uint8_t pop_lsb(bitboard &bb) {
-    uint8_t pos = lsb(bb);
-    bb &= bb - 1;
-    return pos;
+  uint8_t pos = lsb(bb);
+  bb &= bb - 1;
+  return pos;
 }
 
 inline uint8_t get_cell(std::string notation) {
-    uint8_t file = notation[0] - 'a';
-    uint8_t rank = notation[1] - '1';
-    return (rank << 3) + file;
+  uint8_t file = notation[0] - 'a';
+  uint8_t rank = notation[1] - '1';
+  return (rank << 3) + file;
 }
 
 inline void error(const std::string &msg) {
-    std::cerr << msg;
-    exit(1);
+  std::cerr << msg;
+  exit(1);
 }
 
 // For debugging action
 inline void printbb(bitboard bb) {
-    std::cout << "   ";
+  std::cout << "   ";
 
-    for (char let = 'A'; let <= 'H'; ++let)
-        std::cout << ' ' << let;
+  for (char let = 'A'; let <= 'H'; ++let)
+    std::cout << ' ' << let;
+  std::cout << std::endl;
+
+  for (int8_t i = 7; i >= 0; --i) {
+    std::cout << i + 1 << " |";
+    for (uint8_t j = 0; j < 8; ++j)
+      std::cout << ' ' << bool(bb & (ONE << (i * 8 + j)));
     std::cout << std::endl;
-
-    for (int8_t i = 7; i >= 0; --i) {
-        std::cout << i + 1 << " |";
-        for (uint8_t j = 0; j < 8; ++j)
-            std::cout << ' ' << bool(bb & (ONE << (i * 8 + j)));
-        std::cout << std::endl;
-    }
-    std::cout << "\n--------------------\n\n";
+  }
+  std::cout << "\n--------------------\n\n";
 }
 
 #endif // ATENIKA_BITFUNC_HPP

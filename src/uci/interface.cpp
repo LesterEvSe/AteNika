@@ -13,247 +13,245 @@
 
 // Local scope
 namespace {
-    std::atomic<bool> lock(false);
-    std::atomic<bool> quit(false);
+  std::atomic<bool> lock(false);
+  std::atomic<bool> quit(false);
 
-    Board board;
+  Board board;
 
-    // lock is set by the caller, before the thread starts (not here). Setting it
-    // here left a window where the main loop could see lock == false, decide no
-    // search was running, and return out of Uci::start while this thread was
-    // still touching `board`.
-    void go(bool debug) {
-        Search::iter_deep(board, debug);
+  // lock is set by the caller, before the thread starts (not here). Setting it
+  // here left a window where the main loop could see lock == false, decide no
+  // search was running, and return out of Uci::start while this thread was
+  // still touching `board`.
+  void go(bool debug) {
+    Search::iter_deep(board, debug);
 
-        if (quit) {
-            lock = false;
-            return;
-        }
-
-        std::cout << "\nEngine's move: ";
-        Move *move = Search::get_best_move();
-        if (move == nullptr)
-            std::cout << "no moves" << std::endl;
-        else
-            // std::endl required, otherwise,
-            // it will be output only after entering the next command
-            std::cout << static_cast<std::string>(*move) << std::endl;
-        lock = false;
+    if (quit) {
+      lock = false;
+      return;
     }
+
+    std::cout << "\nEngine's move: ";
+    Move *move = Search::get_best_move();
+    if (move == nullptr)
+      std::cout << "no moves" << std::endl;
+    else
+      // std::endl required, otherwise,
+      // it will be output only after entering the next command
+      std::cout << static_cast<std::string>(*move) << std::endl;
+    lock = false;
+  }
 } // namespace
 
 void Uci::start() {
-    std::cout << "\nAteNika by LesterEvSe\n";
-    std::cout << "\"help\" displays all commands" << std::endl << std::endl;
+  std::cout << "\nAteNika by LesterEvSe\n";
+  std::cout << "\"help\" displays all commands" << std::endl << std::endl;
 
-    board = Board();
-    std::string input;
+  board = Board();
+  std::string input;
 
-    auto check_lock = []() {
-        if (!lock)
-            return false;
+  auto check_lock = []() {
+    if (!lock)
+      return false;
+    std::cout << "This command is not available now" << std::endl;
+    return true;
+  };
+
+  // The loop condition is the fix for the spin: on closed stdin getline fails,
+  // leaves input empty and keeps failing forever, so `while (true)` burned a
+  // core printing "Incorrect command". Every match runner closes stdin.
+  while (std::getline(std::cin, input)) {
+    std::istringstream iss(input);
+
+    // Declared inside the loop on purpose. When it lived outside and the
+    // line was empty, `iss >> command` failed and left the previous
+    // command in place — pressing Enter after "perft 4" re-entered the perft
+    // branch with no argument.
+    std::string command;
+    iss >> command;
+
+    if (command.empty())
+      continue;
+
+    if (input == "go" || input == "godeb") {
+      if (lock) {
         std::cout << "This command is not available now" << std::endl;
-        return true;
-    };
+        continue;
+      }
+      lock = true;
+      std::thread search([command] { go(command == "godeb"); });
+      search.detach();
 
-    // The loop condition is the fix for the spin: on closed stdin getline fails,
-    // leaves input empty and keeps failing forever, so `while (true)` burned a
-    // core printing "Incorrect command". Every match runner closes stdin.
-    while (std::getline(std::cin, input)) {
-        std::istringstream iss(input);
+    } else if (input == "newgame") {
+      if (check_lock())
+        continue;
+      board = Board();
 
-        // Declared inside the loop on purpose. When it lived outside and the
-        // line was empty, `iss >> command` failed and left the previous
-        // command in place — pressing Enter after "perft 4" re-entered the perft
-        // branch with no argument.
-        std::string command;
-        iss >> command;
+    } else if (command == "setfen") {
+      if (check_lock())
+        continue;
+      std::string fenstr;
+      std::getline(iss, fenstr);
+      board = Board(fenstr);
 
-        if (command.empty())
-            continue;
+    } else if (command == "depth" || command == "time") {
+      if (check_lock())
+        continue;
+      std::string value;
+      std::getline(iss, value);
 
-        if (input == "go" || input == "godeb") {
-            if (lock) {
-                std::cout << "This command is not available now" << std::endl;
-                continue;
-            }
-            lock = true;
-            std::thread search([command] { go(command == "godeb"); });
-            search.detach();
+      if (command == "time" && value.substr(1) == "inf") {
+        Search::set_time(INF);
+        continue;
+      }
 
-        } else if (input == "newgame") {
-            if (check_lock())
-                continue;
-            board = Board();
+      size_t pos;
+      int16_t number;
+      try {
+        number = static_cast<int16_t>(std::stoi(value, &pos));
+        if (pos != value.size())
+          throw std::runtime_error("");
 
-        } else if (command == "setfen") {
-            if (check_lock())
-                continue;
-            std::string fenstr;
-            std::getline(iss, fenstr);
-            board = Board(fenstr);
+      } catch (const std::exception &e) {
+        std::cerr << "Incorrect command, try again" << std::endl;
+        continue;
+      }
 
-        } else if (command == "depth" || command == "time") {
-            if (check_lock())
-                continue;
-            std::string value;
-            std::getline(iss, value);
+      if (command == "depth")
+        Search::set_depth(number);
+      else
+        Search::set_time(number * 1000);
 
-            if (command == "time" && value.substr(1) == "inf") {
-                Search::set_time(INF);
-                continue;
-            }
+    } else if (input == "d" || input == "info") {
+      if (check_lock())
+        continue;
+      if (input == "d")
+        std::cout << board;
+      else {
+        board.display_all();
+        std::cout << "Search Time: " << Search::get_allocated_sec() << std::endl;
+        std::cout << "Search Depth: " << static_cast<int>(Search::get_search_depth()) << " nodes"
+                  << std::endl;
+      }
 
-            size_t pos;
-            int16_t number;
-            try {
-                number = static_cast<int16_t>(std::stoi(value, &pos));
-                if (pos != value.size())
-                    throw std::runtime_error("");
+    } else if (command == "bench") {
+      if (check_lock())
+        continue;
 
-            } catch (const std::exception &e) {
-                std::cerr << "Incorrect command, try again" << std::endl;
-                continue;
-            }
+      // Optional depth override: "bench" or "bench 10"
+      std::string arg;
+      int depth = Bench::DEFAULT_DEPTH;
+      if (iss >> arg) {
+        try {
+          size_t pos;
+          depth = std::stoi(arg, &pos);
+          if (pos != arg.size() || depth < 1)
+            throw std::runtime_error("");
+        } catch (const std::exception &) {
+          std::cerr << "Usage: bench [depth]" << std::endl;
+          continue;
+        }
+      }
+      Bench::run(depth);
 
-            if (command == "depth")
-                Search::set_depth(number);
-            else
-                Search::set_time(number * 1000);
+    } else if (command == "perft") {
+      if (check_lock())
+        continue;
 
-        } else if (input == "d" || input == "info") {
-            if (check_lock())
-                continue;
-            if (input == "d")
-                std::cout << board;
-            else {
-                board.display_all();
-                std::cout << "Search Time: " << Search::get_allocated_sec() << std::endl;
-                std::cout << "Search Depth: " << static_cast<int>(Search::get_search_depth())
-                          << " nodes" << std::endl;
-            }
+      // "perft n" or "perft divide n"
+      std::string arg;
+      iss >> arg;
+      bool div = (arg == "divide");
+      if (div)
+        iss >> arg;
 
-        } else if (command == "bench") {
-            if (check_lock())
-                continue;
+      int depth;
+      try {
+        size_t pos;
+        depth = std::stoi(arg, &pos);
+        if (pos != arg.size() || depth < 1)
+          throw std::runtime_error("");
+      } catch (const std::exception &) {
+        std::cerr << "Usage: perft <depth> | perft divide <depth>" << std::endl;
+        continue;
+      }
 
-            // Optional depth override: "bench" or "bench 10"
-            std::string arg;
-            int depth = Bench::DEFAULT_DEPTH;
-            if (iss >> arg) {
-                try {
-                    size_t pos;
-                    depth = std::stoi(arg, &pos);
-                    if (pos != arg.size() || depth < 1)
-                        throw std::runtime_error("");
-                } catch (const std::exception &) {
-                    std::cerr << "Usage: bench [depth]" << std::endl;
-                    continue;
-                }
-            }
-            Bench::run(depth);
+      auto start = std::chrono::steady_clock::now();
+      int64_t nodes = div ? Perft::divide(board, depth) : Perft::run(board, depth);
+      int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       std::chrono::steady_clock::now() - start)
+                       .count();
 
-        } else if (command == "perft") {
-            if (check_lock())
-                continue;
+      if (!div)
+        std::cout << "Nodes searched: " << nodes << std::endl;
+      std::cout << "Time: " << ms << " ms  (" << nodes / (ms + 1) << " knps)" << std::endl;
 
-            // "perft n" or "perft divide n"
-            std::string arg;
-            iss >> arg;
-            bool div = (arg == "divide");
-            if (div)
-                iss >> arg;
+    } else if (input == "eval") {
+      if (check_lock())
+        continue;
+      std::cout << "Static Evaluation: " << Eval::evaluate(board) << " cp" << std::endl;
 
-            int depth;
-            try {
-                size_t pos;
-                depth = std::stoi(arg, &pos);
-                if (pos != arg.size() || depth < 1)
-                    throw std::runtime_error("");
-            } catch (const std::exception &) {
-                std::cerr << "Usage: perft <depth> | perft divide <depth>" << std::endl;
-                continue;
-            }
-
-            auto start = std::chrono::steady_clock::now();
-            int64_t nodes = div ? Perft::divide(board, depth) : Perft::run(board, depth);
-            int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                             std::chrono::steady_clock::now() - start)
-                             .count();
-
-            if (!div)
-                std::cout << "Nodes searched: " << nodes << std::endl;
-            std::cout << "Time: " << ms << " ms  (" << nodes / (ms + 1) << " knps)" << std::endl;
-
-        } else if (input == "eval") {
-            if (check_lock())
-                continue;
-            std::cout << "Static Evaluation: " << Eval::evaluate(board) << " cp" << std::endl;
-
-        } else if (input == "stop") {
-            if (!lock) {
-                std::cout << "No search is performed" << std::endl;
-                continue;
-            }
-            Search::stop();
-        } else if (input == "quit") {
-            break; // shutdown is handled once, after the loop
-        } else if (input == "help") {
-            std::cout << "go - find and print best move" << std::endl;
-            std::cout << "godeb - \"go\" command with debug information" << std::endl;
-            std::cout << "newgame - start new game" << std::endl;
-            std::cout << "setfen fen_str - reset up the position described in fenstring (assuming "
-                         "the string is correct)"
-                      << std::endl;
-            std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
-            std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)"
-                      << std::endl;
-            std::cout << "d - display the current position" << std::endl;
-            std::cout << "info - display information about search and more precise about board"
-                      << std::endl;
-            std::cout << "eval - static evaluation of current position" << std::endl;
-            std::cout << "bench [n] - fixed position set at fixed depth; the node count "
-                         "fingerprints the search"
-                      << std::endl;
-            std::cout
-                << "perft n - count all legal move paths of depth \"n\" from the current position"
+    } else if (input == "stop") {
+      if (!lock) {
+        std::cout << "No search is performed" << std::endl;
+        continue;
+      }
+      Search::stop();
+    } else if (input == "quit") {
+      break; // shutdown is handled once, after the loop
+    } else if (input == "help") {
+      std::cout << "go - find and print best move" << std::endl;
+      std::cout << "godeb - \"go\" command with debug information" << std::endl;
+      std::cout << "newgame - start new game" << std::endl;
+      std::cout << "setfen fen_str - reset up the position described in fenstring (assuming "
+                   "the string is correct)"
                 << std::endl;
-            std::cout << "perft divide n - same, broken down per root move (diff against "
-                         "Stockfish's \"go perft n\")"
-                      << std::endl;
-            std::cout << "stop - Instantly stops the search and returns last best move"
-                      << std::endl;
-            std::cout << "quit - exit the program" << std::endl << std::endl;
+      std::cout << "depth n - search for \"n\" nodes in depth" << std::endl;
+      std::cout << R"(time n - search for "n" seconds per move or "inf" to disregard time)"
+                << std::endl;
+      std::cout << "d - display the current position" << std::endl;
+      std::cout << "info - display information about search and more precise about board"
+                << std::endl;
+      std::cout << "eval - static evaluation of current position" << std::endl;
+      std::cout << "bench [n] - fixed position set at fixed depth; the node count "
+                   "fingerprints the search"
+                << std::endl;
+      std::cout << "perft n - count all legal move paths of depth \"n\" from the current position"
+                << std::endl;
+      std::cout << "perft divide n - same, broken down per root move (diff against "
+                   "Stockfish's \"go perft n\")"
+                << std::endl;
+      std::cout << "stop - Instantly stops the search and returns last best move" << std::endl;
+      std::cout << "quit - exit the program" << std::endl << std::endl;
 
-            std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl;
-            std::cout << "Or for promotion piece add_and_inc last symbol q (queen), n (knight), b "
-                         "(bishop) or r (rook)."
-                      << std::endl;
-            std::cout << "E.g., a7a8q, d2d1r" << std::endl;
+      std::cout << "Enter move in coordinate notation, e.g., e4e5, c4e6." << std::endl;
+      std::cout << "Or for promotion piece add_and_inc last symbol q (queen), n (knight), b "
+                   "(bishop) or r (rook)."
+                << std::endl;
+      std::cout << "E.g., a7a8q, d2d1r" << std::endl;
 
-        } else if (Move::isMove(input)) {
-            if (check_lock())
-                continue;
-            if (board.threefold_rule())
-                std::cout << "Tie, repeating the position 3 times" << std::endl;
-            Move move;
-            try {
-                move = Move(board, command);
-                board.make(move);
-            } catch (std::exception &e) {
-                std::cout << e.what() << std::endl;
-            }
+    } else if (Move::isMove(input)) {
+      if (check_lock())
+        continue;
+      if (board.threefold_rule())
+        std::cout << "Tie, repeating the position 3 times" << std::endl;
+      Move move;
+      try {
+        move = Move(board, command);
+        board.make(move);
+      } catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+      }
 
-        } else
-            std::cout << "Incorrect command. Type \"help\" for more information." << std::endl;
-    }
+    } else
+      std::cout << "Incorrect command. Type \"help\" for more information." << std::endl;
+  }
 
-    // Reached by "quit" or by stdin closing. Either way a detached search thread
-    // may still be running, so ask it to stop and wait for it. Sleeping rather
-    // than spinning: the old `while (lock);` busy-waited at 100% CPU.
-    quit = true;
-    while (lock) {
-        Search::stop();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+  // Reached by "quit" or by stdin closing. Either way a detached search thread
+  // may still be running, so ask it to stop and wait for it. Sleeping rather
+  // than spinning: the old `while (lock);` busy-waited at 100% CPU.
+  quit = true;
+  while (lock) {
+    Search::stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
 }
