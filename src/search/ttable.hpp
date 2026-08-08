@@ -16,8 +16,8 @@ struct TTEntry {
 
 namespace TTable {
   void add(const ZobristHash &zob, TTEntry entry);
-  bool in_table(const ZobristHash &zob);
-  const TTEntry &get(const ZobristHash &zob);
+  [[nodiscard]] bool in_table(const ZobristHash &zob);
+  [[nodiscard]] const TTEntry &get(const ZobristHash &zob);
 
   // The table currently outlives every search and every game. bench clears it
   // between positions so a run depends only on the binary, not on whatever was

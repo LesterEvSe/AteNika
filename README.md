@@ -61,7 +61,6 @@ the same way.
 ### GitHub
 
 [Shallow Blue](https://github.com/GunshipPenguin/shallow-blue) a lot  
-[Natrix](https://github.com/gth-other/Natrix)  
 [Stockfish](https://github.com/official-stockfish/Stockfish)  
 
 ### Other

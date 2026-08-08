@@ -41,7 +41,7 @@ int64_t Bench::run(int depth) {
   // different state than it found it.
   const int32_t saved_ms = Search::get_allocated_ms();
   const bool saved_without_time = Search::is_without_time();
-  const int32_t saved_depth = Search::get_search_depth();
+  const int16_t saved_depth = Search::get_search_depth();
 
   // INF disables both time exits: the abort inside _check_limits and the
   // half-budget break in iter_deep. Without this the node count would depend

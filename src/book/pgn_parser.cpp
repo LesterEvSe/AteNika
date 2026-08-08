@@ -49,7 +49,7 @@ namespace {
   std::string processing(const std::string &input) {
     std::string command = input;
     int j = 0;
-    for (int i = 0; i < command.size(); ++i) {
+    for (int i = 0; i < long(command.size()); ++i) {
       if (command[i] == 'x' || command[i] == '+' || command[i] == '#')
         continue;
       command[j++] = command[i];
@@ -65,10 +65,10 @@ namespace {
   bool size2_check(const std::string &command, const Move &move) {
     return command == static_cast<std::string>(move).substr(2, 2);
   }
-  bool kside_castling_check(const std::string &command, const Move &move) {
+  bool kside_castling_check(const std::string & /*command*/, const Move &move) {
     return move.get_flag() == Move::KSIDE_CASTLING;
   }
-  bool qside_castling_check(const std::string &command, const Move &move) {
+  bool qside_castling_check(const std::string & /*command*/, const Move &move) {
     return move.get_flag() == Move::QSIDE_CASTLING;
   }
   bool promotion_check(const std::string &com, const Move &move) {

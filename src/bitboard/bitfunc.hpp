@@ -8,19 +8,19 @@
 
 #include "defs.hpp"
 
-inline uint8_t get_rank(uint8_t cell) { return cell >> 3; }
-inline uint8_t get_file(uint8_t cell) { return cell & 7; }
-inline Color get_opposite_move(Color color) { return color == WHITE ? BLACK : WHITE; }
+[[nodiscard]] inline uint8_t get_rank(uint8_t cell) { return cell >> 3; }
+[[nodiscard]] inline uint8_t get_file(uint8_t cell) { return cell & 7; }
+[[nodiscard]] inline Color get_opposite_move(Color color) { return color == WHITE ? BLACK : WHITE; }
 
 // -march=x86-64-v3 guarantees POPCNT, BMI1 and LZCNT, so each of these is a
 // single instruction.
-inline uint8_t count_bits(bitboard bb) { return std::popcount(bb); }
+[[nodiscard]] inline uint8_t count_bits(bitboard bb) { return std::popcount(bb); }
 
 inline void set(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
 inline void reset(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
 
-inline uint8_t lsb(bitboard bb) { return std::countr_zero(bb); }
-inline uint8_t msb(bitboard bb) { return 63 - std::countl_zero(bb); }
+[[nodiscard]] inline uint8_t lsb(bitboard bb) { return std::countr_zero(bb); }
+[[nodiscard]] inline uint8_t msb(bitboard bb) { return 63 - std::countl_zero(bb); }
 
 inline uint8_t pop_lsb(bitboard &bb) {
   uint8_t pos = lsb(bb);
@@ -28,7 +28,7 @@ inline uint8_t pop_lsb(bitboard &bb) {
   return pos;
 }
 
-inline uint8_t get_cell(std::string_view notation) {
+[[nodiscard]] inline uint8_t get_cell(std::string_view notation) {
   uint8_t file = notation[0] - 'a';
   uint8_t rank = notation[1] - '1';
   return (rank << 3) + file;

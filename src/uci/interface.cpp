@@ -135,7 +135,7 @@ void Uci::start() {
       else {
         board.display_all();
         reply("Search Time: {}", Search::get_allocated_sec());
-        reply("Search Depth: {} nodes", Search::get_search_depth());
+        reply("Search Depth: {} plies", Search::get_search_depth());
       }
 
     } else if (command == "bench") {
@@ -204,28 +204,7 @@ void Uci::start() {
     } else if (input == "quit") {
       break; // shutdown is handled once, after the loop
     } else if (input == "help") {
-      reply("go - find and print best move");
-      reply("godeb - \"go\" command with debug information");
-      reply("newgame - start new game");
-      reply("setfen fen_str - reset up the position described in fenstring (assuming "
-            "the string is correct)");
-      reply("depth n - search for \"n\" nodes in depth");
-      reply(R"(time n - search for "n" seconds per move or "inf" to disregard time)");
-      reply("d - display the current position");
-      reply("info - display information about search and more precise about board");
-      reply("eval - static evaluation of current position");
-      reply("bench [n] - fixed position set at fixed depth; the node count "
-            "fingerprints the search");
-      reply("perft n - count all legal move paths of depth \"n\" from the current position");
-      reply("perft divide n - same, broken down per root move (diff against "
-            "Stockfish's \"go perft n\")");
-      reply("stop - Instantly stops the search and returns last best move");
-      reply("quit - exit the program\n");
-
-      reply("Enter move in coordinate notation, e.g., e4e5, c4e6.");
-      reply("Or for promotion piece add_and_inc last symbol q (queen), n (knight), b "
-            "(bishop) or r (rook).");
-      reply("E.g., a7a8q, d2d1r");
+      help();
 
     } else if (Move::isMove(input)) {
       if (check_lock())
@@ -252,4 +231,29 @@ void Uci::start() {
     Search::stop();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+}
+
+void Uci::help() {
+  reply("go - find and print best move");
+  reply("godeb - \"go\" command with debug information");
+  reply("newgame - start new game");
+  reply("setfen fen_str - reset up the position described in fenstring (assuming "
+        "the string is correct)");
+  reply("depth n - search for \"n\" plies deep");
+  reply(R"(time n - search for "n" seconds per move or "inf" to disregard time)");
+  reply("d - display the current position");
+  reply("info - display information about search and more precise about board");
+  reply("eval - static evaluation of current position");
+  reply("bench [n] - fixed position set at fixed depth; the node count "
+        "fingerprints the search");
+  reply("perft n - count all legal move paths of depth \"n\" from the current position");
+  reply("perft divide n - same, broken down per root move (diff against "
+        "Stockfish's \"go perft n\")");
+  reply("stop - Instantly stops the search and returns last best move");
+  reply("quit - exit the program\n");
+
+  reply("Enter move in coordinate notation, e.g., e4e5, c4e6.");
+  reply("Or for promotion piece add_and_inc last symbol q (queen), n (knight), b "
+        "(bishop) or r (rook).");
+  reply("E.g., a7a8q, d2d1r");
 }

@@ -15,7 +15,7 @@ private:
 
 public:
   TrieNode() = default;
-  std::shared_ptr<TrieNode> operator[](const std::string &move) const;
+  [[nodiscard]] std::shared_ptr<TrieNode> operator[](const std::string &move) const;
   [[nodiscard]] const std::string &get_random() const;
   void add(const std::string &move);
 };

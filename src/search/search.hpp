@@ -13,16 +13,16 @@ namespace Search {
   void set_time(int32_t ms_allocated);
   void set_depth(int16_t depth);
 
-  std::string get_mate();
-  Move *get_best_move();
-  std::string get_allocated_sec();
-  int32_t get_search_depth();
+  [[nodiscard]] std::string get_mate();
+  [[nodiscard]] Move *get_best_move();
+  [[nodiscard]] std::string get_allocated_sec();
+  [[nodiscard]] int16_t get_search_depth();
 
   // Needed by bench, which reports node counts and has to save and restore
   // the user's time settings around a run.
-  int64_t get_nodes();
-  int32_t get_allocated_ms();
-  bool is_without_time();
+  [[nodiscard]] int64_t get_nodes();
+  [[nodiscard]] int32_t get_allocated_ms();
+  [[nodiscard]] bool is_without_time();
 
   void iter_deep(Board &board, bool debug);
 } // namespace Search

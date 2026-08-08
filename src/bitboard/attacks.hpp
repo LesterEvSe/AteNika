@@ -5,13 +5,13 @@
 
 namespace Attacks {
   void init();
-  bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
-  bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
-  bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
+  [[nodiscard]] bitboard get_rook_attacks(uint8_t cell, bitboard blockers);
+  [[nodiscard]] bitboard get_bishop_attacks(uint8_t cell, bitboard blockers);
+  [[nodiscard]] bitboard get_queen_attacks(uint8_t cell, bitboard blockers);
 
-  bitboard get_pawn_attacks(Color color, uint8_t cell);
-  bitboard get_knight_attacks(uint8_t cell);
-  bitboard get_king_attacks(uint8_t cell);
+  [[nodiscard]] bitboard get_pawn_attacks(Color color, uint8_t cell);
+  [[nodiscard]] bitboard get_knight_attacks(uint8_t cell);
+  [[nodiscard]] bitboard get_king_attacks(uint8_t cell);
 } // namespace Attacks
 
 namespace Attacks::detail {

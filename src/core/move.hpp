@@ -34,7 +34,9 @@ private:
   int32_t m_score;
 
 public:
-  Move() : m_flag(NULL_MOVE) {}
+  Move()
+      : m_from(0), m_to(0), m_flag(NULL_MOVE), m_move_piece(NONE), m_captured_piece(NONE),
+        m_promotion_piece(NONE), m_score(0) {}
 
   // example e4e5 g2g1q or something else
   explicit Move(Board &board, const std::string &move);
@@ -54,7 +56,7 @@ public:
   [[nodiscard]] int32_t get_score() const;
 
   void set_score(int32_t val);
-  static bool isMove(const std::string &move);
+  [[nodiscard]] static bool isMove(const std::string &move);
 
   // For selection sort in MovePicker class
   friend bool operator<(const Move &left, const Move &right);

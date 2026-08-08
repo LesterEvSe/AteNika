@@ -10,7 +10,7 @@
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
-Board::Board(std::string short_fen) {
+Board::Board(const std::string &short_fen) {
   std::istringstream iss(short_fen);
   std::string pieces;
   iss >> pieces;
@@ -42,8 +42,8 @@ Board::Board(std::string short_fen) {
 
   std::string castling;
   iss >> castling;
-  for (uint8_t i = 0; i < castling.size(); ++i)
-    switch (castling[i]) {
+  for (char i : castling)
+    switch (i) {
       case 'K': m_castling_rights |= 1; break;
       case 'Q': m_castling_rights |= 2; break;
       case 'k': m_castling_rights |= 4; break;
@@ -69,7 +69,6 @@ Board::Board(std::string short_fen) {
 
   // m_hash is initialized, after the rest of the Board fields are initialized
   m_hash.set_hash(*this);
-  std::memset(m_history, 0, sizeof(m_history));
 }
 
 void Board::update_bitboards() {
@@ -278,8 +277,10 @@ void Board::make(const Move &move) {
       remove_piece(get_opponent_move(), PAWN, captured_pawn);
       break;
     }
-    case Move::CAPTURE_PROMOTION: // Fall through to use PROMOTION code
+    case Move::CAPTURE_PROMOTION:
       remove_piece(get_opponent_move(), move.get_captured_piece(), to);
+      [[fallthrough]];
+
     case Move::PROMOTION:
       remove_piece(m_player_move, move.get_move_piece(), to);
       add_piece(m_player_move, move.get_promotion_piece(), to);
@@ -378,10 +379,11 @@ void Board::unmake(const Move &move) {
       set(m_pieces[get_opponent_move()][PAWN], captured_pawn);
       break;
     }
-    case Move::CAPTURE_PROMOTION: // Fall through to use PROMOTION code
+    case Move::CAPTURE_PROMOTION:
       set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
-    case Move::PROMOTION:
+      [[fallthrough]];
 
+    case Move::PROMOTION:
       set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
       reset(m_pieces[m_player_move][move.get_promotion_piece()], to);
       break;

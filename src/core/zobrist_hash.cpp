@@ -3,8 +3,8 @@
 #include "bitboard/bitfunc.hpp"
 #include "core/board.hpp"
 
-std::mt19937_64 ZobristHash::gen64{PRNG};
-std::mt19937 ZobristHash::gen32{PRNG};
+std::mt19937_64 ZobristHash::gen64{PRNG}; // NOLINT(bugprone-random-generator-seed)
+std::mt19937 ZobristHash::gen32{PRNG};    // NOLINT(bugprone-random-generator-seed)
 std::uniform_int_distribution<uint64_t> ZobristHash::dist64;
 std::uniform_int_distribution<uint32_t> ZobristHash::dist32;
 
@@ -21,8 +21,8 @@ void ZobristHash::init() {
       PIECE_KEYS[WHITE][j][k] = {dist64(gen64), dist32(gen32)};
     }
 
-  for (uint8_t i = 0; i < 8; ++i)
-    EN_PASSANT_FILE[i] = {dist64(gen64), dist32(gen32)};
+  for (auto &i : EN_PASSANT_FILE)
+    i = {dist64(gen64), dist32(gen32)};
 
   for (uint8_t i = 0; i < COLOR_SIZE; ++i) {
     QS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
@@ -48,16 +48,16 @@ void ZobristHash::set_hash(const Board &board) {
   if (board.get_black_qs_castle())
     xor_black_qs_castling();
 
-  for (uint8_t i = 0; i < PIECE_SIZE; ++i) {
-    bitboard white_pieces = board.get_pieces(WHITE, PIECES[i]);
-    bitboard black_pieces = board.get_pieces(BLACK, PIECES[i]);
+  for (auto i : PIECES) {
+    bitboard white_pieces = board.get_pieces(WHITE, i);
+    bitboard black_pieces = board.get_pieces(BLACK, i);
 
     for (uint8_t j = 0; j < 64; ++j) {
       uint64_t cell = ONE << j;
       if (white_pieces & cell)
-        xor_piece(WHITE, PIECES[i], j);
+        xor_piece(WHITE, i, j);
       else if (black_pieces & cell)
-        xor_piece(BLACK, PIECES[i], j);
+        xor_piece(BLACK, i, j);
     }
   }
 }

@@ -7,7 +7,7 @@
 // Other value from https://github.com/bluefeversoft/vice/blob/main/Vice11/src/evaluate.c
 namespace Eval {
   void init();
-  int32_t evaluate(const Board &board);
+  [[nodiscard]] int32_t evaluate(const Board &board);
 } // namespace Eval
 
 namespace Eval::detail {

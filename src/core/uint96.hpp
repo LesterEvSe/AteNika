@@ -23,7 +23,7 @@ public:
   friend std::ostream &operator<<(std::ostream &out, const uint96 &num);
 
   // Required for hashing, because using a std::bitset in std::unordered_map
-  explicit operator std::bitset<96>() const;
+  [[nodiscard]] explicit operator std::bitset<96>() const;
 };
 
 #endif // ATENIKA_UINT96_HPP

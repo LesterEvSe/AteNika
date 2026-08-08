@@ -1,11 +1,13 @@
 #include "book/trie_node.hpp"
 
+#include <random>
+
 std::random_device TrieNode::rd;
 std::mt19937 TrieNode::gen(rd());
 std::uniform_int_distribution<uint16_t> TrieNode::dist;
 
 std::shared_ptr<TrieNode> TrieNode::operator[](const std::string &move) const {
-  int i;
+  unsigned long i;
   for (i = 0; i < children.size(); ++i)
     if (children[i].first == move)
       break;

@@ -22,7 +22,7 @@ namespace Rays {
   };
 
   void init();
-  bitboard get_ray(Direction dir, uint8_t cell);
+  [[nodiscard]] bitboard get_ray(Direction dir, uint8_t cell);
 } // namespace Rays
 
 namespace Rays::detail {

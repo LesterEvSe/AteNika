@@ -50,7 +50,8 @@
         "CMAKE_BUILD_TYPE": "Release",
         "ATENIKA_ARCH": "x86-64-v3",
         "ATENIKA_LTO": "ON",
-        "ATENIKA_BUILD_TESTS": "ON"
+        "ATENIKA_BUILD_TESTS": "ON",
+        "ATENIKA_WERROR": "ON"
       }
     }
   ],

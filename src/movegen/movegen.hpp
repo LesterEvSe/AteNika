@@ -49,7 +49,7 @@ private:
 
 public:
   explicit Movegen(const Board &board);
-  MoveList &get_legal_moves();
+  [[nodiscard]] MoveList &get_legal_moves();
 };
 
 #endif // ATENIKA_MOVEGEN_HPP

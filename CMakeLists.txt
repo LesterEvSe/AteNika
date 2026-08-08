@@ -20,6 +20,7 @@ option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                     OFF)
 option(ATENIKA_LTO         "Link-time optimization in optimized builds"     ON)
 option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)" OFF)
 option(ATENIKA_WARNINGS    "Enable the warning set"                         ON)
+option(ATENIKA_WERROR      "Promote warnings to errors (dev and CI only)"   OFF)
 option(ATENIKA_DEBUG_HASH  "Verify the incremental Zobrist key on every make" OFF)
 
 set(ATENIKA_ARCH "x86-64-v3" CACHE STRING "Microarchitecture level for portable builds")
@@ -123,13 +124,16 @@ endif()
 
 # Warnings
 
-# FIXME: 
-# Expect noise on the first build — operator-precedence warnings in eval.cpp and
-# uninitialized-value warnings in movepicker.cpp point at real code worth
-# reviewing during Phase 0B. Not errors: this is a to-do list, not a gate.
+# The tree is warning-free. Defaults OFF so a newer compiler with new warnings cannot break
+# someone else's build of a release tag.
 if (ATENIKA_WARNINGS)
     if (MSVC)
+        # to prevent MSVC compiler error with strerror
+        target_compile_definitions(atenika_core PRIVATE _CRT_SECURE_NO_WARNINGS)
         target_compile_options(atenika_core PRIVATE /W4 /permissive- /Zc:preprocessor)
+        if (ATENIKA_WERROR)
+            target_compile_options(atenika_core PRIVATE /WX)
+        endif()
     else()
         target_compile_options(atenika_core PRIVATE
             -Wall -Wextra
@@ -137,6 +141,9 @@ if (ATENIKA_WARNINGS)
             -Wshadow
             -Wnon-virtual-dtor
         )
+        if (ATENIKA_WERROR)
+            target_compile_options(atenika_core PRIVATE -Werror)
+        endif()
     endif()
 endif()
 
@@ -201,3 +208,4 @@ message(STATUS "  standard   : C++23")
 message(STATUS "  arch       : ${ATENIKA_ARCH_SUMMARY}")
 message(STATUS "  LTO        : ${ATENIKA_LTO}")
 message(STATUS "  tests      : ${ATENIKA_BUILD_TESTS}")
+message(STATUS "  -Werror    : ${ATENIKA_WERROR}")

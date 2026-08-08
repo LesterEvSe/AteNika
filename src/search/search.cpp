@@ -69,7 +69,7 @@ Move *Search::get_best_move() {
 std::string Search::get_allocated_sec() {
   return detail::_without_time ? "infinity" : std::to_string(detail::_ms_allocated / 1000) + " sec";
 }
-int32_t Search::get_search_depth() { return detail::_depth; }
+int16_t Search::get_search_depth() { return detail::_depth; }
 
 int64_t Search::get_nodes() { return detail::_nodes; }
 int32_t Search::get_allocated_ms() { return detail::_ms_allocated; }
@@ -278,7 +278,6 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   QMovePicker q_move_picker = QMovePicker(&move_list, zob_hash);
 
   Move curr_best = Move();
-  int32_t old_alpha = alpha;
   bool first_move = true;
   ++_order_info;
 

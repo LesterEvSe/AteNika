@@ -77,7 +77,7 @@ private:
   static constexpr uint16_t MAX_MOVES{2048};
 
   int16_t m_moves{0};
-  HistoryNode m_history[MAX_MOVES];
+  HistoryNode m_history[MAX_MOVES]{};
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -92,7 +92,7 @@ public:
      6. full moves
   */
   explicit Board(
-      std::string short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+      const std::string &short_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
   void update_bitboards();
 
   // Required for testing
