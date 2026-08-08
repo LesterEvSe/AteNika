@@ -10,16 +10,16 @@ include(CheckCXXCompilerFlag)
 include(CheckIPOSupported)
 
 # Writes compile_commands.json into the build directory: the exact command line
-# for every source file. clang-tidy and clangd both need it — they compile the
-# code for real, so they must know the include paths, -std=c++23 and defines.
+# for every source file. Used by clang-tidy and clangd.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Options
 
-option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                     OFF)
-option(ATENIKA_LTO         "Link-time optimization in optimized builds"     ON)
-option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)" OFF)
-option(ATENIKA_WARNINGS    "Enable the warning set"                         ON)
+option(ATENIKA_BUILD_TESTS "Build the GoogleTest suite"                       OFF)
+option(ATENIKA_LTO         "Link-time optimization in optimized builds"       ON)
+option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)"   OFF)
+option(ATENIKA_WARNINGS    "Enable the warning set"                           ON)
+option(ATENIKA_WERROR      "Promote warnings to errors (dev and CI only)"     OFF)
 option(ATENIKA_DEBUG_HASH  "Verify the incremental Zobrist key on every make" OFF)
 
 set(ATENIKA_ARCH "x86-64-v3" CACHE STRING "Microarchitecture level for portable builds")
@@ -31,41 +31,34 @@ endif()
 
 # Core library; compiled once, shared by the engine and the test binary
 
-# FIXME: When src/ gains subdirectories, only these pathas change.
 add_library(atenika_core OBJECT
-    # core/
-    src/bitfunc.cpp
-    src/uint96.cpp
-    src/zobrist_hash.cpp
-    src/move.cpp
-    src/move_list.cpp
-    src/board.cpp
+    src/bitboard/rays.cpp
+    src/bitboard/attacks.cpp
 
-    # movegen/
-    src/rays.cpp
-    src/attacks.cpp
-    src/movegen.cpp
-    src/perft.cpp
+    src/core/uint96.cpp
+    src/core/zobrist_hash.cpp
+    src/core/move.cpp
+    src/core/move_list.cpp
+    src/core/board.cpp
 
-    # search/
-    src/mvv_lva.cpp
-    src/order_info.cpp
-    src/ttable.cpp
-    src/movepicker.cpp
-    src/qmovepicker.cpp
-    src/search.cpp
-    src/bench.cpp
+    src/movegen/movegen.cpp
+    src/movegen/perft.cpp
 
-    # eval/
-    src/eval.cpp
+    src/eval/eval.cpp
 
-    # uci/
-    src/interface.cpp
+    src/search/mvv_lva.cpp
+    src/search/order_info.cpp
+    src/search/ttable.cpp
+    src/search/movepicker.cpp
+    src/search/qmovepicker.cpp
+    src/search/search.cpp
+    src/search/bench.cpp
 
-    # book/
-    src/pgn_parser.cpp
-    src/trie_node.cpp
-    src/book.cpp
+    src/uci/interface.cpp
+
+    src/book/pgn_parser.cpp
+    src/book/trie_node.cpp
+    src/book/book.cpp
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -111,32 +104,41 @@ endif()
 
 # Link-time optimization
 
+function(atenika_enable_lto target)
+    if (ATENIKA_LTO AND ATENIKA_IPO_OK)
+        set_target_properties(${target} PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON
+        )
+    endif()
+endfunction()
+
 # This is the single largest speedup available in the build: the engine is ~19
 # translation units with small accessors (get_pieces, make, update_bitboards)
 # living in .cpp files, so cross-TU inlining is otherwise blocked. Measured on
 # the perft suite: -O3 = 20.5 Mnps, +march=native = 21.2, +LTO = 36.2 Mnps.
 if (ATENIKA_LTO)
     check_ipo_supported(RESULT ATENIKA_IPO_OK OUTPUT ATENIKA_IPO_MSG)
-    if (ATENIKA_IPO_OK)
-        set_target_properties(atenika_core PROPERTIES
-            INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON
-            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON
-        )
-    else()
+    if (NOT ATENIKA_IPO_OK)
         message(WARNING "LTO requested but unsupported: ${ATENIKA_IPO_MSG}")
     endif()
 endif()
 
+atenika_enable_lto(atenika_core)
+
 
 # Warnings
 
-# FIXME: 
-# Expect noise on the first build — operator-precedence warnings in eval.cpp and
-# uninitialized-value warnings in movepicker.cpp point at real code worth
-# reviewing during Phase 0B. Not errors: this is a to-do list, not a gate.
+# The tree is warning-free. Defaults OFF so a newer compiler with new warnings cannot break
+# someone else's build of a release tag.
 if (ATENIKA_WARNINGS)
     if (MSVC)
+        # to prevent MSVC compiler error with strerror
+        target_compile_definitions(atenika_core PRIVATE _CRT_SECURE_NO_WARNINGS)
         target_compile_options(atenika_core PRIVATE /W4 /permissive- /Zc:preprocessor)
+        if (ATENIKA_WERROR)
+            target_compile_options(atenika_core PRIVATE /WX)
+        endif()
     else()
         target_compile_options(atenika_core PRIVATE
             -Wall -Wextra
@@ -144,6 +146,9 @@ if (ATENIKA_WARNINGS)
             -Wshadow
             -Wnon-virtual-dtor
         )
+        if (ATENIKA_WERROR)
+            target_compile_options(atenika_core PRIVATE -Werror)
+        endif()
     endif()
 endif()
 
@@ -153,13 +158,7 @@ endif()
 add_executable(AteNika src/main.cpp)
 target_link_libraries(AteNika PRIVATE atenika_core)
 
-if (ATENIKA_LTO AND ATENIKA_IPO_OK)
-    set_target_properties(AteNika PROPERTIES
-        INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON
-        INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON
-    )
-endif()
-
+atenika_enable_lto(AteNika)
 
 # Tests
 
@@ -179,12 +178,17 @@ if (ATENIKA_BUILD_TESTS)
         tests/board_test.cpp
         tests/zob_hash_test.cpp
         tests/perft_test.cpp
-        tests/perft_comparison_test.cpp
+        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         tests/mate_test.cpp
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     target_link_libraries(AteNikaTest PRIVATE atenika_core GTest::gtest GTest::gtest_main)
+
+    # Must match atenika_core. Its objects are LLVM bitcode or GCC IR under LTO,
+    # and a link line without -flto never loads the plugin that can read them —
+    # "file format not recognized" at link time.
+    atenika_enable_lto(AteNikaTest)
 
     enable_testing()
     include(GoogleTest)
@@ -206,5 +210,16 @@ message(STATUS "AteNika ${PROJECT_VERSION}")
 message(STATUS "  build type : ${CMAKE_BUILD_TYPE}")
 message(STATUS "  standard   : C++23")
 message(STATUS "  arch       : ${ATENIKA_ARCH_SUMMARY}")
-message(STATUS "  LTO        : ${ATENIKA_LTO}")
+# ATENIKA_LTO is only the request; check_ipo_supported has the final say, and it
+# fails on some clang installations. Report what the build will actually do.
+if (ATENIKA_LTO AND ATENIKA_IPO_OK)
+    set(ATENIKA_LTO_SUMMARY "ON")
+elseif (ATENIKA_LTO)
+    set(ATENIKA_LTO_SUMMARY "OFF (requested, but unsupported by this toolchain)")
+else()
+    set(ATENIKA_LTO_SUMMARY "OFF")
+endif()
+
+message(STATUS "  LTO        : ${ATENIKA_LTO_SUMMARY}")
 message(STATUS "  tests      : ${ATENIKA_BUILD_TESTS}")
+message(STATUS "  -Werror    : ${ATENIKA_WERROR}")

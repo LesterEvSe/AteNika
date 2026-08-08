@@ -2,8 +2,8 @@
 #define ATENIKA_DEFS_HPP
 
 #include <cstdint>
-#include <string>
 #include <limits> // std::numeric_limits<int32_t>::max()
+#include <string_view>
 
 /** Arrangements for the presentation of the board (uint64_t) */
 /**
@@ -33,7 +33,7 @@
 */
 
 // clang-format off
-const std::string FIELD[64] = {
+constexpr std::string_view FIELD[64] = {
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
     "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
     "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
@@ -81,40 +81,32 @@ constexpr bitboard RANK_8 = RANK_1 << (8 * 7);
 
 
 enum PieceType : uint8_t {
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING,
-    PIECE_SIZE, // should be before end
-    NONE // should be at the end
+  PAWN,
+  KNIGHT,
+  BISHOP,
+  ROOK,
+  QUEEN,
+  KING,
+  PIECE_SIZE, // should be before end
+  NONE        // should be at the end
 };
 
-constexpr PieceType PIECES[] = { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+constexpr PieceType PIECES[] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING};
 
 enum Color : uint8_t {
-    BLACK,
-    WHITE,
-    COLOR_SIZE // should be at the end
+  BLACK,
+  WHITE,
+  COLOR_SIZE // should be at the end
 };
 
-enum GamePhase : uint8_t {
-    OPENING,
-    ENDGAME,
-    PHASES
-};
+enum GamePhase : uint8_t { OPENING, ENDGAME, PHASES };
 
 // for transposition table and entry
-enum TTFlag : uint8_t {
-    ALPHA,
-    EXACT,
-    BETA
-};
+enum TTFlag : uint8_t { ALPHA, EXACT, BETA };
 
-constexpr uint64_t ZERO {0};
-constexpr uint64_t ONE  {1};
-constexpr uint8_t MAX_PLY {100}; // fifty full moves rule without pawn moves or without captures
+constexpr uint64_t ZERO{0};
+constexpr uint64_t ONE{1};
+constexpr uint8_t MAX_PLY{100}; // fifty full moves rule without pawn moves or without captures
 constexpr int32_t INF = std::numeric_limits<int32_t>::max();
 
-#endif //ATENIKA_DEFS_HPP
+#endif // ATENIKA_DEFS_HPP

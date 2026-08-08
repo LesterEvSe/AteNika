@@ -14,6 +14,7 @@ Checks: >
   modernize-use-emplace,
   modernize-redundant-void-arg,
   modernize-loop-convert,
+  modernize-use-nodiscard,
   readability-misleading-indentation,
   readability-redundant-control-flow,
   readability-simplify-boolean-expr,
@@ -25,9 +26,11 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -bugprone-narrowing-conversions,
   -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-throwing-static-initialization,
 
-# The three disabled bugprone checks fire on deliberate engine idioms:
-# (from, to) square pairs, uint8_t/int16_t/int32_t transitions, row * 8 + col.
+# The disabled bugprone checks fire on deliberate engine idioms: (from, to)
+# square pairs, uint8_t/int16_t/int32_t transitions, row * 8 + col, and the
+# namespace-scope tables that the existing init() functions fill.
 
 HeaderFilterRegex: '.*\.hpp$'
 WarningsAsErrors: ''
