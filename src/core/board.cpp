@@ -1,6 +1,5 @@
 #include "core/board.hpp"
 
-#include <cstring> // for std::memset
 #include <format>
 #include <sstream> // for std::istringstream in constructor
 
@@ -58,13 +57,14 @@ Board::Board(const std::string &short_fen) {
   else
     m_en_passant_cell = get_cell(en_passant);
 
-  // for implicit conversion
+  // istream has no uint8_t overload that reads a number, so parse as int and
+  // narrow explicitly — MSVC /W4 rejects the implicit form (C4244).
   int temp_ply;
   iss >> temp_ply;
-  m_ply = temp_ply;
+  m_ply = static_cast<uint8_t>(temp_ply);
 
   iss >> temp_ply;
-  m_moves = 2 * temp_ply + (m_player_move == BLACK);
+  m_moves = static_cast<int16_t>(2 * temp_ply + (m_player_move == BLACK));
   update_bitboards();
 
   // m_hash is initialized, after the rest of the Board fields are initialized

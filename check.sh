@@ -61,7 +61,9 @@ TIDY_ARGS=(-p build/tests -quiet -j "$JOBS" -warnings-as-errors='*')
 # clang-tidy appends a command-line -checks to the .clang-tidy value.
 [ -n "$QUICK" ] && TIDY_ARGS+=(-checks='-clang-analyzer-*')
 [ "$MODE" = tidyfix ] && TIDY_ARGS+=(-fix -format)
-nice -n 10 run-clang-tidy "${TIDY_ARGS[@]}" || STATUS=1
+# The ^ anchors matter: run-clang-tidy joins these with | and applies re.search,
+# and FetchContent's GoogleTest lives under a path that also contains "/src/".
+nice -n 10 run-clang-tidy "${TIDY_ARGS[@]}" "^$PWD/src/" "^$PWD/tests/" || STATUS=1
 
 [ "$STATUS" -eq 0 ] && echo "==> clean"
 exit "$STATUS"

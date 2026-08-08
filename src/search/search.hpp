@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <string>
 
 #include "search/order_info.hpp"
 

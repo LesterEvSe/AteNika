@@ -1,6 +1,9 @@
 #ifndef ATENIKA_BOARD_HPP
 #define ATENIKA_BOARD_HPP
 
+#include <ostream>
+#include <string>
+
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
 

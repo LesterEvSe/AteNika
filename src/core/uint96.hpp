@@ -3,6 +3,7 @@
 
 #include <bitset>
 #include <cstdint>
+#include <ostream>
 
 using bits96 = std::bitset<96>;
 

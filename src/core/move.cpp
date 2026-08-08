@@ -8,7 +8,7 @@
 
 Move::Move(Board &board, const std::string &move) {
   MoveList legal_moves = Movegen(board).get_legal_moves();
-  int i;
+  uint8_t i; // matches MoveList::size and operator[]; int narrows on indexing
 
   for (i = 0; i < legal_moves.size(); ++i)
     if (move == static_cast<std::string>(legal_moves[i])) {

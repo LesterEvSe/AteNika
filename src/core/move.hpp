@@ -1,6 +1,8 @@
 #ifndef ATENIKA_MOVE_HPP
 #define ATENIKA_MOVE_HPP
 
+#include <string>
+
 #include "defs.hpp"
 
 class Board;
@@ -22,15 +24,17 @@ public:
   };
 
 private:
-  struct {
-    uint8_t m_from : 6;
-    uint8_t m_to : 6;
+  // Bit-fields directly in the class rather than wrapped in an anonymous
+  // struct: C++ has anonymous unions, not anonymous structs, and MSVC warns
+  // (C4201). Consecutive bit-fields pack into the same allocation unit either.
+  uint8_t m_from : 6;
+  uint8_t m_to : 6;
 
-    Flag m_flag : 5;
-    PieceType m_move_piece : 3;
-    PieceType m_captured_piece : 3;
-    PieceType m_promotion_piece : 3;
-  };
+  Flag m_flag : 5;
+  PieceType m_move_piece : 3;
+  PieceType m_captured_piece : 3;
+  PieceType m_promotion_piece : 3;
+
   int32_t m_score;
 
 public:

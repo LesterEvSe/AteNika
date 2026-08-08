@@ -14,13 +14,17 @@
 
 // -march=x86-64-v3 guarantees POPCNT, BMI1 and LZCNT, so each of these is a
 // single instruction.
-[[nodiscard]] inline uint8_t count_bits(bitboard bb) { return std::popcount(bb); }
+[[nodiscard]] inline uint8_t count_bits(bitboard bb) {
+  return static_cast<uint8_t>(std::popcount(bb));
+}
 
 inline void set(bitboard &bb, uint8_t cell) { bb |= ONE << cell; }
 inline void reset(bitboard &bb, uint8_t cell) { bb &= ~(ONE << cell); }
 
-[[nodiscard]] inline uint8_t lsb(bitboard bb) { return std::countr_zero(bb); }
-[[nodiscard]] inline uint8_t msb(bitboard bb) { return 63 - std::countl_zero(bb); }
+[[nodiscard]] inline uint8_t lsb(bitboard bb) { return static_cast<uint8_t>(std::countr_zero(bb)); }
+[[nodiscard]] inline uint8_t msb(bitboard bb) {
+  return static_cast<uint8_t>(63 - std::countl_zero(bb));
+}
 
 inline uint8_t pop_lsb(bitboard &bb) {
   uint8_t pos = lsb(bb);

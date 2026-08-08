@@ -1,6 +1,7 @@
 #ifndef ATENIKA_BOOK_HPP
 #define ATENIKA_BOOK_HPP
 
+#include <memory>
 #include <string>
 
 #include "book/trie_node.hpp"
