@@ -116,7 +116,7 @@ void Uci::start() {
         if (pos != value.size())
           throw std::runtime_error("");
 
-      } catch (const std::exception &e) {
+      } catch (const std::exception &) {
         // std::cerr has unitbuf set by the standard, so it flushes itself.
         std::println(std::cerr, "Incorrect command, try again");
         continue;

@@ -52,9 +52,9 @@ bool Search::detail::_check_limits() {
   if (_nodes & 2047)
     return false;
 
-  int32_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::steady_clock::now() - detail::_start)
-                        .count();
+  auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                          std::chrono::steady_clock::now() - detail::_start)
+                                          .count());
 
   if (_without_time || elapsed < _ms_allocated)
     return false;
@@ -130,9 +130,10 @@ void Search::iter_deep(Board &board, bool debug) {
   for (int16_t i = 1; i <= detail::_depth; ++i) {
     detail::_best_score = detail::_negamax(board, i, -INF, INF, true);
 
-    int32_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::steady_clock::now() - detail::_start)
-                          .count();
+    // static_cast for MSVC W4 warnings
+    auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                            std::chrono::steady_clock::now() - detail::_start)
+                                            .count());
 
     if (detail::_stop)
       break;

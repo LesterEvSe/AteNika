@@ -1,5 +1,6 @@
 #include "book/pgn_parser.hpp"
 
+#include <cctype>  // for std::tolower
 #include <cstring> // for strerror
 #include <fstream>
 #include <functional>
@@ -57,7 +58,7 @@ namespace {
     command.resize(j--);
 
     if (command[j - 1] == '=')
-      command[j] = tolower(command[j]);
+      command[j] = static_cast<char>(std::tolower(static_cast<unsigned char>(command[j])));
     return command;
   }
 
@@ -149,7 +150,7 @@ void PGNParser::detail::second_processing() {
         check = other_check;
 
       MoveList moves = Movegen(board).get_legal_moves();
-      int i;
+      uint8_t i;
       for (i = 0; i < moves.size(); ++i) {
         if (!check(command, moves[i]))
           continue;
