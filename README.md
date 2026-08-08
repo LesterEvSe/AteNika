@@ -38,7 +38,7 @@ The equivalent of `cargo fmt` + `cargo clippy`. Needs `clang-format` and `clang-
 bash check.sh          # reformat in place, then lint
 ```
 
-CI pins clang-format 18.1.8. Match it locally so the two never disagree about formatting:
+CI pins clang-format 18.1.8. Match it locally.
 
 ``` Bash
 pipx install clang-format==18.1.8

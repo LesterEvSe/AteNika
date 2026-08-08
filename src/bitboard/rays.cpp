@@ -29,7 +29,7 @@ void Rays::init() {
     DIAG_A8_H1 |= bit_H1 << (7 * i);
   }
 
-  bitboard one = ONE, west, east;
+  bitboard one = ONE, west = ZERO, east = ZERO;
   for (int8_t i = 0; i < 64; ++i) {
     if (i % 8 == 0) {
       west = ZERO;
