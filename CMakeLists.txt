@@ -56,10 +56,6 @@ add_library(atenika_core OBJECT
 
     src/uci/uci.cpp
     src/uci/extras.cpp
-
-    src/book/pgn_parser.cpp
-    src/book/trie_node.cpp
-    src/book/book.cpp
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
