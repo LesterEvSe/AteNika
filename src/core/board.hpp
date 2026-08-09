@@ -1,5 +1,4 @@
-#ifndef ATENIKA_BOARD_HPP
-#define ATENIKA_BOARD_HPP
+#pragma once
 
 #include <ostream>
 #include <string>
@@ -147,5 +146,3 @@ public:
   friend std::ostream &operator<<(std::ostream &out, const Board &board);
   void display_all() const;
 };
-
-#endif // ATENIKA_BOARD_HPP

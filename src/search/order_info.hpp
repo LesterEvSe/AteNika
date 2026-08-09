@@ -1,5 +1,4 @@
-#ifndef ATENIKA_ORDER_INFO_HPP
-#define ATENIKA_ORDER_INFO_HPP
+#pragma once
 
 #include "core/move.hpp"
 #include "defs.hpp"
@@ -27,5 +26,3 @@ public:
   [[nodiscard]] int32_t get_history(uint8_t from, uint8_t to) const;
   [[nodiscard]] int16_t get_ply() const;
 };
-
-#endif // ATENIKA_ORDER_INFO_HPP

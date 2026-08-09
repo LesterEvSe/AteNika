@@ -1,5 +1,4 @@
-#ifndef ATENIKA_UCI_HPP
-#define ATENIKA_UCI_HPP
+#pragma once
 
 // Uci - Universal Chess Interface
 // information from https://chessprogramming.org/UCI
@@ -9,5 +8,3 @@ namespace Uci {
   // every UCI keyword has been tried.
   void start();
 } // namespace Uci
-
-#endif // ATENIKA_UCI_HPP

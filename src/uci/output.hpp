@@ -1,5 +1,4 @@
-#ifndef ATENIKA_OUTPUT_HPP
-#define ATENIKA_OUTPUT_HPP
+#pragma once
 
 #include <iostream>
 #include <print>
@@ -16,5 +15,3 @@ namespace Output {
   }
 
 } // namespace Output
-
-#endif // ATENIKA_OUTPUT_HPP

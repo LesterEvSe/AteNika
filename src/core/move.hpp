@@ -1,5 +1,4 @@
-#ifndef ATENIKA_MOVE_HPP
-#define ATENIKA_MOVE_HPP
+#pragma once
 
 #include <string>
 
@@ -67,5 +66,3 @@ public:
   friend bool operator==(const Move &left, const Move &right);
   explicit operator std::string() const;
 };
-
-#endif // ATENIKA_MOVE_HPP

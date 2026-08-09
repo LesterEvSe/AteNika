@@ -1,5 +1,4 @@
-#ifndef ATENIKA_MOVE_LIST_HPP
-#define ATENIKA_MOVE_LIST_HPP
+#pragma once
 
 #include "core/move.hpp"
 
@@ -18,5 +17,3 @@ public:
   Move &operator[](uint8_t index);
   void emplace_back(const Move &move);
 };
-
-#endif // ATENIKA_MOVE_LIST_HPP

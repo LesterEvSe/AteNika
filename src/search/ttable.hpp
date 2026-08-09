@@ -1,5 +1,4 @@
-#ifndef ATENIKA_TTABLE_HPP
-#define ATENIKA_TTABLE_HPP
+#pragma once
 
 #include <unordered_map>
 
@@ -29,6 +28,3 @@ namespace TTable::detail {
   extern std::unordered_map<bits96, TTEntry> _ttable;
 
 } // namespace TTable::detail
-
-
-#endif // ATENIKA_TTABLE_HPP

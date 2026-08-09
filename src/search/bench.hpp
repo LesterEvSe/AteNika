@@ -1,5 +1,4 @@
-#ifndef ATENIKA_BENCH_HPP
-#define ATENIKA_BENCH_HPP
+#pragma once
 
 #include <cstdint>
 
@@ -23,5 +22,3 @@ namespace Bench {
   int64_t run(int depth = DEFAULT_DEPTH);
 
 } // namespace Bench
-
-#endif // ATENIKA_BENCH_HPP

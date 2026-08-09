@@ -1,5 +1,4 @@
-#ifndef ATENIKA_ZOBRIST_HASH_HPP
-#define ATENIKA_ZOBRIST_HASH_HPP
+#pragma once
 
 #include <random>
 
@@ -44,5 +43,3 @@ public:
   void xor_black_ks_castling();
   void xor_black_qs_castling();
 };
-
-#endif // ATENIKA_ZOBRIST_HASH_HPP

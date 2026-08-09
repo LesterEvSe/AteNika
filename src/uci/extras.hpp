@@ -1,5 +1,4 @@
-#ifndef ATENIKA_EXTRAS_HPP
-#define ATENIKA_EXTRAS_HPP
+#pragma once
 
 #include <sstream>
 #include <string>
@@ -15,5 +14,3 @@ namespace Extras {
   void help();
 
 } // namespace Extras
-
-#endif // ATENIKA_EXTRAS_HPP

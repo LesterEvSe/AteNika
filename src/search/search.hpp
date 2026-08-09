@@ -1,5 +1,4 @@
-#ifndef ATENIKA_SEARCH_HPP
-#define ATENIKA_SEARCH_HPP
+#pragma once
 
 #include <atomic>
 #include <chrono>
@@ -84,5 +83,3 @@ namespace Search::detail {
   int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
 
 } // namespace Search::detail
-
-#endif // ATENIKA_SEARCH_HPP

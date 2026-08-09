@@ -1,5 +1,4 @@
-#ifndef ATENIKA_RAYS_HPP
-#define ATENIKA_RAYS_HPP
+#pragma once
 
 #include "defs.hpp"
 
@@ -33,6 +32,3 @@ namespace Rays::detail {
   bitboard _west_shift(bitboard diag, uint8_t num);
   bitboard _east_shift(bitboard diag, uint8_t num);
 } // namespace Rays::detail
-
-
-#endif // ATENIKA_RAYS_HPP
