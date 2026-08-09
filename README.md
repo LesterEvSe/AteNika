@@ -68,4 +68,4 @@ ctest --preset sanitize
 [Chessprogramming Wiki](https://www.chessprogramming.org/Main_Page)  
 [Chess Database Information](https://chess.stackexchange.com/questions/18046/what-are-the-biggest-free-chess-game-databases-is-it-legal-to-download-games-fr)  
 [FICS Database](https://www.ficsgames.org/)  
-[UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html)  
+[UCI protocol](https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf#file-uci-protocol-specification-txt)  

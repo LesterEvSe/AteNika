@@ -4,7 +4,7 @@
 #include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
-#include "uci/interface.hpp"
+#include "uci/uci.hpp"
 
 int main() {
   ZobristHash::init();
@@ -13,8 +13,6 @@ int main() {
   MvvLva::init();
   Eval::init();
   Search::init();
-
-  // Data take from https://www.ficsgames.org/download.html
   Uci::start();
   return 0;
 }

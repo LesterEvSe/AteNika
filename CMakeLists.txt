@@ -54,7 +54,8 @@ add_library(atenika_core OBJECT
     src/search/search.cpp
     src/search/bench.cpp
 
-    src/uci/interface.cpp
+    src/uci/uci.cpp
+    src/uci/extras.cpp
 
     src/book/pgn_parser.cpp
     src/book/trie_node.cpp
@@ -62,6 +63,11 @@ add_library(atenika_core OBJECT
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+# UCI "id name" has to carry the version: fastchess and ordo identify an engine
+# by that string, and a ladder of binaries all calling themselves "AteNika" is
+# unusable. Single source of truth is project(VERSION) above.
+target_compile_definitions(atenika_core PUBLIC ATENIKA_VERSION="${PROJECT_VERSION}")
 
 target_compile_features(atenika_core PUBLIC cxx_std_23)
 set_target_properties(atenika_core PROPERTIES
