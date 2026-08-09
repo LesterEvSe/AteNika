@@ -1,13 +1,18 @@
 #include "search/search.hpp"
 
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <format>
 #include <iostream>
 #include <print>
+#include <string>
 
+#include "core/board.hpp"
 #include "eval/eval.hpp"
 #include "movegen/movegen.hpp"
 #include "search/movepicker.hpp"
+#include "search/order_info.hpp"
 #include "search/qmovepicker.hpp"
 #include "search/ttable.hpp"
 
@@ -32,26 +37,37 @@ namespace {
   }
 } // namespace
 
-// Limits
-int64_t Search::detail::_nodes;
-int32_t Search::detail::_ms_allocated;
-bool Search::detail::_without_time;
-int16_t Search::detail::_depth;
-int64_t Search::detail::_max_nodes;
-std::atomic<bool> Search::detail::_stop;
+namespace Search::detail {
+  // Limits
+  int64_t _nodes;
+  int32_t _ms_allocated;
+  bool _without_time;
+  int16_t _depth;
+  int64_t _max_nodes;
+  std::atomic<bool> _stop;
 
-int64_t Search::detail::_fh;  // fail high
-int64_t Search::detail::_fhf; // fail high first
+  int64_t _fh;  // cut-off at n move. The moves are accumulating.
+  int64_t _fhf; // cut-off at first move.
 
-// Search
-OrderInfo Search::detail::_order_info;
-Move Search::detail::_best_move;
-int32_t Search::detail::_best_score;
-int16_t Search::detail::_seldepth;
-bool Search::detail::_debug_info;
-std::chrono::time_point<std::chrono::steady_clock> Search::detail::_start;
+  // Search
+  OrderInfo _order_info;
+  Move _best_move;
+  int32_t _best_score;
+  int16_t _seldepth;
+  bool _debug_info;
+  std::chrono::time_point<std::chrono::steady_clock> _start;
 
-std::string Search::detail::_mate; // for mate check
+  std::string _mate; // for mate check
+
+  // Declared ahead of the definitions below: iter_deep calls into them before
+  // they appear, and _negamax and _quiescence are mutually recursive.
+  void _info(const Board &board, int depth, int elapsed);
+  void _restart();
+  bool _check_limits();
+
+  int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
+  int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
+} // namespace Search::detail
 
 void Search::detail::_restart() {
   _nodes = 0;
@@ -134,8 +150,6 @@ void Search::set_limits(const Limits &limits, Color side_to_move) {
   detail::_max_nodes = limits.nodes > 0 ? limits.nodes : 0;
   detail::_depth = limits.depth > 0 ? limits.depth : MAX_SEARCH_DEPTH;
 
-  // "go infinite", "go depth n" and "go nodes n" all run until they are told to
-  // stop or until their own limit is hit. None of them has a clock to divide.
   if (limits.infinite || (limits.movetime <= 0 && limits.time[side_to_move] <= 0)) {
     detail::_without_time = true;
     return;
@@ -164,7 +178,7 @@ void Search::set_limits(const Limits &limits, Color side_to_move) {
 
 
 void Search::detail::_info(const Board &board, int depth, int elapsed) {
-  // Sometimes I have an error in Linux
+  // Sometimes we have an error in Linux.
   // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
   // It's divide by zero error, so I increment elapsed ms, to avoid this problem
   const int64_t nps = _nodes * 1000 / (elapsed + 1);
@@ -196,7 +210,7 @@ void Search::detail::_info(const Board &board, int depth, int elapsed) {
   std::println(std::cout, "info depth {} seldepth {} score {} nodes {} nps {} time {} pv {}", depth,
                _seldepth, format_score(_best_score), _nodes, nps, elapsed, pv);
 
-  // moq - move ordering quality, the share of fail-highs that resolved on the
+  // moq — move ordering quality, the share of fail-highs that resolved on the
   // first move. Phase 2 reads it to judge whether staged generation is worth
   // the work, so it survives the move to UCI on the "info string" channel.
   if (_debug_info)
@@ -220,10 +234,6 @@ void Search::iter_deep(Board &board, bool print_info) {
                                             std::chrono::steady_clock::now() - detail::_start)
                                             .count());
 
-    // An aborted iteration is thrown away whole. _check_limits returns 0 and
-    // that 0 propagates up through _negamax, so both the score and the move it
-    // points at are meaningless; _best_move keeps the depth i-1 result, which
-    // is a real one.
     if (detail::_stop)
       break;
 
@@ -244,13 +254,15 @@ void Search::iter_deep(Board &board, bool print_info) {
       break;
   }
 
-  // A "go" must always be answered, and answered with a move that is legal: a
-  // GUI given nothing waits forever, and one given an illegal move forfeits on
-  // the spot. _best_move is still null here only if the stop arrived before
-  // depth 1 finished, or if the position has no legal moves at all — in which
-  // case the caller reports the null move and the GUI adjudicates.
+  // A "go" command must always be answered; otherwise, the GUI will wait forever,
+  // and making an illegal move results in an immediate forfeit.
+  //
+  // _best_move is null here for two different reasons. If the stop arrived before
+  // depth 1 finished, moves[0] rescues it. If the position has no legal moves at
+  // all it stays null, and the caller reports "0000" for the GUI to adjudicate.
   if (detail::_best_move.get_flag() == Move::NULL_MOVE) {
     MoveList moves = Movegen(board).get_legal_moves();
+
     if (moves.size() > 0)
       detail::_best_move = moves[0];
   }
