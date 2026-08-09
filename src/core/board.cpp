@@ -497,59 +497,47 @@ std::string Board::get_fen() const {
   return fen + std::to_string(m_ply) + " " + std::to_string(m_moves / 2);
 }
 
-std::ostream &operator<<(std::ostream &out, const Board &board) {
-  out << "   ";
-  for (char let = 'A'; let <= 'H'; ++let)
-    out << ' ' << let;
-  out << '\n';
-
-  for (int8_t row = 7; row >= 0; --row) {
-    out << row + 1 << " |";
-    for (uint8_t col = 0; col < 8; ++col) {
-      int8_t temp = row * 8 + col;
-      bitboard sq = ONE << temp;
-
-      if (board.m_pieces[BLACK][PAWN] & sq)
-        out << " p";
-      else if (board.m_pieces[BLACK][ROOK] & sq)
-        out << " r";
-      else if (board.m_pieces[BLACK][KNIGHT] & sq)
-        out << " n";
-      else if (board.m_pieces[BLACK][BISHOP] & sq)
-        out << " b";
-      else if (board.m_pieces[BLACK][KING] & sq)
-        out << " k";
-      else if (board.m_pieces[BLACK][QUEEN] & sq)
-        out << " q";
-
-      else if (board.m_pieces[WHITE][PAWN] & sq)
-        out << " P";
-      else if (board.m_pieces[WHITE][ROOK] & sq)
-        out << " R";
-      else if (board.m_pieces[WHITE][KNIGHT] & sq)
-        out << " N";
-      else if (board.m_pieces[WHITE][BISHOP] & sq)
-        out << " B";
-      else if (board.m_pieces[WHITE][KING] & sq)
-        out << " K";
-      else if (board.m_pieces[WHITE][QUEEN] & sq)
-        out << " Q";
-      else
-        out << " .";
-    }
-    out << '\n';
-  }
-  out << "\n   ";
-
-  for (char let = 'A'; let <= 'H'; ++let)
-    out << ' ' << let;
-  out << "\n\n";
-  return out;
-}
-
 void Board::display_all() const {
   std::cout << *this;
   std::cout << "Fen: " << get_fen() << '\n';
   // uint96 has an operator<< but no std::formatter, so this stays a stream insert.
   std::cout << "Key: " << m_hash.get_hash() << "\n\n";
+}
+
+namespace {
+  // Lowercase is black, as in FEN.
+  constexpr char PIECE_CHAR[COLOR_SIZE][PIECE_SIZE] = {
+      {'p', 'n', 'b', 'r', 'q', 'k'},
+      {'P', 'N', 'B', 'R', 'Q', 'K'},
+  };
+
+  constexpr const char *FILE_LABELS = "     A B C D E F G H";
+  constexpr const char *BORDER = "   +-----------------+";
+
+  char piece_char(const Board &board, uint8_t cell) {
+    const bitboard square = ONE << cell;
+
+    for (const Color color : {BLACK, WHITE})
+      for (const PieceType piece : PIECES)
+        if (board.get_pieces(color, piece) & square)
+          return PIECE_CHAR[color][piece];
+
+    return '.';
+  }
+} // namespace
+
+std::ostream &operator<<(std::ostream &out, const Board &board) {
+  out << FILE_LABELS << '\n' << BORDER << '\n';
+
+  for (int8_t row = 7; row >= 0; --row) {
+    out << ' ' << row + 1 << " |";
+    for (uint8_t col = 0; col < 8; ++col)
+      out << ' ' << piece_char(board, static_cast<uint8_t>(row * 8 + col));
+
+    out << " | " << row + 1 << '\n';
+  }
+  out << BORDER << '\n' << FILE_LABELS << "\n\n";
+
+  out << (board.get_curr_move() == WHITE ? " White" : " Black") << " to move\n\n";
+  return out;
 }

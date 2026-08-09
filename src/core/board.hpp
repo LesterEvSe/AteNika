@@ -143,6 +143,8 @@ public:
   void unmake_null_move();
 
   [[nodiscard]] std::string get_fen() const;
-  friend std::ostream &operator<<(std::ostream &out, const Board &board);
   void display_all() const;
 };
+
+// Not a friend, because the whole rendering goes through the public accessors.
+std::ostream &operator<<(std::ostream &out, const Board &board);
