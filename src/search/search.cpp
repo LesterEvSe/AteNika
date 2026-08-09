@@ -59,13 +59,37 @@ namespace Search::detail {
 
   std::string _mate; // for mate check
 
+  // Triangular PV table. Row p is the line from ply p onwards, written from
+  // index p so a parent copies its child's row straight across:
+  //
+  //             0      1      2      3     _pv_length
+  //    row 0   e2e4   e7e5   g1f3   b8c6        4
+  //    row 1    -     e7e5   g1f3   b8c6        4
+  //    row 2    -      -     g1f3   b8c6        4
+  //    row 3    -      -      -     b8c6        4
+  //
+  // _pv_length[p] is an end index, not a count: row p spans [p, length). So row
+  // 0 reads out as the whole line and _pv[0][0] is the move sent as bestmove.
+  //
+  // Sized by MAX_PLY, which also sizes the killers; both index by search ply.
+  Move _pv[MAX_PLY][MAX_PLY];
+  int16_t _pv_length[MAX_PLY];
+
+  // Row 0 of the last *completed* iteration. An aborted iteration leaves _pv[0]
+  // half-built, so it never reaches here.
+  Move _best_pv[MAX_PLY];
+  int16_t _best_pv_length;
+
   // Declared ahead of the definitions below: iter_deep calls into them before
   // they appear, and _negamax and _quiescence are mutually recursive.
-  void _info(const Board &board, int depth, int elapsed);
+  void _info(int depth, int elapsed);
   void _restart();
   bool _check_limits();
 
+  // More here: https://chessprogramming.org/Negamax
   int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
+
+  // More here: https://chessprogramming.org/Quiescence_Search
   int32_t _quiescence(Board &board, int32_t alpha, int32_t beta);
 } // namespace Search::detail
 
@@ -77,6 +101,7 @@ void Search::detail::_restart() {
   _fhf = 0;
   _mate = "";
   _seldepth = 0;
+  _best_pv_length = 0;
 
   _order_info = OrderInfo();
   _best_move = Move();
@@ -129,6 +154,9 @@ bool Search::is_without_time() { return detail::_without_time; }
 int64_t Search::get_max_nodes() { return detail::_max_nodes; }
 int16_t Search::get_seldepth() { return detail::_seldepth; }
 
+const Move *Search::get_pv() { return detail::_best_pv; }
+int16_t Search::get_pv_length() { return detail::_best_pv_length; }
+
 void Search::set_time(int32_t ms_allocated) {
   if (ms_allocated == INF)
     detail::_without_time = true;
@@ -177,33 +205,16 @@ void Search::set_limits(const Limits &limits, Color side_to_move) {
 }
 
 
-void Search::detail::_info(const Board &board, int depth, int elapsed) {
+void Search::detail::_info(int depth, int elapsed) {
   // Sometimes we have an error in Linux.
   // Process finished with exit code 136 (interrupted by signal 8:SIGFPE)
   // It's divide by zero error, so I increment elapsed ms, to avoid this problem
   const int64_t nps = _nodes * 1000 / (elapsed + 1);
 
-  // The principal variation is still walked out of the transposition table.
-  // That is only sound while the table is an unbounded map keyed on the whole
-  // 96-bit hash, where an entry can be neither displaced nor aliased. Phase 1.3
-  // replaces it with a fixed-size array, at which point a clobbered entry turns
-  // this into a truncated — or illegal — line. The triangular PV table is the
-  // fix, and it has to land before that rewrite.
   std::string pv;
-  Board temp = board;
+  for (int16_t i = 0; i < _best_pv_length; ++i)
+    pv += static_cast<std::string>(_best_pv[i]) + ' ';
 
-  // Set a counter, so we don't go over the limit
-  for (int i = 0; i < _depth && TTable::in_table(temp.get_zob_hash()); ++i) {
-    const Move move = TTable::get(temp.get_zob_hash()).move;
-
-    // TTable::get is operator[], so a probe that misses inserts a default entry
-    // whose move is NULL_MOVE. Making it would corrupt the scratch board.
-    if (move.get_flag() == Move::NULL_MOVE)
-      break;
-
-    pv += static_cast<std::string>(move) + ' ';
-    temp.make(move);
-  }
   if (!pv.empty())
     pv.pop_back();
 
@@ -237,11 +248,18 @@ void Search::iter_deep(Board &board, bool print_info) {
     if (detail::_stop)
       break;
 
-    // Assigned before the info line so the PV printed and the move eventually
-    // played are read from the same table state.
-    detail::_best_move = TTable::get(board.get_zob_hash()).move;
+    // Only a completed iteration gets to publish its line.
+    if (detail::_pv_length[0] > 0) {
+      detail::_best_pv_length = detail::_pv_length[0];
+
+      for (int16_t j = 0; j < detail::_best_pv_length; ++j)
+        detail::_best_pv[j] = detail::_pv[0][j];
+
+      detail::_best_move = detail::_best_pv[0];
+    }
+
     if (print_info)
-      detail::_info(board, i, elapsed);
+      detail::_info(i, elapsed);
 
     if (detail::_best_score > MATE_BOUND) {
       // for testing
@@ -272,12 +290,23 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
                                  bool null_move) {
   if (_check_limits())
     return 0;
+
+  // Captured here because _order_info is incremented before the move loop, so
+  // from inside that loop get_ply() already reads ply + 1.
+  const int16_t ply = _order_info.get_ply();
+
+  // Cleared before the depth check, not after it. A node that delegates straight
+  // to _quiescence still owns a row, and leaving that row stale lets the parent
+  // copy up a line left behind by whichever sibling subtree wrote it last;
+  // which reads as a perfectly plausible PV with garbage on the end.
+  _pv_length[ply] = ply;
+
   if (depth < 1)
     return _quiescence(board, alpha, beta);
 
   ++_nodes;
-  if (_order_info.get_ply() > _seldepth)
-    _seldepth = _order_info.get_ply();
+  if (ply > _seldepth)
+    _seldepth = ply;
 
   if (board.get_ply() >= MAX_PLY || board.threefold_rule())
     return 0;
@@ -356,6 +385,15 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         }
         alpha = score;
         full_window = false;
+
+        if (ply + 1 < MAX_PLY) {
+          _pv[ply][ply] = move;
+
+          for (int16_t i = ply + 1; i < _pv_length[ply + 1]; ++i)
+            _pv[ply][i] = _pv[ply + 1][i];
+
+          _pv_length[ply] = _pv_length[ply + 1];
+        }
 
         if (!(move.get_flag() & Move::CAPTURE))
           _order_info.add_history(curr_best_move.get_from_cell(), curr_best_move.get_to_cell(),

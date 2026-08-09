@@ -33,7 +33,7 @@ namespace Search {
   // Driving a search. This is the whole surface UCI needs: resolve one "go"
   // into limits, run it, interrupt it, read the answer back.
   void set_limits(const Limits &limits, Color side_to_move);
-  void iter_deep(Board &board, bool print_info);
+  void iter_deep(Board &board, bool print_info); // Main function to call search
   void stop();
   [[nodiscard]] Move *get_best_move();
   void set_debug(bool on); // extra "info string" output, UCI "debug on"
@@ -41,6 +41,11 @@ namespace Search {
   [[nodiscard]] int64_t get_nodes();
   [[nodiscard]] int16_t get_seldepth();
   [[nodiscard]] std::string get_mate(); // mate tests only
+
+  // The principal variation of the last completed iteration: get_pv()[0] is the
+  // move get_best_move() reports, by construction. Valid until the next search.
+  [[nodiscard]] const Move *get_pv();
+  [[nodiscard]] int16_t get_pv_length();
 
   // Individual limits. bench and the mate tests set these directly instead of
   // going through set_limits.
