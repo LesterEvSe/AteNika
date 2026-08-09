@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "core/board.hpp"
+#include "core/move.hpp"
 #include "eval/eval.hpp"
 #include "movegen/perft.hpp"
 #include "search/bench.hpp"
@@ -66,6 +67,38 @@ namespace {
       reply("Nodes searched: {}", nodes);
     reply("Time: {} ms  ({} knps)", ms, nodes / (ms + 1));
   }
+
+  // Bare coordinate notation typed at the prompt: "e2e4", or a whole line of
+  // them.
+  void play_moves(Board &board, const std::string &first, std::istringstream &args) {
+    // All or nothing strategy. Without the snapshot a bad move halfway through a line
+    // leaves the position silently advanced by however many moves did parse,
+    // and the early return skips the board dump that would have shown it.
+    const Board snapshot = board;
+
+    std::string notation = first;
+    do {
+      if (!Move::isMove(notation)) {
+        std::println(std::cerr, "Not a move: {}", notation);
+        board = snapshot;
+        return;
+      }
+
+      try {
+        const Move move(board, notation);
+        board.make(move);
+
+      } catch (const std::exception &e) {
+        std::println(std::cerr, R"(Rejected move "{}": {})", notation, e.what());
+        board = snapshot;
+        return;
+      }
+    } while (args >> notation);
+
+    if (board.threefold_rule())
+      reply("Draw by threefold repetition");
+    std::cout << board << std::flush;
+  }
 } // namespace
 
 bool Extras::dispatch(Board &board, const std::string &token, std::istringstream &args) {
@@ -88,6 +121,9 @@ bool Extras::dispatch(Board &board, const std::string &token, std::istringstream
 
   } else if (token == "help") {
     help();
+
+  } else if (Move::isMove(token)) {
+    play_moves(board, token, args);
 
   } else {
     return false;
@@ -118,4 +154,8 @@ void Extras::help() {
   reply("  perft divide n            same, per root move (diff against Stockfish's");
   reply("                            \"go perft n\")");
   reply("  help                      this text\n");
+
+  reply("Coordinate notation on its own line plays the move(s) on the current");
+  reply("position, e.g. \"e2e4\" or \"e2e4 e7e5 g1f3\". Add the piece letter for a");
+  reply("promotion: q, r, b or n, as in \"a7a8q\".\n");
 }
