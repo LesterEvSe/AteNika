@@ -285,6 +285,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
     if (_check_limits())
       return 0;
+
     // to prevent bug with mate
     if (score >= beta && std::abs(score) < 2'000'000'000)
       return beta;
