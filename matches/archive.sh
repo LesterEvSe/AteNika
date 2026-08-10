@@ -9,13 +9,26 @@ cd "$(dirname "$0")/.."
 
 NAME=${1:?usage: archive.sh <version-or-label>}
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "working tree is dirty. Commit first, or the SHA below is a lie" >&2
+# Only these can change the binary, so only these have to be committed.
+# CMakeLists is in the list because it carries project(VERSION) — which becomes
+# ATENIKA_VERSION in "id name" — along with the source list and the build flags.
+# Docs, tests/ and matches/ are free to be dirty.
+DIRTY=$(git status --porcelain -- src CMakeLists.txt)
+if [ -n "$DIRTY" ]; then
+  echo "uncommitted, and they affect the binary, so the SHA below would be a lie:" >&2
+  echo "$DIRTY" >&2
   exit 1
 fi
 
 SHA=$(git rev-parse --short HEAD)
 OUT="matches/builds/atenika-$NAME"
+
+# The ladder is append-only, so re-running for a name already recorded would
+# leave two rows claiming to be the same rung.
+if grep -q "^| $NAME " matches/LADDER.md; then
+  echo "$NAME is already in LADDER.md; pick another name or drop that row" >&2
+  exit 1
+fi
 
 cmake -S . -B build/archive \
       -DCMAKE_BUILD_TYPE=Release \

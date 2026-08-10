@@ -24,11 +24,15 @@ case "$MODE" in
 esac
 
 FASTCHESS=${FASTCHESS:-./tools/fastchess}
-BOOK=${BOOK:-./books/UHO_4060_v3.epd}
+BOOK=${BOOK:-./books/UHO_4060_v4.epd}
 TC=${TC:-8+0.08}
-# Physical P-cores only. Counting SMT threads halves each engine's NPS and turns
-# a strength test into a scheduling test.
-CONCURRENCY=${CONCURRENCY:-6}
+# Physical cores, not threads: two engines sharing a core halve each other's NPS,
+# which turns a strength test into a scheduling test. 80% leaves the OS and
+# fastchess itself some room. Override with CONCURRENCY=N.
+CORES=$(lscpu -p=Core,Socket 2>/dev/null | grep -v '^#' | sort -u | wc -l) || CORES=0
+[ "$CORES" -gt 0 ] || CORES=$(nproc)
+CONCURRENCY=${CONCURRENCY:-$(( CORES * 8 / 10 ))}
+[ "$CONCURRENCY" -ge 1 ] || CONCURRENCY=1
 MAX_ROUNDS=${MAX_ROUNDS:-30000}
 
 mkdir -p results
