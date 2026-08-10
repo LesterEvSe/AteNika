@@ -1,0 +1,46 @@
+# The hand-laid-out tables in eval.hpp, attacks.hpp, defs.hpp, bitfunc.hpp and
+# board.hpp are wrapped in // clang-format off. Their 8x8 layout is meaningful
+# and clang-format reflows it into an unreadable blob. Keep new tables wrapped.
+
+BasedOnStyle: LLVM
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 100
+
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+# Keeps the one-line accessors in bitfunc.hpp and board.cpp on one line.
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+
+BreakBeforeBraces: Attach
+IndentCaseLabels: true
+AccessModifierOffset: -2
+FixNamespaceComments: true
+
+NamespaceIndentation: All
+
+# Standard library, then third-party, then this project. A .cpp's own header is
+# hoisted above all three so the compiler proves it is self-contained.
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeIsMainRegex: '$'
+IncludeCategories:
+  - Regex:    '^<[^/.]+>$'
+    Priority: 1
+  - Regex:    '^<.*>$'
+    Priority: 2
+  - Regex:    '^".*"$'
+    Priority: 3
+
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+SpaceAfterCStyleCast: true
+SeparateDefinitionBlocks: Leave
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2

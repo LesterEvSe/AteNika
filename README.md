@@ -1,37 +1,66 @@
+[![CI](https://github.com/LesterEvSe/AteNika/actions/workflows/ci.yml/badge.svg)](https://github.com/LesterEvSe/AteNika/actions/workflows/ci.yml)
+
 ## Overview
 
-A chess engine, **without graphical interface**, written in C++20.  
+A chess engine, **without graphical interface**, written in C++23.  
 Briefly about the name. **AteNika** are the names of two ancient Greek goddesses **Athena**, who was the patroness of wisdom, strategy, justice and war defense, and **Nika**, which is literally translated from Greek "Victory", she was the ancient Greek goddess of victory and triumph.
 
 ## Build and Run
 
-On **Windows**, all you need to do is run the code from any available IDE with C++20.  
-**Another way**. You can create a new project via VS, add_and_inc all files from src and book.txt there, and then load these files into the project. This way you can run and customize the project with VS directly
+Requirements: a C++23 compiler (GCC 14+, Clang 18+, MSVC 19.39+) and CMake 3.25 or newer.
+Linux and Windows are built and tested on every commit.
 
-For **Unix-like** systems follow this steps:
+### Using presets
 
-``` Bash
-mkdir build
-cd build
-cmake ..
-make
-./AteNika # To run the application
-```  
-
-By default, the project will be built in Release version, without building tests, i.e. this is the command
+The project ships a `CMakePresets.json`, so a build is two commands from the repository root:
 
 ``` Bash
-cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF
+cmake --preset release
+cmake --build --preset release
+./build/release/AteNika
 ```
 
-Accordingly, you can change these parameters to **Debug** and **ON**, if necessary.
+### Without presets
+
+``` Bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/AteNika
+```
+
+## Development
+
+### Format and lint
+
+The equivalent of `cargo fmt` + `cargo clippy`. Needs `clang-format` and `clang-tidy`:
+
+``` Bash
+bash check.sh          # reformat in place, then lint
+```
+
+CI pins clang-format 18.1.8. Match it locally.
+
+``` Bash
+pipx install clang-format==18.1.8
+```
+
+### Sanitizers
+
+The suite under AddressSanitizer and UndefinedBehaviorSanitizer. They are catches out-of-bounds
+table indexing and undefined behaviour, which a bitboard engine hits silently rather than
+crashing. Roughly 7x slower than the `tests` preset.
+
+``` Bash
+cmake --preset sanitize
+cmake --build --preset sanitize
+ctest --preset sanitize
+```
 
 ## Inspired by resources
 
 ### GitHub
 
 [Shallow Blue](https://github.com/GunshipPenguin/shallow-blue) a lot  
-[Natrix](https://github.com/gth-other/Natrix)  
 [Stockfish](https://github.com/official-stockfish/Stockfish)  
 
 ### Other
@@ -39,4 +68,4 @@ Accordingly, you can change these parameters to **Debug** and **ON**, if necessa
 [Chessprogramming Wiki](https://www.chessprogramming.org/Main_Page)  
 [Chess Database Information](https://chess.stackexchange.com/questions/18046/what-are-the-biggest-free-chess-game-databases-is-it-legal-to-download-games-fr)  
 [FICS Database](https://www.ficsgames.org/)  
-[UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html)  
+[UCI protocol](https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf#file-uci-protocol-specification-txt)  

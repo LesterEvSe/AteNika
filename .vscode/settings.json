@@ -1,0 +1,20 @@
+{
+  "clangd.arguments": [
+    "--compile-commands-dir=build/tests",
+    "--clang-tidy",
+    "--header-insertion=never",
+    "--background-index"
+  ],
+
+  "C_Cpp.intelliSenseEngine": "disabled",
+
+  // Format on save, using .clang-format from the repo root.
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true
+  },
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true
+  }
+}

@@ -1,0 +1,513 @@
+#include "core/board.hpp"
+
+#include <format>
+#include <sstream> // for std::istringstream in constructor
+
+#include "bitboard/attacks.hpp"
+#include "bitboard/bitfunc.hpp"
+
+namespace {
+  // Lowercase is black, as in FEN.
+  constexpr char PIECE_CHAR[COLOR_SIZE][PIECE_SIZE] = {
+      {'p', 'n', 'b', 'r', 'q', 'k'},
+      {'P', 'N', 'B', 'R', 'Q', 'K'},
+  };
+
+  char piece_char(const Board &board, uint8_t cell) {
+    const bitboard square = ONE << cell;
+
+    for (const Color color : {BLACK, WHITE})
+      for (const PieceType piece : PIECES)
+        if (board.get_pieces(color, piece) & square)
+          return PIECE_CHAR[color][piece];
+
+    return '\0';
+  }
+
+  // Every castle asks the same three questions and differs only in constants:
+  // are the squares between king and rook vacant, and is any square the king
+  // stands on or crosses attacked.
+  struct CastlePath {
+    bitboard empty;
+    uint8_t king, through, dest;
+  };
+
+  constexpr CastlePath WHITE_KS{(ONE << f1) | (ONE << g1), e1, f1, g1};
+  constexpr CastlePath WHITE_QS{(ONE << b1) | (ONE << c1) | (ONE << d1), e1, d1, c1};
+  constexpr CastlePath BLACK_KS{(ONE << f8) | (ONE << g8), e8, f8, g8};
+  constexpr CastlePath BLACK_QS{(ONE << b8) | (ONE << c8) | (ONE << d8), e8, d8, c8};
+
+  bool path_is_clear(const Board &board, Color side, const CastlePath &path) {
+    if ((board.get_free_cells() & path.empty) != path.empty)
+      return false;
+
+    return !board.under_attack(side, path.king) && !board.under_attack(side, path.through) &&
+           !board.under_attack(side, path.dest);
+  }
+} // namespace
+
+// example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
+// start from last row. lowercase letters - black, uppercase - white
+// p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
+Board::Board(const std::string &short_fen) {
+  std::istringstream iss(short_fen);
+  std::string pieces;
+  iss >> pieces;
+
+  int8_t pos = 56;
+  for (uint16_t i = 0; i < pieces.size(); ++i, ++pos)
+    switch (pieces[i]) {
+      case 'p': m_pieces[BLACK][PAWN] |= (ONE << pos); break;
+      case 'r': m_pieces[BLACK][ROOK] |= (ONE << pos); break;
+      case 'n': m_pieces[BLACK][KNIGHT] |= (ONE << pos); break;
+      case 'b': m_pieces[BLACK][BISHOP] |= (ONE << pos); break;
+      case 'k': m_pieces[BLACK][KING] |= (ONE << pos); break;
+      case 'q': m_pieces[BLACK][QUEEN] |= (ONE << pos); break;
+
+      case 'P': m_pieces[WHITE][PAWN] |= (ONE << pos); break;
+      case 'R': m_pieces[WHITE][ROOK] |= (ONE << pos); break;
+      case 'N': m_pieces[WHITE][KNIGHT] |= (ONE << pos); break;
+      case 'B': m_pieces[WHITE][BISHOP] |= (ONE << pos); break;
+      case 'K': m_pieces[WHITE][KING] |= (ONE << pos); break;
+      case 'Q': m_pieces[WHITE][QUEEN] |= (ONE << pos); break;
+
+      case '/': pos -= 17; break; // Because we have pos increment at the end
+      default: pos += static_cast<int8_t>(pieces[i] - '1'); // Because of increment too
+    }
+
+  char move;
+  iss >> move;
+  m_player_move = move == 'w' ? WHITE : BLACK;
+
+  std::string castling;
+  iss >> castling;
+  for (char i : castling)
+    switch (i) {
+      case 'K': m_castling_rights |= 1; break;
+      case 'Q': m_castling_rights |= 2; break;
+      case 'k': m_castling_rights |= 4; break;
+      case 'q': m_castling_rights |= 8; break;
+      default: break;
+    }
+
+  std::string en_passant;
+  iss >> en_passant;
+  if (en_passant == "-")
+    m_en_passant_cell = ZERO;
+  else
+    m_en_passant_cell = get_cell(en_passant);
+
+  // istream has no uint8_t overload that reads a number, so parse as int and
+  // narrow explicitly — MSVC /W4 rejects the implicit form (C4244).
+  int temp_ply;
+  iss >> temp_ply;
+  m_ply = static_cast<uint8_t>(temp_ply);
+
+  iss >> temp_ply;
+  m_moves = static_cast<int16_t>(2 * temp_ply + (m_player_move == BLACK));
+  update_bitboards();
+
+  // m_hash is initialized, after the rest of the Board fields are initialized
+  m_hash.set_hash(*this);
+}
+
+void Board::update_bitboards() {
+  m_side[WHITE] = m_pieces[WHITE][PAWN] | m_pieces[WHITE][ROOK] | m_pieces[WHITE][KNIGHT] |
+                  m_pieces[WHITE][BISHOP] | m_pieces[WHITE][KING] | m_pieces[WHITE][QUEEN];
+
+  m_side[BLACK] = m_pieces[BLACK][PAWN] | m_pieces[BLACK][ROOK] | m_pieces[BLACK][KNIGHT] |
+                  m_pieces[BLACK][BISHOP] | m_pieces[BLACK][KING] | m_pieces[BLACK][QUEEN];
+
+  m_all = m_side[WHITE] | m_side[BLACK];
+}
+
+bool operator==(const Board &left, const Board &right) { return left.m_hash == right.m_hash; }
+
+Color Board::get_curr_move() const { return m_player_move; }
+Color Board::get_opponent_move() const { return m_player_move == WHITE ? BLACK : WHITE; }
+
+bitboard Board::get_attacks_for_cell(Color color, PieceType type, uint8_t cell) const {
+  bitboard free_cells = ~m_all;
+  switch (type) {
+    case PAWN: return Attacks::get_pawn_attacks(color, cell) & free_cells;
+    case KNIGHT: return Attacks::get_knight_attacks(cell) & free_cells;
+    case BISHOP: return Attacks::get_bishop_attacks(cell, m_all);
+    case ROOK: return Attacks::get_rook_attacks(cell, m_all);
+    case QUEEN: return Attacks::get_queen_attacks(cell, m_all);
+    case KING: return Attacks::get_king_attacks(cell);
+    default: return ZERO;
+  }
+}
+bitboard Board::get_pieces(Color color, PieceType type) const { return m_pieces[color][type]; }
+bitboard Board::get_side_pieces(Color color) const { return m_side[color]; }
+bitboard Board::get_all_pieces() const { return m_all; }
+bitboard Board::get_free_cells() const { return ~m_all; }
+bool Board::curr_player_has_big_pieces() const {
+  return m_pieces[m_player_move][KNIGHT] | m_pieces[m_player_move][BISHOP] |
+         m_pieces[m_player_move][ROOK] | m_pieces[m_player_move][QUEEN];
+}
+
+uint8_t Board::get_ply() const { return m_ply; }
+ZobristHash Board::get_zob_hash() const { return m_hash; }
+uint8_t Board::get_en_passant() const { return m_en_passant_cell; }
+
+bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
+bool Board::get_white_qs_castle() const { return m_castling_rights & 2; }
+bool Board::get_black_ks_castle() const { return m_castling_rights & 4; }
+bool Board::get_black_qs_castle() const { return m_castling_rights & 8; }
+
+bool Board::can_white_ks_castle() const {
+  return get_white_ks_castle() && path_is_clear(*this, WHITE, WHITE_KS);
+}
+bool Board::can_white_qs_castle() const {
+  return get_white_qs_castle() && path_is_clear(*this, WHITE, WHITE_QS);
+}
+bool Board::can_black_ks_castle() const {
+  return get_black_ks_castle() && path_is_clear(*this, BLACK, BLACK_KS);
+}
+bool Board::can_black_qs_castle() const {
+  return get_black_qs_castle() && path_is_clear(*this, BLACK, BLACK_QS);
+}
+
+
+PieceType Board::get_piece_at(Color color, uint8_t index) const {
+  bitboard field = ONE << index;
+
+  if (field & m_pieces[color][PAWN])
+    return PAWN;
+  if (field & m_pieces[color][KNIGHT])
+    return KNIGHT;
+  if (field & m_pieces[color][BISHOP])
+    return BISHOP;
+  if (field & m_pieces[color][ROOK])
+    return ROOK;
+  if (field & m_pieces[color][QUEEN])
+    return QUEEN;
+  if (field & m_pieces[color][KING])
+    return KING;
+
+  std::string_view player = color == WHITE ? "white" : "black";
+  error(std::format("{} has not piece at {} cell", player, FIELD[index]));
+  return NONE; // Will never reach this line
+}
+
+bool Board::king_in_check(Color color) const {
+  bitboard pieces = get_pieces(color, KING);
+  uint8_t king_cell = lsb(pieces);
+  return under_attack(color, king_cell);
+}
+
+// This allows us not to go through absolutely all the pieces in order
+// to say whether some piece attack this cell or not.
+//
+// Main idea. If on the current square there is for example a WHITE KNIGHT,
+// and it attacks BLACK KNIGHT, therefore the cell under attack.
+bool Board::under_attack(Color defender, uint8_t cell) const {
+  Color attacker = get_opposite_move(defender);
+  if (get_pieces(attacker, PAWN) & Attacks::get_pawn_attacks(defender, cell))
+    return true;
+  if (get_pieces(attacker, KNIGHT) & Attacks::get_knight_attacks(cell))
+    return true;
+  if (get_pieces(attacker, KING) & Attacks::get_king_attacks(cell))
+    return true;
+
+  // Sliding Attacks
+  bitboard blockers = get_all_pieces();
+  if ((get_pieces(attacker, ROOK) | get_pieces(attacker, QUEEN)) &
+      Attacks::get_rook_attacks(cell, blockers))
+    return true;
+
+  if ((get_pieces(attacker, BISHOP) | get_pieces(attacker, QUEEN)) &
+      Attacks::get_bishop_attacks(cell, blockers))
+    return true;
+  return false;
+}
+
+void Board::add_piece(Color color, PieceType piece, uint8_t cell) {
+  set(m_pieces[color][piece], cell);
+  m_hash.xor_piece(color, piece, cell);
+}
+
+void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
+  reset(m_pieces[color][piece], cell);
+  m_hash.xor_piece(color, piece, cell);
+}
+
+bool Board::threefold_rule() const {
+  uint96 hash = m_hash.get_hash();
+  uint8_t repetitions = 0;
+  uint16_t ind = m_moves;
+
+  for (uint8_t ply = m_ply; ply > 0; --ply)
+    if (m_history[--ind].hash == hash)
+      ++repetitions;
+  return repetitions >= 3;
+}
+
+void Board::make(const Move &move) {
+  m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights};
+
+  if (m_en_passant_cell) {
+    m_hash.xor_en_passant(m_en_passant_cell);
+    m_en_passant_cell = ZERO;
+  }
+  ++m_ply;
+
+  uint8_t to = move.get_to_cell();
+  remove_piece(m_player_move, move.get_move_piece(), move.get_from_cell());
+  add_piece(m_player_move, move.get_move_piece(), to);
+
+  switch (move.get_flag()) {
+    case Move::CAPTURE: remove_piece(get_opponent_move(), move.get_captured_piece(), to); break;
+
+    case Move::LONG_PAWN_MOVE:
+      m_en_passant_cell = (m_player_move == WHITE) ? to - 8 : to + 8;
+      m_hash.xor_en_passant(m_en_passant_cell);
+      break;
+
+    // Castling rights are not hashed here: the diff at the end of make()
+    // covers every way a right can be lost, castling included.
+    case Move::QSIDE_CASTLING: {
+      uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+      remove_piece(m_player_move, ROOK, rook_cell);
+      add_piece(m_player_move, ROOK, rook_cell + 3);
+      break;
+    }
+    case Move::KSIDE_CASTLING: {
+      uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+      remove_piece(m_player_move, ROOK, rook_cell);
+      add_piece(m_player_move, ROOK, rook_cell - 2);
+      break;
+    }
+    case Move::EN_PASSANT: {
+      uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
+      remove_piece(get_opponent_move(), PAWN, captured_pawn);
+      break;
+    }
+    case Move::CAPTURE_PROMOTION:
+      remove_piece(get_opponent_move(), move.get_captured_piece(), to);
+      [[fallthrough]];
+
+    case Move::PROMOTION:
+      remove_piece(m_player_move, move.get_move_piece(), to);
+      add_piece(m_player_move, move.get_promotion_piece(), to);
+      break;
+
+    default: // Move::QUIET
+      m_ply = (move.get_move_piece() == PAWN) ? ZERO : m_ply;
+      break;
+  }
+
+  if (move.get_flag() != Move::QUIET)
+    m_ply = ZERO;
+
+  update_bitboards();
+  m_player_move = get_opponent_move();
+  m_hash.xor_move();
+
+  // A right can disappear four ways: the king moves, a rook moves, a rook is
+  // captured on its home square, or the side castles. All four are already
+  // expressed by the CASTLING table, so hash whichever bits it clears rather
+  // than trying to catch each case separately.
+  const uint8_t old_rights = m_castling_rights;
+  m_castling_rights &= CASTLING[move.get_from_cell()] & CASTLING[to];
+
+  const uint8_t lost = old_rights ^ m_castling_rights;
+  if (lost & 1)
+    m_hash.xor_white_ks_castling();
+  if (lost & 2)
+    m_hash.xor_white_qs_castling();
+  if (lost & 4)
+    m_hash.xor_black_ks_castling();
+  if (lost & 8)
+    m_hash.xor_black_qs_castling();
+
+#ifdef ATENIKA_DEBUG_HASH
+  verify_hash(static_cast<std::string>(move));
+#endif
+}
+
+#ifdef ATENIKA_DEBUG_HASH
+// Compares the incrementally maintained key against a full recompute. Enabled by
+// -DATENIKA_DEBUG_HASH so it can run on an optimized build: it needs millions of
+// nodes to reach the odd cases, which a Debug build is far too slow for.
+// Deliberately not assert(), which NDEBUG would strip out of a Release build.
+void Board::verify_hash(const std::string &context) const {
+  ZobristHash recomputed;
+  recomputed.set_hash(*this);
+
+  if (!(recomputed == m_hash))
+    error("Zobrist mismatch after " + context + "\nFEN: " + get_fen() + "\n");
+}
+#endif
+
+void Board::unmake(const Move &move) {
+  // Recover important data from history
+  const HistoryNode &hnode = m_history[--m_moves];
+  m_hash = hnode.hash;
+  m_ply = hnode.ply;
+  m_en_passant_cell = hnode.ep;
+  m_castling_rights = hnode.castling_rights; // or we can do |=
+
+  m_player_move = get_opponent_move();
+  uint8_t to = move.get_to_cell();
+
+  switch (move.get_flag()) {
+    case Move::CAPTURE:
+      set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+      reset(m_pieces[m_player_move][move.get_move_piece()], to);
+
+      set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
+      break;
+    case Move::QSIDE_CASTLING: {
+      set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+      reset(m_pieces[m_player_move][move.get_move_piece()], to);
+
+      uint8_t rook_cell = (m_player_move == WHITE) ? a1 : a8;
+      set(m_pieces[m_player_move][ROOK], rook_cell);
+      reset(m_pieces[m_player_move][ROOK], rook_cell + 3);
+
+      break;
+    }
+    case Move::KSIDE_CASTLING: {
+      set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+      reset(m_pieces[m_player_move][move.get_move_piece()], to);
+
+      uint8_t rook_cell = (m_player_move == WHITE) ? h1 : h8;
+      set(m_pieces[m_player_move][ROOK], rook_cell);
+      reset(m_pieces[m_player_move][ROOK], rook_cell - 2);
+      break;
+    }
+    case Move::EN_PASSANT: {
+      set(m_pieces[m_player_move][PAWN], move.get_from_cell());
+      reset(m_pieces[m_player_move][PAWN], move.get_to_cell());
+
+      uint8_t captured_pawn = (m_player_move == WHITE) ? to - 8 : to + 8;
+      set(m_pieces[get_opponent_move()][PAWN], captured_pawn);
+      break;
+    }
+    case Move::CAPTURE_PROMOTION:
+      set(m_pieces[get_opponent_move()][move.get_captured_piece()], to);
+      [[fallthrough]];
+
+    case Move::PROMOTION:
+      set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+      reset(m_pieces[m_player_move][move.get_promotion_piece()], to);
+      break;
+    default: // Move::QUIET and Move::LONG_PAWN_MOVE
+      // new code here
+      set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
+      reset(m_pieces[m_player_move][move.get_move_piece()], to);
+      break;
+  }
+  update_bitboards();
+}
+
+void Board::make_null_move() {
+  m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights};
+  if (m_en_passant_cell) {
+    m_hash.xor_en_passant(m_en_passant_cell);
+    m_en_passant_cell = ZERO;
+  }
+  ++m_ply;
+
+  m_player_move = get_opponent_move();
+  m_hash.xor_move();
+}
+
+void Board::unmake_null_move() {
+  const HistoryNode &hnode = m_history[--m_moves];
+  m_hash = hnode.hash;
+  --m_ply;
+  m_en_passant_cell = hnode.ep;
+  // It is possible not to reinstate castling rights
+
+  m_player_move = get_opponent_move();
+}
+
+std::string Board::get_fen() const {
+  std::string fen;
+
+  for (int8_t row = 7; row >= 0; --row) {
+    // We can use char, because symbols <= '9'
+    char empty = '0';
+
+    for (uint8_t col = 0; col < 8; ++col) {
+      const char piece = piece_char(*this, static_cast<uint8_t>(row * 8 + col));
+
+      if (!piece) {
+        ++empty;
+        continue;
+      }
+
+      if (empty != '0') {
+        fen += empty;
+        empty = '0';
+      }
+
+      fen += piece;
+    }
+
+    if (empty != '0')
+      fen += empty;
+    if (row)
+      fen += '/';
+  }
+
+  fen += m_player_move == WHITE ? " w " : " b ";
+  if (get_white_ks_castle())
+    fen += 'K';
+  if (get_white_qs_castle())
+    fen += 'Q';
+  if (get_black_ks_castle())
+    fen += 'k';
+  if (get_black_qs_castle())
+    fen += 'q';
+
+  // if m_castling_rights == 0
+  if (fen.back() == ' ')
+    fen += "- ";
+  else
+    fen += ' ';
+
+  if (m_en_passant_cell) {
+    fen += FIELD[m_en_passant_cell];
+    fen += ' ';
+  } else {
+    fen += "- ";
+  }
+  return fen + std::to_string(m_ply) + " " + std::to_string(m_moves / 2);
+}
+
+void Board::display_all() const {
+  std::cout << *this;
+  std::cout << "Fen: " << get_fen() << '\n';
+  // uint96 has an operator<< but no std::formatter, so this stays a stream insert.
+  std::cout << "Key: " << m_hash.get_hash() << "\n\n";
+}
+
+namespace {
+  // File letters and border pipes sit at matching offsets, so these two must be
+  // edited together with the rank rows below or the grid skews.
+  constexpr const char *FILE_LABELS = "     A B C D E F G H";
+  constexpr const char *BORDER = "   +-----------------+";
+} // namespace
+
+std::ostream &operator<<(std::ostream &out, const Board &board) {
+  out << FILE_LABELS << '\n' << BORDER << '\n';
+
+  for (int8_t row = 7; row >= 0; --row) {
+    out << ' ' << row + 1 << " |";
+
+    for (uint8_t col = 0; col < 8; ++col) {
+      const char piece = piece_char(board, static_cast<uint8_t>(row * 8 + col));
+      out << ' ' << (piece ? piece : '.');
+    }
+
+    out << " | " << row + 1 << '\n';
+  }
+  out << BORDER << '\n' << FILE_LABELS << "\n\n";
+
+  out << (board.get_curr_move() == WHITE ? " White" : " Black") << " to move\n\n";
+  return out;
+}

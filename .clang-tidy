@@ -1,0 +1,37 @@
+# Curated rather than "everything": a bitboard engine legitimately uses C
+# arrays, raw indexing and dense numeric constants, so the cppcoreguidelines and
+# magic-number checks would fire hundreds of times on correct code.
+
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  clang-analyzer-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-equals-default,
+  modernize-use-emplace,
+  modernize-redundant-void-arg,
+  modernize-loop-convert,
+  modernize-use-nodiscard,
+  readability-misleading-indentation,
+  readability-redundant-control-flow,
+  readability-simplify-boolean-expr,
+  readability-const-return-type,
+  readability-non-const-parameter,
+  misc-definitions-in-headers,
+  misc-unused-parameters,
+  misc-unused-using-decls,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-throwing-static-initialization,
+
+# The disabled bugprone checks fire on deliberate engine idioms: (from, to)
+# square pairs, uint8_t/int16_t/int32_t transitions, row * 8 + col, and the
+# namespace-scope tables that the existing init() functions fill.
+
+HeaderFilterRegex: '.*\.hpp$'
+WarningsAsErrors: ''
+FormatStyle: file

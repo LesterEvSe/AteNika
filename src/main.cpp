@@ -1,25 +1,18 @@
-#include "bitfunc.hpp"
-#include "zobrist_hash.hpp"
-#include "rays.hpp"
-#include "attacks.hpp"
-#include "mvv_lva.hpp"
-#include "eval.hpp"
-#include "search.hpp"
-#include "interface.hpp"
-//#include "pgn_parser.hpp"
+#include "bitboard/attacks.hpp"
+#include "bitboard/rays.hpp"
+#include "cli/uci.hpp"
+#include "core/zobrist_hash.hpp"
+#include "eval/eval.hpp"
+#include "search/mvv_lva.hpp"
+#include "search/search.hpp"
 
 int main() {
-    init_bits_pre_calculation(); // Must be at the beginning!
-    ZobristHash::init();
-    Rays::init();
-    Attacks::init(); // Must be init after Rays
-    MvvLva::init();
-    Eval::init();
-    Search::init();
-
-    // Data take from https://www.ficsgames.org/download.html
-    // PGNParser::parse("../ficsgamesdb_2020_CvC_nomovetimes_317502.pgn");
-//    Uci::init();
-    Uci::start();
-    return 0;
+  ZobristHash::init();
+  Rays::init();
+  Attacks::init(); // Must be init after Rays
+  MvvLva::init();
+  Eval::init();
+  Search::init();
+  Uci::start();
+  return 0;
 }

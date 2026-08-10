@@ -1,0 +1,106 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "release",
+      "displayName": "Release — portable",
+      "description": "Distributable build. x86-64-v3 baseline plus LTO. For publish.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_ARCH": "x86-64-v3",
+        "ATENIKA_NATIVE": "OFF",
+        "ATENIKA_LTO": "ON"
+      }
+    },
+    {
+      "name": "native",
+      "displayName": "Release — native",
+      "description": "Tuned for the building machine. Use for local SPRT and benchmarking; the binary may crash on other CPUs.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_NATIVE": "ON",
+        "ATENIKA_LTO": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "No optimization, no LTO, asserts live.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ATENIKA_LTO": "OFF"
+      }
+    },
+    {
+      "name": "tests",
+      "displayName": "Tests",
+      "description": "Optimized build of the GoogleTest suite, so perft finishes in seconds rather than minutes.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ATENIKA_ARCH": "x86-64-v3",
+        "ATENIKA_LTO": "ON",
+        "ATENIKA_BUILD_TESTS": "ON",
+        "ATENIKA_WERROR": "ON"
+      }
+    },
+    {
+      "name": "sanitize",
+      "displayName": "Sanitizers — address + undefined",
+      "description": "The test suite under ASan and UBSan. Roughly 7x slower than the tests preset, so it is a separate build rather than something the other presets carry.",
+      "inherits": "base",
+      "condition": { "type": "notEquals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ATENIKA_BUILD_TESTS": "ON",
+        "ATENIKA_LTO": "OFF",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release", "configuration": "Release" },
+    { "name": "native",  "configurePreset": "native",  "configuration": "Release" },
+    { "name": "debug",    "configurePreset": "debug",    "configuration": "Debug"          },
+    { "name": "tests",    "configurePreset": "tests",    "configuration": "Release"        },
+    { "name": "sanitize", "configurePreset": "sanitize", "configuration": "RelWithDebInfo" }
+  ],
+
+  "testPresets": [
+    {
+      "name": "tests",
+      "configurePreset": "tests",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "fast",
+      "configurePreset": "tests",
+      "configuration": "Release",
+      "description": "Everything except the perft suite run in a few milliseconds, for use as a pre-commit check.",
+      "filter": { "exclude": { "name": "Perft" } },
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "sanitize",
+      "configurePreset": "sanitize",
+      "configuration": "RelWithDebInfo",
+      "description": "The full suite, perft included: millions of make/unmake cycles is what gives the sanitizers something to find.",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" }
+    }
+  ]
+}

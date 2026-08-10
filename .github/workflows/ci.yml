@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+# Supersede stale runs: pushing three times in a minute cancels the first two.
+# main is exempt, since those runs are the record of what passed.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+# The default token can write to the repo. Nothing here needs that.
+permissions:
+  contents: read
+
+env:
+  # Oldest version that formats this tree identically to a modern one, and the
+  # version Ubuntu ships, so no third-party apt repo is needed. Run the same
+  # locally:  pipx install clang-format==18.1.8
+  CLANG_VERSION: "18"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # pip pins the exact build; apt's clang-format is a different patch level.
+      - name: Install clang-format
+        run: pip install clang-format==18.1.8
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-$CLANG_VERSION clang-tidy-$CLANG_VERSION
+          # check.sh calls the unversioned names; Debian installs versioned ones.
+          sudo ln -sf /usr/bin/clang-$CLANG_VERSION          /usr/local/bin/clang
+          sudo ln -sf /usr/bin/clang++-$CLANG_VERSION        /usr/local/bin/clang++
+          sudo ln -sf /usr/bin/clang-tidy-$CLANG_VERSION     /usr/local/bin/clang-tidy
+          sudo ln -sf /usr/bin/run-clang-tidy-$CLANG_VERSION /usr/local/bin/run-clang-tidy
+
+      # Debug info. Check it, if something went wrong.
+      - name: Tool versions
+        run: |
+          clang-format --version
+          clang-tidy --version
+
+      - name: check.sh -n
+        env:
+          CC: clang # so compile_commands.json holds clang flags, not GCC's
+          CXX: clang++
+          JOBS: 2 # clang-analyzer can exceed 1 GB per process
+        run: bash check.sh -n
+
+      # A matrix cannot read `env`, so the two files each name their compiler
+      # and this asserts they agree. Drift would otherwise ship a release built
+      # with a toolchain nothing here ever tested.
+      - name: Release toolchain is one CI tests
+        run: |
+          v=$(grep -oP 'GCC_VERSION:\s*"\K[0-9]+' .github/workflows/release.yml)
+          grep -q "g++-$v" .github/workflows/ci.yml ||
+            { echo "::error::release.yml builds with g++-$v, which ci.yml does not test"; exit 1; }
+
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Do not cancel the siblings when one fails: if MSVC breaks you still want
+      # to know whether GCC did too, in the same run.
+      fail-fast: false
+      matrix:
+        include:
+          # pkg is the apt package; cxx is the binary it installs. They differ
+          # for clang: the clang-18 package provides clang++-18.
+          - { name: Linux GCC 14, os: ubuntu-24.04, cc: gcc-14, cxx: g++-14, pkg: g++-14 }
+          - { name: Linux Clang 18, os: ubuntu-24.04, cc: clang-18, cxx: clang++-18, pkg: clang-18 }
+          - { name: Windows MSVC, os: windows-2022, cc: "", cxx: "", pkg: "" } # empty => CMake finds cl.exe
+          # release.yml ships a macOS binary. Without this the first macOS build
+          # in the project's life would happen during a release, where a failure
+          # blocks it. arm64, so -march=x86-64-v3 is probed and skipped.
+          - { name: macOS AppleClang, os: macos-14, cc: "", cxx: "", pkg: "" }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compiler
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.pkg }}
+
+      # The tests preset carries ATENIKA_WERROR=ON, so this step is both
+      # "builds clean" and "builds warning-free".
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake --preset tests
+
+      - name: Build
+        run: cmake --build --preset tests --parallel
+
+      - name: Test
+        run: ctest --preset tests
+
+  # Catches what -Werror structurally cannot: an out-of-bounds index into a
+  # [64] table returns a plausible bitboard and the engine plays on silently.
+  sanitizers:
+    name: ASan + UBSan  # AddressSanitizer and UndefinedBehaviorSanitizer
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compiler
+        run: sudo apt-get update && sudo apt-get install -y clang-$CLANG_VERSION
+
+      - name: Configure
+        env:
+          CC: clang-18
+          CXX: clang++-18
+        run: cmake --preset sanitize
+
+      - name: Build
+        run: cmake --build --preset sanitize --parallel
+
+      # The preset compiles with -fno-sanitize-recover=all, so the first finding
+      # already aborts. These make a report fatal even if that flag is dropped.
+      - name: Test
+        env:
+          ASAN_OPTIONS: abort_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --preset sanitize
