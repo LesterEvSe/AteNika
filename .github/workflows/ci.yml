@@ -60,6 +60,15 @@ jobs:
           JOBS: 2 # clang-analyzer can exceed 1 GB per process
         run: bash check.sh -n
 
+      # A matrix cannot read `env`, so the two files each name their compiler
+      # and this asserts they agree. Drift would otherwise ship a release built
+      # with a toolchain nothing here ever tested.
+      - name: Release toolchain is one CI tests
+        run: |
+          v=$(grep -oP 'GCC_VERSION:\s*"\K[0-9]+' .github/workflows/release.yml)
+          grep -q "g++-$v" .github/workflows/ci.yml ||
+            { echo "::error::release.yml builds with g++-$v, which ci.yml does not test"; exit 1; }
+
   test:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -74,6 +83,10 @@ jobs:
           - { name: Linux GCC 14, os: ubuntu-24.04, cc: gcc-14, cxx: g++-14, pkg: g++-14 }
           - { name: Linux Clang 18, os: ubuntu-24.04, cc: clang-18, cxx: clang++-18, pkg: clang-18 }
           - { name: Windows MSVC, os: windows-2022, cc: "", cxx: "", pkg: "" } # empty => CMake finds cl.exe
+          # release.yml ships a macOS binary. Without this the first macOS build
+          # in the project's life would happen during a release, where a failure
+          # blocks it. arm64, so -march=x86-64-v3 is probed and skipped.
+          - { name: macOS AppleClang, os: macos-14, cc: "", cxx: "", pkg: "" }
 
     steps:
       - uses: actions/checkout@v4
