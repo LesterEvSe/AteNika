@@ -75,21 +75,18 @@ jobs:
       - name: Bench
         shell: bash
         run: |
+          mkdir -p dist
           printf 'bench\nquit\n' | "${{ matrix.bin }}" | tee bench.log
-          grep 'Nodes searched' bench.log | grep -oE '[0-9]+' > "bench-${{ matrix.name }}.txt"
+          grep 'Nodes searched' bench.log | grep -oE '[0-9]+' > "dist/bench-${{ matrix.name }}.txt"
 
       - name: Stage asset
         shell: bash
-        run: |
-          mkdir -p dist
-          cp "${{ matrix.bin }}" "dist/${{ matrix.asset }}"
+        run: cp "${{ matrix.bin }}" "dist/${{ matrix.asset }}"
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: |
-            dist/${{ matrix.asset }}
-            bench-${{ matrix.name }}.txt
+          path: dist/
 
   release:
     needs: build
