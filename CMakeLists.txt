@@ -35,6 +35,9 @@ add_library(atenika_core OBJECT
     src/bitboard/rays.cpp
     src/bitboard/attacks.cpp
 
+    src/cli/uci.cpp
+    src/cli/extras.cpp
+
     src/core/uint96.cpp
     src/core/zobrist_hash.cpp
     src/core/move.cpp
@@ -53,9 +56,6 @@ add_library(atenika_core OBJECT
     src/search/qmovepicker.cpp
     src/search/search.cpp
     src/search/bench.cpp
-
-    src/uci/uci.cpp
-    src/uci/extras.cpp
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")

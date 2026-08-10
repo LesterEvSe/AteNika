@@ -1,7 +1,7 @@
 #include "search/bench.hpp"
 
 #include <chrono>
-#include <iostream>
+#include <cstdio>
 #include <print>
 
 #include "core/board.hpp"
@@ -69,22 +69,22 @@ int64_t Bench::run(int depth) {
     total_nodes += nodes;
 
     Move *best = Search::get_best_move();
-    std::println(std::cout, "Position {}/{}  nodes {}  best {}", i + 1, POSITION_COUNT, nodes,
+    std::println("Position {}/{}  nodes {}  best {}", i + 1, POSITION_COUNT, nodes,
                  best ? static_cast<std::string>(*best) : "none");
     // Progress is only useful live, and stdout is fully buffered on a pipe.
-    std::cout.flush();
+    std::fflush(stdout);
   }
 
   const int64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                          std::chrono::steady_clock::now() - start)
                          .count();
 
-  std::println(std::cout, "\n===========================");
-  std::println(std::cout, "Depth          : {}", depth);
-  std::println(std::cout, "Positions      : {}", POSITION_COUNT);
-  std::println(std::cout, "Nodes searched : {}", total_nodes);
-  std::println(std::cout, "Time           : {} ms", ms);
-  std::println(std::cout, "NPS            : {}", total_nodes * 1000 / (ms + 1));
+  std::println("\n===========================");
+  std::println("Depth          : {}", depth);
+  std::println("Positions      : {}", POSITION_COUNT);
+  std::println("Nodes searched : {}", total_nodes);
+  std::println("Time           : {} ms", ms);
+  std::println("NPS            : {}", total_nodes * 1000 / (ms + 1));
 
   TTable::clear();
   Search::set_depth(static_cast<int16_t>(saved_depth));

@@ -1,6 +1,5 @@
 #include "movegen/perft.hpp"
 
-#include <iostream>
 #include <print>
 
 #include "movegen/movegen.hpp"
@@ -38,10 +37,10 @@ int64_t Perft::divide(Board &board, int depth) {
     int64_t nodes = depth == 1 ? 1 : run(board, depth - 1);
     board.unmake(move_list[i]);
 
-    std::println(std::cout, "{}: {}", static_cast<std::string>(move_list[i]), nodes);
+    std::println("{}: {}", static_cast<std::string>(move_list[i]), nodes);
     total += nodes;
   }
 
-  std::println(std::cout, "\nNodes searched: {}", total);
+  std::println("\nNodes searched: {}", total);
   return total;
 }

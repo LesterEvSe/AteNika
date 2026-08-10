@@ -1,10 +1,10 @@
 #include "bitboard/attacks.hpp"
 #include "bitboard/rays.hpp"
+#include "cli/uci.hpp"
 #include "core/zobrist_hash.hpp"
 #include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
-#include "uci/uci.hpp"
 
 int main() {
   ZobristHash::init();

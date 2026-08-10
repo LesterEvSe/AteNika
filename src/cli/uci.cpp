@@ -1,4 +1,4 @@
-#include "uci/uci.hpp"
+#include "cli/uci.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -9,12 +9,12 @@
 #include <string>
 #include <thread>
 
+#include "cli/extras.hpp"
+#include "cli/output.hpp"
 #include "core/board.hpp"
 #include "core/move.hpp"
 #include "search/search.hpp"
 #include "search/ttable.hpp"
-#include "uci/extras.hpp"
-#include "uci/output.hpp"
 
 // Defined by CMake from project(VERSION).
 #ifndef ATENIKA_VERSION
@@ -75,7 +75,7 @@ namespace {
       board = Board(fen);
 
     } else {
-      std::println(std::cerr, "Unknown position type: {}", token);
+      std::println(stderr, "Unknown position type: {}", token);
       return;
     }
 
@@ -92,7 +92,7 @@ namespace {
         board.make(move);
       } catch (const std::exception &e) {
         // Stop at the first bad move.
-        std::println(std::cerr, R"(Rejected move "{}": {})", notation, e.what());
+        std::println(stderr, R"(Rejected move "{}": {})", notation, e.what());
         return;
       }
     }
@@ -167,7 +167,7 @@ void Uci::start() {
 
     // Everything below reads or replaces the board the search thread is using.
     if (searching) {
-      std::println(std::cerr, "Busy searching, ignored: {}", input);
+      std::println(stderr, "Busy searching, ignored: {}", input);
       continue;
     }
 
@@ -194,7 +194,7 @@ void Uci::start() {
       // unprompted and one that gets an error back may refuse to start us.
 
     } else if (!Extras::dispatch(board, token, args)) {
-      std::println(std::cerr, "Unknown command: {}", input);
+      std::println(stderr, "Unknown command: {}", input);
     }
   }
 

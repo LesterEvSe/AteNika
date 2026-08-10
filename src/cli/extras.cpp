@@ -1,16 +1,17 @@
-#include "uci/extras.hpp"
+#include "cli/extras.hpp"
 
 #include <chrono>
+#include <cstdio>
 #include <exception>
 #include <iostream>
 
+#include "cli/output.hpp"
 #include "core/board.hpp"
 #include "core/move.hpp"
 #include "eval/eval.hpp"
 #include "movegen/perft.hpp"
 #include "search/bench.hpp"
 #include "search/search.hpp"
-#include "uci/output.hpp"
 
 namespace {
   using Output::reply;
@@ -29,8 +30,8 @@ namespace {
       return true;
 
     } catch (const std::exception &) {
-      // std::cerr has unitbuf set by the standard, so it flushes itself.
-      std::println(std::cerr, "{}", usage);
+      // stderr is unbuffered by default, so it needs no flush.
+      std::println(stderr, "{}", usage);
       return false;
     }
   }
@@ -79,7 +80,7 @@ namespace {
     std::string notation = first;
     do {
       if (!Move::isMove(notation)) {
-        std::println(std::cerr, "Not a move: {}", notation);
+        std::println(stderr, "Not a move: {}", notation);
         board = snapshot;
         return;
       }
@@ -89,7 +90,7 @@ namespace {
         board.make(move);
 
       } catch (const std::exception &e) {
-        std::println(std::cerr, R"(Rejected move "{}": {})", notation, e.what());
+        std::println(stderr, R"(Rejected move "{}": {})", notation, e.what());
         board = snapshot;
         return;
       }

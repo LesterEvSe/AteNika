@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <format>
-#include <iostream>
 #include <print>
 #include <string>
 
@@ -218,19 +218,19 @@ void Search::detail::_info(int depth, int elapsed) {
   if (!pv.empty())
     pv.pop_back();
 
-  std::println(std::cout, "info depth {} seldepth {} score {} nodes {} nps {} time {} pv {}", depth,
-               _seldepth, format_score(_best_score), _nodes, nps, elapsed, pv);
+  std::println("info depth {} seldepth {} score {} nodes {} nps {} time {} pv {}", depth, _seldepth,
+               format_score(_best_score), _nodes, nps, elapsed, pv);
 
   // moq — move ordering quality, the share of fail-highs that resolved on the
   // first move. Phase 2 reads it to judge whether staged generation is worth
   // the work, so it survives the move to UCI on the "info string" channel.
   if (_debug_info)
-    std::println(std::cout, "info string moq {}% fh {} fhf {}",
+    std::println("info string moq {}% fh {} fhf {}",
                  static_cast<int>(100.0 * static_cast<double>(_fhf) /
                                   static_cast<double>(_fh == 0 ? 1 : _fh)),
                  _fh, _fhf);
 
-  std::cout.flush();
+  std::fflush(stdout);
 }
 
 void Search::iter_deep(Board &board, bool print_info) {
