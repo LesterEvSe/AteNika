@@ -1,5 +1,4 @@
-#ifndef ATENIKA_UINT96_HPP
-#define ATENIKA_UINT96_HPP
+#pragma once
 
 #include <bitset>
 #include <cstdint>
@@ -26,5 +25,3 @@ public:
   // Required for hashing, because using a std::bitset in std::unordered_map
   [[nodiscard]] explicit operator std::bitset<96>() const;
 };
-
-#endif // ATENIKA_UINT96_HPP

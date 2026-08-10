@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and attach to
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  # Must be a compiler ci.yml also tests; its lint job fails if it is not.
+  GCC_VERSION: "14"
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing should not hide whether the others built.
+      fail-fast: false
+      matrix:
+        include:
+          # bin differs because Visual Studio is a multi-config generator and
+          # writes the executable into a per-configuration subdirectory.
+          - name: linux
+            os: ubuntu-24.04
+            bin: build/release/AteNika
+            asset: AteNika-linux-x86-64-v3
+          - name: windows
+            os: windows-2022
+            bin: build/release/Release/AteNika.exe
+            asset: AteNika-windows-x86-64.exe
+          - name: macos
+            os: macos-14
+            bin: build/release/AteNika
+            asset: AteNika-macos-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Install GCC
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y "g++-$GCC_VERSION"
+          echo "CXX=g++-$GCC_VERSION" >> "$GITHUB_ENV"
+
+      # The release preset is the project's own definition of a distributable
+      # build (x86-64-v3 plus LTO) so this cannot drift from it.
+      - name: Configure
+        shell: bash
+        run: cmake --preset release 2>&1 | tee configure.log
+
+      # CMakeLists only warns when check_ipo_supported fails, and a warning
+      # scrolls past in a log. Measured locally, this engine is ~1.8x slower
+      # without LTO.
+      - name: LTO must be on
+        shell: bash
+        run: |
+          grep -q 'LTO *: ON' configure.log ||
+            { echo "::error::LTO is off for ${{ matrix.name }}"; exit 1; }
+
+      - name: Build
+        run: cmake --build --preset release --parallel
+
+      # bench is the behaviour fingerprint. Three platforms cannot produce
+      # byte-identical binaries, so this is what "the same engine" means here.
+      - name: Bench
+        shell: bash
+        run: |
+          printf 'bench\nquit\n' | "${{ matrix.bin }}" | tee bench.log
+          grep 'Nodes searched' bench.log | grep -oE '[0-9]+' > "bench-${{ matrix.name }}.txt"
+
+      - name: Stage asset
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "${{ matrix.bin }}" "dist/${{ matrix.asset }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            dist/${{ matrix.asset }}
+            bench-${{ matrix.name }}.txt
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # A matrix job cannot see its siblings, so the comparison lands here.
+      - name: Platforms must agree on bench
+        run: |
+          cat artifacts/*/bench-*.txt
+          sort -u artifacts/*/bench-*.txt > unique.txt
+          [ "$(wc -l < unique.txt)" -eq 1 ] ||
+            { echo "::error::platforms disagree on bench, see above"; exit 1; }
+          echo "BENCH=$(cat unique.txt)" >> "$GITHUB_ENV"
+
+      # Draft, not published. The rating quoted in the description comes from
+      # playing the binary attached here, which cannot happen before it exists.
+      # So, rate a local build instead would describe a different toolchain.
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          {
+            echo "bench $BENCH — identical on Linux, Windows and macOS."
+            echo
+            echo "Rating: to be measured against this binary, then filled in here."
+          } > notes.md
+
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --title "AteNika $TAG" \
+            --notes-file notes.md \
+            artifacts/*/AteNika-*

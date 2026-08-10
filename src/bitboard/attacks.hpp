@@ -1,5 +1,4 @@
-#ifndef ATENIKA_ATTACKS_HPP
-#define ATENIKA_ATTACKS_HPP
+#pragma once
 
 #include "defs.hpp"
 
@@ -102,5 +101,3 @@ namespace Attacks::detail {
   void _init_knight_attacks();
   void _init_king_attacks();
 } // namespace Attacks::detail
-
-#endif // ATENIKA_ATTACKS_HPP

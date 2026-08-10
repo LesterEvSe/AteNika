@@ -1,5 +1,4 @@
-#ifndef ATENIKA_MOVEPICKER_HPP
-#define ATENIKA_MOVEPICKER_HPP
+#pragma once
 
 #include "core/move_list.hpp"
 #include "core/zobrist_hash.hpp"
@@ -15,5 +14,3 @@ public:
   [[nodiscard]] bool has_next() const;
   const Move &get_next(); // Using selection sorting in place, O(n) at a time
 };
-
-#endif // ATENIKA_MOVEPICKER_HPP

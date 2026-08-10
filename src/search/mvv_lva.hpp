@@ -1,5 +1,4 @@
-#ifndef ATENIKA_MVV_LVA_HPP
-#define ATENIKA_MVV_LVA_HPP
+#pragma once
 
 #include "defs.hpp"
 
@@ -22,5 +21,3 @@ namespace MvvLva {
   extern int32_t mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
   void init();
 }; // namespace MvvLva
-
-#endif // ATENIKA_MVV_LVA_HPP

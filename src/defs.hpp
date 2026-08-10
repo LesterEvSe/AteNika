@@ -1,5 +1,4 @@
-#ifndef ATENIKA_DEFS_HPP
-#define ATENIKA_DEFS_HPP
+#pragma once
 
 #include <cstdint>
 #include <limits> // std::numeric_limits<int32_t>::max()
@@ -108,5 +107,3 @@ constexpr uint64_t ZERO{0};
 constexpr uint64_t ONE{1};
 constexpr uint8_t MAX_PLY{100}; // fifty full moves rule without pawn moves or without captures
 constexpr int32_t INF = std::numeric_limits<int32_t>::max();
-
-#endif // ATENIKA_DEFS_HPP

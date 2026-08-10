@@ -1,5 +1,4 @@
-#ifndef ATENIKA_BOARD_HPP
-#define ATENIKA_BOARD_HPP
+#pragma once
 
 #include <ostream>
 #include <string>
@@ -144,8 +143,8 @@ public:
   void unmake_null_move();
 
   [[nodiscard]] std::string get_fen() const;
-  friend std::ostream &operator<<(std::ostream &out, const Board &board);
   void display_all() const;
 };
 
-#endif // ATENIKA_BOARD_HPP
+// Not a friend, because the whole rendering goes through the public accessors.
+std::ostream &operator<<(std::ostream &out, const Board &board);

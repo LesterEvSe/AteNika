@@ -38,8 +38,10 @@ void Movegen::gen_legal_moves() {
 
   for (uint8_t i = 0; i < m_moves.size(); ++i) {
     temp.make(m_moves[i]);
+
     if (!m_board.king_in_check(curr_player))
       m_legal_moves.emplace_back(m_moves[i]);
+
     temp.unmake(m_moves[i]);
   }
 }

@@ -37,6 +37,7 @@ QMovePicker::QMovePicker(MoveList *move_list, const ZobristHash &hash)
 }
 
 bool QMovePicker::has_next() const { return m_curr_node < m_size; }
+
 const Move &QMovePicker::get_next() {
   int32_t score = m_move_list[m_curr_node].get_score();
   uint8_t max_val_ind = m_curr_node;

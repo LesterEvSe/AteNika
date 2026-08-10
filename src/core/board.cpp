@@ -6,6 +6,46 @@
 #include "bitboard/attacks.hpp"
 #include "bitboard/bitfunc.hpp"
 
+namespace {
+  // Lowercase is black, as in FEN.
+  constexpr char PIECE_CHAR[COLOR_SIZE][PIECE_SIZE] = {
+      {'p', 'n', 'b', 'r', 'q', 'k'},
+      {'P', 'N', 'B', 'R', 'Q', 'K'},
+  };
+
+  char piece_char(const Board &board, uint8_t cell) {
+    const bitboard square = ONE << cell;
+
+    for (const Color color : {BLACK, WHITE})
+      for (const PieceType piece : PIECES)
+        if (board.get_pieces(color, piece) & square)
+          return PIECE_CHAR[color][piece];
+
+    return '\0';
+  }
+
+  // Every castle asks the same three questions and differs only in constants:
+  // are the squares between king and rook vacant, and is any square the king
+  // stands on or crosses attacked.
+  struct CastlePath {
+    bitboard empty;
+    uint8_t king, through, dest;
+  };
+
+  constexpr CastlePath WHITE_KS{(ONE << f1) | (ONE << g1), e1, f1, g1};
+  constexpr CastlePath WHITE_QS{(ONE << b1) | (ONE << c1) | (ONE << d1), e1, d1, c1};
+  constexpr CastlePath BLACK_KS{(ONE << f8) | (ONE << g8), e8, f8, g8};
+  constexpr CastlePath BLACK_QS{(ONE << b8) | (ONE << c8) | (ONE << d8), e8, d8, c8};
+
+  bool path_is_clear(const Board &board, Color side, const CastlePath &path) {
+    if ((board.get_free_cells() & path.empty) != path.empty)
+      return false;
+
+    return !board.under_attack(side, path.king) && !board.under_attack(side, path.through) &&
+           !board.under_attack(side, path.dest);
+  }
+} // namespace
+
 // example of short FEN: rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w Kq - 4
 // start from last row. lowercase letters - black, uppercase - white
 // p - pawn, r - rook, n - knight, b - bishop, k - king, q - queen
@@ -117,49 +157,16 @@ bool Board::get_black_ks_castle() const { return m_castling_rights & 4; }
 bool Board::get_black_qs_castle() const { return m_castling_rights & 8; }
 
 bool Board::can_white_ks_castle() const {
-  if (!get_white_ks_castle())
-    return false;
-
-  static const bitboard empty_cells = (ONE << f1) | (ONE << g1);
-  if ((get_free_cells() & empty_cells) != empty_cells)
-    return false;
-
-  // e1 - white king cell before castling and moves
-  return !under_attack(WHITE, e1) && !under_attack(WHITE, f1) && !under_attack(WHITE, g1);
+  return get_white_ks_castle() && path_is_clear(*this, WHITE, WHITE_KS);
 }
-
 bool Board::can_white_qs_castle() const {
-  if (!get_white_qs_castle())
-    return false;
-
-  static const bitboard empty_cells = (ONE << b1) | (ONE << c1) | (ONE << d1);
-  if ((get_free_cells() & empty_cells) != empty_cells)
-    return false;
-
-  return !under_attack(WHITE, e1) && !under_attack(WHITE, c1) && !under_attack(WHITE, d1);
+  return get_white_qs_castle() && path_is_clear(*this, WHITE, WHITE_QS);
 }
-
 bool Board::can_black_ks_castle() const {
-  if (!get_black_ks_castle())
-    return false;
-
-  static const bitboard empty_cells = (ONE << f8) | (ONE << g8);
-  if ((get_free_cells() & empty_cells) != empty_cells)
-    return false;
-
-  // e8 - black king cell before castling and moves
-  return !under_attack(BLACK, e8) && !under_attack(BLACK, f8) && !under_attack(BLACK, g8);
+  return get_black_ks_castle() && path_is_clear(*this, BLACK, BLACK_KS);
 }
-
 bool Board::can_black_qs_castle() const {
-  if (!get_black_qs_castle())
-    return false;
-
-  static const bitboard empty_cells = (ONE << b8) | (ONE << c8) | (ONE << d8);
-  if ((get_free_cells() & empty_cells) != empty_cells)
-    return false;
-
-  return !under_attack(BLACK, e8) && !under_attack(BLACK, c8) && !under_attack(BLACK, d8);
+  return get_black_qs_castle() && path_is_clear(*this, BLACK, BLACK_QS);
 }
 
 
@@ -192,7 +199,7 @@ bool Board::king_in_check(Color color) const {
 
 // This allows us not to go through absolutely all the pieces in order
 // to say whether some piece attack this cell or not.
-
+//
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
 bool Board::under_attack(Color defender, uint8_t cell) const {
@@ -426,43 +433,18 @@ std::string Board::get_fen() const {
     char empty = '0';
 
     for (uint8_t col = 0; col < 8; ++col) {
-      bitboard square = ONE << (row * 8 + col);
-      char piece = 0;
+      const char piece = piece_char(*this, static_cast<uint8_t>(row * 8 + col));
 
-      if (m_pieces[BLACK][PAWN] & square)
-        piece = 'p';
-      else if (m_pieces[BLACK][ROOK] & square)
-        piece = 'r';
-      else if (m_pieces[BLACK][KNIGHT] & square)
-        piece = 'n';
-      else if (m_pieces[BLACK][BISHOP] & square)
-        piece = 'b';
-      else if (m_pieces[BLACK][KING] & square)
-        piece = 'k';
-      else if (m_pieces[BLACK][QUEEN] & square)
-        piece = 'q';
-
-      else if (m_pieces[WHITE][PAWN] & square)
-        piece = 'P';
-      else if (m_pieces[WHITE][ROOK] & square)
-        piece = 'R';
-      else if (m_pieces[WHITE][KNIGHT] & square)
-        piece = 'N';
-      else if (m_pieces[WHITE][BISHOP] & square)
-        piece = 'B';
-      else if (m_pieces[WHITE][KING] & square)
-        piece = 'K';
-      else if (m_pieces[WHITE][QUEEN] & square)
-        piece = 'Q';
-      else
+      if (!piece) {
         ++empty;
-
-      if (!piece)
         continue;
+      }
+
       if (empty != '0') {
         fen += empty;
         empty = '0';
       }
+
       fen += piece;
     }
 
@@ -497,59 +479,35 @@ std::string Board::get_fen() const {
   return fen + std::to_string(m_ply) + " " + std::to_string(m_moves / 2);
 }
 
-std::ostream &operator<<(std::ostream &out, const Board &board) {
-  out << "   ";
-  for (char let = 'A'; let <= 'H'; ++let)
-    out << ' ' << let;
-  out << '\n';
-
-  for (int8_t row = 7; row >= 0; --row) {
-    out << row + 1 << " |";
-    for (uint8_t col = 0; col < 8; ++col) {
-      int8_t temp = row * 8 + col;
-      bitboard sq = ONE << temp;
-
-      if (board.m_pieces[BLACK][PAWN] & sq)
-        out << " p";
-      else if (board.m_pieces[BLACK][ROOK] & sq)
-        out << " r";
-      else if (board.m_pieces[BLACK][KNIGHT] & sq)
-        out << " n";
-      else if (board.m_pieces[BLACK][BISHOP] & sq)
-        out << " b";
-      else if (board.m_pieces[BLACK][KING] & sq)
-        out << " k";
-      else if (board.m_pieces[BLACK][QUEEN] & sq)
-        out << " q";
-
-      else if (board.m_pieces[WHITE][PAWN] & sq)
-        out << " P";
-      else if (board.m_pieces[WHITE][ROOK] & sq)
-        out << " R";
-      else if (board.m_pieces[WHITE][KNIGHT] & sq)
-        out << " N";
-      else if (board.m_pieces[WHITE][BISHOP] & sq)
-        out << " B";
-      else if (board.m_pieces[WHITE][KING] & sq)
-        out << " K";
-      else if (board.m_pieces[WHITE][QUEEN] & sq)
-        out << " Q";
-      else
-        out << " .";
-    }
-    out << '\n';
-  }
-  out << "\n   ";
-
-  for (char let = 'A'; let <= 'H'; ++let)
-    out << ' ' << let;
-  out << "\n\n";
-  return out;
-}
-
 void Board::display_all() const {
   std::cout << *this;
   std::cout << "Fen: " << get_fen() << '\n';
   // uint96 has an operator<< but no std::formatter, so this stays a stream insert.
   std::cout << "Key: " << m_hash.get_hash() << "\n\n";
+}
+
+namespace {
+  // File letters and border pipes sit at matching offsets, so these two must be
+  // edited together with the rank rows below or the grid skews.
+  constexpr const char *FILE_LABELS = "     A B C D E F G H";
+  constexpr const char *BORDER = "   +-----------------+";
+} // namespace
+
+std::ostream &operator<<(std::ostream &out, const Board &board) {
+  out << FILE_LABELS << '\n' << BORDER << '\n';
+
+  for (int8_t row = 7; row >= 0; --row) {
+    out << ' ' << row + 1 << " |";
+
+    for (uint8_t col = 0; col < 8; ++col) {
+      const char piece = piece_char(board, static_cast<uint8_t>(row * 8 + col));
+      out << ' ' << (piece ? piece : '.');
+    }
+
+    out << " | " << row + 1 << '\n';
+  }
+  out << BORDER << '\n' << FILE_LABELS << "\n\n";
+
+  out << (board.get_curr_move() == WHITE ? " White" : " Black") << " to move\n\n";
+  return out;
 }

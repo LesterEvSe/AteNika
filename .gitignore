@@ -1,3 +1,9 @@
+# Build info
 build/*
 .vscode/*
 !.vscode/settings.json
+
+# Engines, books and PGNs
+matches/*
+!matches/*.sh
+!matches/*.md

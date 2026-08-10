@@ -14,7 +14,7 @@ public:
     ZobristHash::init();
     Rays::init();
     Attacks::init();
-    std::cout << board;
+    // std::cout << board;
   }
 };
 

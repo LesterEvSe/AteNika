@@ -35,6 +35,9 @@ add_library(atenika_core OBJECT
     src/bitboard/rays.cpp
     src/bitboard/attacks.cpp
 
+    src/cli/uci.cpp
+    src/cli/extras.cpp
+
     src/core/uint96.cpp
     src/core/zobrist_hash.cpp
     src/core/move.cpp
@@ -53,15 +56,14 @@ add_library(atenika_core OBJECT
     src/search/qmovepicker.cpp
     src/search/search.cpp
     src/search/bench.cpp
-
-    src/uci/interface.cpp
-
-    src/book/pgn_parser.cpp
-    src/book/trie_node.cpp
-    src/book/book.cpp
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+# UCI "id name" has to carry the version: fastchess and ordo identify an engine
+# by that string, and a ladder of binaries all calling themselves "AteNika" is
+# unusable. Single source of truth is project(VERSION) above.
+target_compile_definitions(atenika_core PUBLIC ATENIKA_VERSION="${PROJECT_VERSION}")
 
 target_compile_features(atenika_core PUBLIC cxx_std_23)
 set_target_properties(atenika_core PROPERTIES
@@ -178,8 +180,9 @@ if (ATENIKA_BUILD_TESTS)
         tests/board_test.cpp
         tests/zob_hash_test.cpp
         tests/perft_test.cpp
-        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         tests/mate_test.cpp
+        tests/pv_test.cpp
+        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

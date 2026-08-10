@@ -1,10 +1,10 @@
 #include "bitboard/attacks.hpp"
 #include "bitboard/rays.hpp"
+#include "cli/uci.hpp"
 #include "core/zobrist_hash.hpp"
 #include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
-#include "uci/interface.hpp"
 
 int main() {
   ZobristHash::init();
@@ -13,8 +13,6 @@ int main() {
   MvvLva::init();
   Eval::init();
   Search::init();
-
-  // Data take from https://www.ficsgames.org/download.html
   Uci::start();
   return 0;
 }
