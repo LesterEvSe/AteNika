@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include <cstdint>
 #include <unordered_map>
 
 #include "core/move.hpp"
-#include "core/uint96.hpp"
 #include "core/zobrist_hash.hpp"
 
 struct TTEntry {
@@ -28,6 +28,6 @@ namespace TTable {
 } // namespace TTable
 
 namespace TTable::detail {
-  extern std::unordered_map<bits96, TTEntry> _ttable;
+  extern std::unordered_map<uint64_t, TTEntry> _ttable;
 
 } // namespace TTable::detail

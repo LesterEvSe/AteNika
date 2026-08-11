@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
@@ -10,7 +11,7 @@
 #include "core/zobrist_hash.hpp"
 
 struct HistoryNode {
-  uint96 hash;
+  uint64_t hash;
   uint8_t ply;
   uint8_t ep; // en_passant_cell
   uint8_t castling_rights;

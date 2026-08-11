@@ -35,3 +35,9 @@ TEST_F(ZobHashTest, make_one_move) {
 
   ASSERT_EQ(expected, board);
 }
+
+TEST_F(ZobHashTest, regression_castling) {
+  // same pieces, different castling rights
+  EXPECT_NE(Board("r3k2r/8/8/8/8/8/8/R3K2R w KQkq -").get_zob_hash().get_hash(),
+            Board("r3k2r/8/8/8/8/8/8/R3K2R w Kq   -").get_zob_hash().get_hash());
+}
