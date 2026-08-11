@@ -8,4 +8,3 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 
 | version | sha | bench | archived | rating |
 |---|---|---|---|---|
-| 0.2.0 | d7f5694  | 8831568    | 2026-08-09 |  |
