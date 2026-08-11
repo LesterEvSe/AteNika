@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2023 Yevhenii Sekhin
+
 #include "search/ttable.hpp"
 
 std::unordered_map<bits96, TTEntry> TTable::detail::_ttable;

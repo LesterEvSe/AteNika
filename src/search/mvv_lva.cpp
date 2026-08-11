@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2023 Yevhenii Sekhin
+
 #include "search/mvv_lva.hpp"
 
 int32_t MvvLva::mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
