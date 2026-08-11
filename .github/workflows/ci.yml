@@ -30,8 +30,8 @@ jobs:
       - uses: actions/checkout@v4
 
       # Ahead of the toolchain installs below, because it needs no toolchain.
-      - name: license.sh -n
-        run: bash license.sh -n
+      - name: spdx.sh -n
+        run: bash spdx.sh -n
 
       - uses: actions/setup-python@v5
         with:

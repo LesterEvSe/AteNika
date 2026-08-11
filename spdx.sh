@@ -2,13 +2,17 @@
 # The SPDX licence header on every source file. What check.sh is for formatting,
 # this is for the notice that says what licence the code is under.
 #
-#   bash license.sh          insert the header where it is missing
-#   bash license.sh -n       report only, change nothing (use in CI or pre-commit)
+#   bash spdx.sh          insert the header where it is missing
+#   bash spdx.sh -n       report only, change nothing (use in CI or pre-commit)
 #
 # Why per-file at all, when LICENSE sits at the repo root: a root file does not
 # travel with a source file copied out of the tree, and the GPL-3 text is
 # byte-identical for -only and -or-later — the SPDX line is the only place this
 # project actually states which of the two it is.
+#
+# Not named license.sh: GitHub's licence detector matches any root file whose
+# name starts with "licen[sc]e", so that name put this script into the contest
+# for "what licence is this repo under".
 #
 set -uo pipefail
 cd "$(dirname "$0")"
@@ -20,7 +24,7 @@ MODE=fix
 case "${1:-}" in
     "")  ;;
     -n)  MODE=check ;;
-    *)   echo "usage: bash license.sh [-n]" >&2; exit 2 ;;
+    *)   echo "usage: bash spdx.sh [-n]" >&2; exit 2 ;;
 esac
 
 # The same file set check.sh formats, so the two cannot disagree about what
