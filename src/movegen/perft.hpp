@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2023 Yevhenii Sekhin
+
 #ifndef ATENIKA_PERFT_HPP
 #define ATENIKA_PERFT_HPP
 

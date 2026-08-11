@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2023 Yevhenii Sekhin
+
 #include "bitboard/attacks.hpp"
 #include "bitboard/rays.hpp"
 #include "cli/uci.hpp"

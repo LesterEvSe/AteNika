@@ -29,6 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Ahead of the toolchain installs below, because it needs no toolchain.
+      - name: spdx.sh -n
+        run: bash spdx.sh -n
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
