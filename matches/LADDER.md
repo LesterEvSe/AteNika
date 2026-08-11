@@ -7,4 +7,5 @@ and what its bench fingerprint was, so any rung can be rebuilt.
 Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 
 | version | sha | bench | archived | rating |
-|---|---|---|---|---|
+| --------| --- | ----- | -------- | ------ |
+| atenika-0.2.0    | 3736a3a  | 8831568    | 2026-08-11 | 1555 ± 15 |
