@@ -485,7 +485,7 @@ std::string Board::get_fen() const {
 void Board::display_all() const {
   std::cout << *this;
   std::cout << "Fen: " << get_fen() << '\n';
-  std::cout << "Key: " << m_hash.get_hash() << "\n\n";
+  std::cout << "Key: " << std::format("{:X}\n\n", m_hash.get_hash());
 }
 
 namespace {
