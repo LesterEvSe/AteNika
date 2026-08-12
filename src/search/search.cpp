@@ -333,7 +333,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (ply > _seldepth)
     _seldepth = ply;
 
-  if (board.get_ply() >= MAX_PLY || board.threefold_rule())
+  if (board.get_ply() >= MAX_PLY || (ply > 0 && board.is_repetition()))
     return 0;
 
   ZobristHash zob_hash = board.get_zob_hash();
@@ -467,7 +467,7 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (_order_info.get_ply() > _seldepth)
     _seldepth = _order_info.get_ply();
 
-  if (board.get_ply() >= MAX_PLY || board.threefold_rule())
+  if (board.get_ply() >= MAX_PLY || board.is_repetition())
     return 0;
 
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat

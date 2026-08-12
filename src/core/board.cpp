@@ -236,15 +236,22 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
   m_hash.xor_piece(color, piece, cell);
 }
 
-bool Board::threefold_rule() const {
-  uint64_t hash = m_hash.get_hash();
-  uint8_t repetitions = 0;
-  uint16_t ind = m_moves;
+// Why 2? The current position is not in the history, so two matches there plus this one
+bool Board::threefold_rule() const { return has_repetition(2); }
 
-  for (uint8_t ply = m_ply; ply > 0; --ply)
-    if (m_history[--ind].hash == hash)
-      ++repetitions;
-  return repetitions >= 3;
+// Why 1? One repeat means the same cycle can be played again, so the draw is already forcible.
+// If the engine wants it, the engine gets it :D
+bool Board::is_repetition() const { return has_repetition(1); }
+
+bool Board::has_repetition(uint8_t repetition) const {
+  const uint64_t hash = m_hash.get_hash();
+  uint8_t found = 0;
+
+  for (int16_t ind = m_moves - 2; ind >= m_moves - m_ply && ind >= 0; ind -= 2)
+    if (m_history[ind].hash == hash && ++found == repetition)
+      return true;
+
+  return false;
 }
 
 void Board::make(const Move &move) {

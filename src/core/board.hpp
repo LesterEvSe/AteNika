@@ -87,6 +87,7 @@ private:
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);
+  [[nodiscard]] bool has_repetition(uint8_t needed) const;
 
 public:
   /* using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
@@ -134,6 +135,7 @@ public:
   [[nodiscard]] bool king_in_check(Color color) const;
   [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
   [[nodiscard]] bool threefold_rule() const;
+  [[nodiscard]] bool is_repetition() const;
 
   void make(const Move &move);
   void unmake(const Move &move);
