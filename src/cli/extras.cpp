@@ -82,7 +82,7 @@ namespace {
 
     std::string notation = first;
     do {
-      if (!Move::isMove(notation)) {
+      if (!Move::is_move(notation)) {
         std::println(stderr, "Not a move: {}", notation);
         board = snapshot;
         return;
@@ -126,7 +126,7 @@ bool Extras::dispatch(Board &board, const std::string &token, std::istringstream
   } else if (token == "help") {
     help();
 
-  } else if (Move::isMove(token)) {
+  } else if (Move::is_move(token)) {
     play_moves(board, token, args);
 
   } else {

@@ -419,7 +419,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             ++_fhf;
           ++_fh;
 
-          if (!(move.get_flag() & Move::CAPTURE))
+          if (!move.is_capture())
             _order_info.add_killer(curr_best_move);
 
           if (!_stop)
