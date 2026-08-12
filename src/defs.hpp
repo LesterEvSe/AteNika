@@ -103,9 +103,6 @@ enum Color : uint8_t {
 
 enum GamePhase : uint8_t { OPENING, ENDGAME, PHASES };
 
-// for transposition table and entry
-enum TTFlag : uint8_t { ALPHA, EXACT, BETA };
-
 constexpr uint64_t ZERO{0};
 constexpr uint64_t ONE{1};
 constexpr uint8_t MAX_PLY{100}; // fifty full moves rule without pawn moves or without captures

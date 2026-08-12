@@ -9,6 +9,14 @@
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
 
+// NONE   default, zero slot.
+// ALPHA  no move raised alpha
+// EXACT  alpha < score < beta
+// BETA   a move failed high.
+//
+// enum class to prevent collision with PieceType::NONE
+enum class TTFlag : uint8_t { NONE, ALPHA, EXACT, BETA };
+
 struct TTEntry {
   Move move;
   int32_t score;

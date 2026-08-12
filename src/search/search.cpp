@@ -383,7 +383,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
           if (!(move.get_flag() & Move::CAPTURE))
             _order_info.add_killer(curr_best_move);
 
-          TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, BETA});
+          TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, TTFlag::BETA});
           return beta;
         }
         alpha = score;
@@ -409,9 +409,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
   // improve alpha
   if (alpha != old_alpha)
-    TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, EXACT});
+    TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, TTFlag::EXACT});
   else
-    TTable::add(zob_hash, {curr_best_move, alpha, depth, ALPHA});
+    TTable::add(zob_hash, {curr_best_move, alpha, depth, TTFlag::ALPHA});
   return alpha;
 }
 
