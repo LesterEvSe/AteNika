@@ -38,6 +38,26 @@ namespace {
       return std::format("mate -{}", (INF + score + 1) / 2);
     return std::format("cp {}", score);
   }
+
+  // Score here is the distance to mate, counted in plies.
+  //
+  // Clamped: UBSan caught a signed overflow, because the score can be a beta
+  // value carried down from another branch, not just a mate found below.
+  int32_t _score_to_tt(int32_t score, int16_t ply) {
+    if (score > MATE_BOUND)
+      return static_cast<int32_t>(std::min<int64_t>(int64_t{score} + ply, INF));
+    if (score < -MATE_BOUND)
+      return static_cast<int32_t>(std::max<int64_t>(int64_t{score} - ply, -INF));
+    return score;
+  }
+
+  int32_t _score_from_tt(int32_t score, int16_t ply) {
+    if (score > MATE_BOUND)
+      return score - ply;
+    if (score < -MATE_BOUND)
+      return score + ply;
+    return score;
+  }
 } // namespace
 
 namespace Search::detail {
@@ -240,6 +260,8 @@ void Search::iter_deep(Board &board, bool print_info) {
   detail::_restart();
   detail::_start = std::chrono::steady_clock::now();
 
+  TTable::new_search();
+
   for (int16_t i = 1; i <= detail::_depth; ++i) {
     detail::_best_score = detail::_negamax(board, i, -INF, INF, true);
 
@@ -316,11 +338,28 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
   ZobristHash zob_hash = board.get_zob_hash();
 
+  // If this node is in the table, the entry answers two questions:
+  // 1. Can this node be cut off outright?
+  // 2. Which move should be tried first?
+  const TTEntry *tt = TTable::probe(zob_hash);
+  const Move tt_move = tt != nullptr ? tt->move : Move();
+
+  if (tt != nullptr && ply > 0 && tt->depth >= depth) {
+    const int32_t score = _score_from_tt(tt->score, ply);
+
+    if (tt->flag == TTFlag::EXACT)
+      return score;
+    if (tt->flag == TTFlag::BETA && score >= beta)
+      return beta;
+    if (tt->flag == TTFlag::ALPHA && score <= alpha)
+      return alpha;
+  }
+
   bool in_check = board.king_in_check(board.get_curr_move());
   if (in_check)
     ++depth;
 
-  // Greatly speeds up the work. Should be +100 Elo
+  // Greatly speeds up the work. Should be +100 Elo (unverified)
   if (null_move && !in_check && board.get_ply() && board.curr_player_has_big_pieces() &&
       depth >= 4) {
     board.make_null_move();
@@ -343,7 +382,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
-  MovePicker move_picker = MovePicker(&move_list, zob_hash, _order_info);
+  MovePicker move_picker = MovePicker(&move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -383,7 +422,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
           if (!(move.get_flag() & Move::CAPTURE))
             _order_info.add_killer(curr_best_move);
 
-          TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, TTFlag::BETA});
+          if (!_stop)
+            TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
+                        TTFlag::BETA);
           return beta;
         }
         alpha = score;
@@ -407,11 +448,13 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   }
   --_order_info;
 
-  // improve alpha
-  if (alpha != old_alpha)
-    TTable::add(zob_hash, {curr_best_move, curr_best_score, depth, TTFlag::EXACT});
-  else
-    TTable::add(zob_hash, {curr_best_move, alpha, depth, TTFlag::ALPHA});
+  if (!_stop) {
+    if (alpha != old_alpha)
+      TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
+                  TTFlag::EXACT);
+    else
+      TTable::add(zob_hash, curr_best_move, _score_to_tt(alpha, ply), depth, TTFlag::ALPHA);
+  }
   return alpha;
 }
 
@@ -438,8 +481,10 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (move_list.size() == 0)
     return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
-  ZobristHash zob_hash = board.get_zob_hash();
-  QMovePicker q_move_picker = QMovePicker(&move_list, zob_hash);
+  // Quiescence never cuts on the table and never writes to it, so the entry is
+  // only used to order the first move.
+  const TTEntry *tt = TTable::probe(board.get_zob_hash());
+  QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
 
   Move curr_best = Move();
   bool first_move = true;

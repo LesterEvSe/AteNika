@@ -4,7 +4,6 @@
 #pragma once
 
 #include "core/move_list.hpp"
-#include "core/zobrist_hash.hpp"
 
 class QMovePicker {
 private:
@@ -13,7 +12,7 @@ private:
   uint8_t m_size;
 
 public:
-  explicit QMovePicker(MoveList *move_list, const ZobristHash &hash);
+  explicit QMovePicker(MoveList *move_list, const Move &tt_move);
   [[nodiscard]] bool has_next() const;
   const Move &get_next();
 };

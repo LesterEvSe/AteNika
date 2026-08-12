@@ -4,6 +4,7 @@
 #include "cli/uci.hpp"
 
 #include <atomic>
+#include <charconv>
 #include <chrono>
 #include <exception>
 #include <iostream>
@@ -56,10 +57,38 @@ namespace {
     reply("id name {}", ENGINE_NAME);
     reply("id author {}", ENGINE_AUTHOR);
 
-    // No options advertised yet. "Hash" belongs here, but the table is still an
-    // unbounded std::unordered_map that would ignore whatever size we claimed
-    // to support; it arrives with the rewrite in Phase 1.3.
+    reply("option name Hash type spin default {} min {} max {}", TTable::DEFAULT_HASH_MB,
+          TTable::MIN_HASH_MB, TTable::MAX_HASH_MB);
     reply("uciok");
+  }
+
+  // "setoption name <name> value <v>"; an option name may contain spaces, so
+  // everything between the two keywords belongs to it. Unknown names and
+  // unparsable values are swallowed rather than reported: a GUI that gets an
+  // error back may refuse to start us.
+  void handle_setoption(std::istringstream &args) {
+    std::string token;
+    if (!(args >> token) || token != "name")
+      return;
+
+    std::string name;
+    while (args >> token && token != "value")
+      name += name.empty() ? token : ' ' + token;
+
+    std::string value;
+    if (!(args >> value))
+      return;
+
+    if (name == "Hash") {
+      size_t mb = 0;
+      const char *first = value.data();
+      const char *last = first + value.size();
+
+      // resize() clamps to [MIN_HASH_MB, MAX_HASH_MB], so only a value that is
+      // not a number at all is rejected here.
+      if (const auto [ptr, ec] = std::from_chars(first, last, mb); ec == std::errc{} && ptr == last)
+        TTable::resize(mb);
+    }
   }
 
   void handle_position(std::istringstream &args) {
@@ -193,8 +222,7 @@ void Uci::start() {
       handle_go(args);
 
     } else if (token == "setoption") {
-      // Accepted and ignored. We advertise no options, but GUIs send these
-      // unprompted and one that gets an error back may refuse to start us.
+      handle_setoption(args);
 
     } else if (!Extras::dispatch(board, token, args)) {
       std::println(stderr, "Unknown command: {}", input);

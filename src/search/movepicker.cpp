@@ -4,18 +4,11 @@
 #include "search/movepicker.hpp"
 
 #include "search/mvv_lva.hpp"
-#include "search/ttable.hpp"
 
-MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &order_info)
+MovePicker::MovePicker(MoveList *move_list, const Move &tt_move, OrderInfo &order_info)
     : m_move_list(*move_list), m_curr_node(0) {
-  Move best_move;
-  if (TTable::in_table(hash))
-    best_move = TTable::get(hash).move;
-  else
-    best_move = Move();
-
   for (uint8_t i = 0; i < m_move_list.size(); ++i) {
-    if (m_move_list[i] == best_move) {
+    if (m_move_list[i] == tt_move) {
       m_move_list[i].set_score(INF);
       continue;
     }
