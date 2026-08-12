@@ -237,7 +237,7 @@ void Board::remove_piece(Color color, PieceType piece, uint8_t cell) {
 }
 
 bool Board::threefold_rule() const {
-  uint96 hash = m_hash.get_hash();
+  uint64_t hash = m_hash.get_hash();
   uint8_t repetitions = 0;
   uint16_t ind = m_moves;
 
@@ -485,8 +485,7 @@ std::string Board::get_fen() const {
 void Board::display_all() const {
   std::cout << *this;
   std::cout << "Fen: " << get_fen() << '\n';
-  // uint96 has an operator<< but no std::formatter, so this stays a stream insert.
-  std::cout << "Key: " << m_hash.get_hash() << "\n\n";
+  std::cout << "Key: " << std::format("{:X}\n\n", m_hash.get_hash());
 }
 
 namespace {

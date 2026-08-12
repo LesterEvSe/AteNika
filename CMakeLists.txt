@@ -38,7 +38,6 @@ add_library(atenika_core OBJECT
     src/cli/uci.cpp
     src/cli/extras.cpp
 
-    src/core/uint96.cpp
     src/core/zobrist_hash.cpp
     src/core/move.cpp
     src/core/move_list.cpp

@@ -37,6 +37,13 @@ namespace {
 
   constexpr int POSITION_COUNT = sizeof(POSITIONS) / sizeof(POSITIONS[0]);
 
+  // Need separate constant not to accidentally change DEFAULT_HASH_MB in TTable
+  // and break bench code.
+
+  // A separate constant, so that changing DEFAULT_HASH_MB
+  // cannot silently move the bench fingerprint.
+  constexpr size_t BENCH_HASH_MB = 16;
+
 } // namespace
 
 int64_t Bench::run(int depth) {
@@ -56,6 +63,9 @@ int64_t Bench::run(int depth) {
   // Likewise for the node limit: a "go nodes 10000" earlier in the session
   // would otherwise silently truncate every position in the run.
   Search::set_max_nodes(0);
+
+  const size_t saved_hash_mb = TTable::size_mb();
+  TTable::resize(BENCH_HASH_MB);
 
   int64_t total_nodes = 0;
   const auto start = std::chrono::steady_clock::now();
@@ -89,7 +99,7 @@ int64_t Bench::run(int depth) {
   std::println("Time           : {} ms", ms);
   std::println("NPS            : {}", total_nodes * 1000 / (ms + 1));
 
-  TTable::clear();
+  TTable::resize(saved_hash_mb);
   Search::set_depth(static_cast<int16_t>(saved_depth));
   Search::set_time(saved_without_time ? INF : saved_ms);
   Search::set_max_nodes(saved_max_nodes);
