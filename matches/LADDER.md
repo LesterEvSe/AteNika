@@ -8,4 +8,5 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 
 | version | sha | bench | archived | rating |
 | --------| --- | ----- | -------- | ------ |
-| atenika-0.2.0    | 3736a3a  | 8831568    | 2026-08-11 | 1555 ± 15 |
+| atenika-0.2.0    | 3736a3a  | 8831568    | 2026-08-11 | 1555 +/- 15 |
+| atenika-dev      | 2868302  | 5010987    | 2026-08-12 | 16.31 +/- 14.64, stopped earlier after 1258 games |

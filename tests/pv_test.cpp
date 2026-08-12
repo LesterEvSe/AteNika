@@ -31,7 +31,8 @@ public:
     Search::set_time(INF);
     Search::set_max_nodes(0);
 
-    // The table is write-only until Phase 1.3 restores the probe (TT rewrite)
+    // Each test starts from an empty table, so a PV never depends on what the
+    // test before it happened to store.
     TTable::clear();
   }
 

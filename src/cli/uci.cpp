@@ -166,7 +166,7 @@ namespace {
 
 void Uci::start() {
   reply("{} by {}", ENGINE_NAME, ENGINE_AUTHOR);
-  reply(R"("help" displays all commands)");
+  reply("\"help\" displays all commands");
 
   board = Board();
   std::string input;
