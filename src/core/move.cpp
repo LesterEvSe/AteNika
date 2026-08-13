@@ -33,9 +33,6 @@ PieceType Move::get_move_piece() const { return m_move_piece; }
 PieceType Move::get_captured_piece() const { return m_captured_piece; }
 PieceType Move::get_promotion_piece() const { return m_promotion_piece; }
 
-int32_t Move::get_score() const { return m_score; }
-void Move::set_score(int32_t val) { m_score = val; }
-
 // Basic check if such a move can exist at all
 bool Move::is_move(const std::string &move) {
   if (move.size() != 4 && move.size() != 5)
@@ -49,8 +46,6 @@ bool Move::is_move(const std::string &move) {
   }
   return true;
 }
-
-bool operator<(const Move &left, const Move &right) { return left.m_score < right.m_score; }
 
 bool operator==(const Move &left, const Move &right) {
   return left.m_from == right.m_from && left.m_to == right.m_to && left.m_flag == right.m_flag &&

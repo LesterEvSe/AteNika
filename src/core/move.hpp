@@ -40,12 +40,10 @@ private:
   PieceType m_captured_piece : 3;
   PieceType m_promotion_piece : 3;
 
-  int32_t m_score;
-
 public:
   Move()
       : m_from(0), m_to(0), m_flag(NULL_MOVE), m_move_piece(NONE), m_captured_piece(NONE),
-        m_promotion_piece(NONE), m_score(0) {}
+        m_promotion_piece(NONE) {}
 
   // example e4e5 g2g1q or something else
   explicit Move(Board &board, const std::string &move);
@@ -53,7 +51,7 @@ public:
   Move(uint8_t from, uint8_t to, PieceType move_piece, Flag flag = QUIET,
        PieceType captured_piece = NONE, PieceType promotion_piece = NONE)
       : m_from(from), m_to(to), m_flag(flag), m_move_piece(move_piece),
-        m_captured_piece(captured_piece), m_promotion_piece(promotion_piece), m_score(0) {}
+        m_captured_piece(captured_piece), m_promotion_piece(promotion_piece) {}
 
   [[nodiscard]] bool is_capture() const;
   [[nodiscard]] uint8_t get_from_cell() const;
@@ -63,13 +61,8 @@ public:
   [[nodiscard]] PieceType get_move_piece() const;
   [[nodiscard]] PieceType get_captured_piece() const;
   [[nodiscard]] PieceType get_promotion_piece() const;
-  [[nodiscard]] int32_t get_score() const;
-
-  void set_score(int32_t val);
   [[nodiscard]] static bool is_move(const std::string &move);
 
-  // For selection sort in MovePicker class
-  friend bool operator<(const Move &left, const Move &right);
   friend bool operator==(const Move &left, const Move &right);
   explicit operator std::string() const;
 };

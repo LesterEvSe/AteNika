@@ -23,10 +23,10 @@ QMovePicker::QMovePicker(MoveList *move_list, const Move &tt_move)
             MvvLva::CAPTURE_BONUS +
             MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
         break;
-      default: m_move_list[i].set_score(0); continue;
+      default: m_move_list.set_score(i, 0); continue;
     }
 
-    m_move_list[i].set_score(m_move_list[i] == tt_move ? INF : score);
+    m_move_list.set_score(i, m_move_list[i] == tt_move ? INF : score);
     ++m_size;
   }
 }
@@ -34,18 +34,24 @@ QMovePicker::QMovePicker(MoveList *move_list, const Move &tt_move)
 bool QMovePicker::has_next() const { return m_curr_node < m_size; }
 
 const Move &QMovePicker::get_next() {
-  int32_t score = m_move_list[m_curr_node].get_score();
+  int32_t score = m_move_list.get_score(m_curr_node);
   uint8_t max_val_ind = m_curr_node;
 
   for (uint8_t i = m_curr_node + 1; i < m_move_list.size(); ++i) {
-    if (score < m_move_list[i].get_score()) {
-      score = m_move_list[i].get_score();
+    if (score < m_move_list.get_score(i)) {
+      score = m_move_list.get_score(i);
       max_val_ind = i;
     }
   }
 
-  Move temp = m_move_list[m_curr_node];
+  Move temp_move = m_move_list[m_curr_node];
+  int32_t temp_score = m_move_list.get_score(m_curr_node);
+
   m_move_list[m_curr_node] = m_move_list[max_val_ind];
-  m_move_list[max_val_ind] = temp;
+  m_move_list.set_score(m_curr_node, score);
+
+  m_move_list[max_val_ind] = temp_move;
+  m_move_list.set_score(max_val_ind, temp_score);
+
   return m_move_list[m_curr_node++];
 }
