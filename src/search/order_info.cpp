@@ -20,7 +20,6 @@ void OrderInfo::add_killer(Move move) {
   m_killers1[m_ply] = move;
 }
 
-
 Move OrderInfo::get_killer1() const { return m_killers1[m_ply]; }
 Move OrderInfo::get_killer2() const { return m_killers2[m_ply]; }
 

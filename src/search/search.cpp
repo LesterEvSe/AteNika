@@ -93,14 +93,12 @@ namespace Search::detail {
   //
   // _pv_length[p] is an end index, not a count: row p spans [p, length). So row
   // 0 reads out as the whole line and _pv[0][0] is the move sent as bestmove.
-  //
-  // Sized by MAX_PLY, which also sizes the killers; both index by search ply.
-  Move _pv[MAX_PLY][MAX_PLY];
-  int16_t _pv_length[MAX_PLY];
+  Move _pv[MAX_SEARCH_PLY][MAX_SEARCH_PLY];
+  int16_t _pv_length[MAX_SEARCH_PLY];
 
   // Row 0 of the last *completed* iteration. An aborted iteration leaves _pv[0]
   // half-built, so it never reaches here.
-  Move _best_pv[MAX_PLY];
+  Move _best_pv[MAX_SEARCH_PLY];
   int16_t _best_pv_length;
 
   // Declared ahead of the definitions below: iter_deep calls into them before
@@ -326,6 +324,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   // which reads as a perfectly plausible PV with garbage on the end.
   _pv_length[ply] = ply;
 
+  if (ply >= MAX_SEARCH_PLY - 1)
+    return Eval::evaluate(board);
+
   if (depth < 1)
     return _quiescence(board, alpha, beta);
 
@@ -430,7 +431,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         alpha = score;
         full_window = false;
 
-        if (ply + 1 < MAX_PLY) {
+        if (ply + 1 < MAX_SEARCH_PLY) {
           _pv[ply][ply] = move;
 
           for (int16_t i = ply + 1; i < _pv_length[ply + 1]; ++i)
@@ -464,8 +465,12 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     return 0;
 
   ++_nodes;
-  if (_order_info.get_ply() > _seldepth)
-    _seldepth = _order_info.get_ply();
+  const int16_t ply = _order_info.get_ply();
+  if (ply >= MAX_SEARCH_PLY - 1)
+    return Eval::evaluate(board);
+
+  if (ply > _seldepth)
+    _seldepth = ply;
 
   if (board.get_ply() >= MAX_PLY || board.is_repetition())
     return 0;

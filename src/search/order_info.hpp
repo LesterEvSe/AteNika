@@ -6,11 +6,12 @@
 #include "core/move.hpp"
 #include "defs.hpp"
 
+// Can skip killer check, because we do it inside search.cpp file.
 class OrderInfo {
 private:
   int16_t m_ply;
   int32_t m_history[64][64]; // from square, to square;
-  Move m_killers1[MAX_PLY], m_killers2[MAX_PLY];
+  Move m_killers1[MAX_SEARCH_PLY], m_killers2[MAX_SEARCH_PLY];
 
 public:
   static constexpr int32_t KILLER1_BONUS = 200'000;
