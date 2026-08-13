@@ -75,7 +75,7 @@ int32_t Eval::evaluate(const Board &board) {
     score += detail::PST[PAWN][detail::FLIP[sq]];
     mat_white += detail::MATERIAL_BONUS[PAWN];
 
-    score += (pieces & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
+    score += (wP & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
     score += (bP & detail::_wp_passed_mask[sq] ? 0 : detail::PASSED_PAWNS[get_rank(sq)]);
   }
 
@@ -85,7 +85,7 @@ int32_t Eval::evaluate(const Board &board) {
     score -= detail::PST[PAWN][sq];
     mat_black += detail::MATERIAL_BONUS[PAWN];
 
-    score -= (pieces & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
+    score -= (bP & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
     score -= (wP & detail::_bp_passed_mask[sq] ? 0 : detail::PASSED_PAWNS[7 - get_rank(sq)]);
   }
 
