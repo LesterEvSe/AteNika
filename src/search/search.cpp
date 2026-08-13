@@ -368,7 +368,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() && depth >= 4) {
     board.make_null_move();
     ++_order_info;
-    int32_t score = _negamax(board, depth - 4, -alpha - 1, -alpha, false);
+
+    int32_t score = -_negamax(board, depth - 4, -alpha - 1, -alpha, false);
+
     --_order_info;
     board.unmake_null_move();
 
