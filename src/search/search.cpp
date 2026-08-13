@@ -77,6 +77,8 @@ namespace Search::detail {
   Move _best_move;
   int32_t _best_score;
   int16_t _seldepth;
+
+  int16_t _root_depth;
   bool _debug_info;
   std::chrono::time_point<std::chrono::steady_clock> _start;
 
@@ -122,6 +124,7 @@ void Search::detail::_restart() {
   _fhf = 0;
   _mate = "";
   _seldepth = 0;
+  _root_depth = 0;
   _best_pv_length = 0;
 
   _order_info = OrderInfo();
@@ -261,6 +264,7 @@ void Search::iter_deep(Board &board, bool print_info) {
   TTable::new_search();
 
   for (int16_t i = 1; i <= detail::_depth; ++i) {
+    detail::_root_depth = i;
     detail::_best_score = detail::_negamax(board, i, -INF, INF, true);
 
     // static_cast for MSVC W4 warnings
@@ -357,7 +361,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   }
 
   bool in_check = board.king_in_check(board.get_curr_move());
-  if (in_check)
+  if (in_check && ply < 2 * _root_depth)
     ++depth;
 
   // Greatly speeds up the work. Should be +100 Elo (unverified)
@@ -371,7 +375,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       return 0;
 
     // to prevent bug with mate
-    if (score >= beta && std::abs(score) < 2'000'000'000)
+    if (score >= beta && std::abs(score) < MATE_BOUND)
       return beta;
   }
 
