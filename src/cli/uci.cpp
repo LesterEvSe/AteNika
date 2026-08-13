@@ -124,7 +124,7 @@ namespace {
         board.make(move);
       } catch (const std::exception &e) {
         // Stop at the first bad move.
-        std::println(stderr, R"(Rejected move "{}": {})", notation, e.what());
+        std::println(stderr, "Rejected move \"{}\": {}", notation, e.what());
         return;
       }
     }

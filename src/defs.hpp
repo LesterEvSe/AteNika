@@ -9,52 +9,56 @@
 
 /** Arrangements for the presentation of the board (uint64_t) */
 /**
- *      A   B   C   D   E   F   G   H
- * 8 | 56  57  58  59  60  61  62  63
- * 7 | 48  49  50  51  52  53  54  55
- * 6 | 40  41  42  43  44  45  46  47
- * 5 | 32  33  34  35  36  37  38  39
- * 4 | 24  25  26  27  28  29  30  31
- * 3 | 16  17  18  19  20  21  22  23
- * 2 |  8   9  10  11  12  13  14  15
- * 1 |  0   1   2   3   4   5   6   7
- */
+       A   B   C   D   E   F   G   H
+  8 | 56  57  58  59  60  61  62  63
+  7 | 48  49  50  51  52  53  54  55
+  6 | 40  41  42  43  44  45  46  47
+  5 | 32  33  34  35  36  37  38  39
+  4 | 24  25  26  27  28  29  30  31
+  3 | 16  17  18  19  20  21  22  23
+  2 |  8   9  10  11  12  13  14  15
+  1 |  0   1   2   3   4   5   6   7
+*/
 
 /** Fen-Notation
  * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation (without full move counter)
  * rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0  (start position)
-       A B C D E F G H
-   8 | r n b q k b n r
-   7 | p p p p p p p p
-   6 | - - - - - - - -
-   5 | - - - - - - - -
-   4 | - - - - - - - -
-   3 | - - - - - - - -
-   2 | P P P P P P P P
-   1 | R N B Q K B N R
+
+      A B C D E F G H
+    +-----------------+
+  8 | r n b q k b n r | 8
+  7 | p p p p p p p p | 7
+  6 | . . . . . . . . | 6
+  5 | . . . . . . . . | 5
+  4 | . . . . . . . . | 4
+  3 | . . . . . . . . | 3
+  2 | P P P P P P P P | 2
+  1 | R N B Q K B N R | 1
+    +-----------------+
+      A B C D E F G H
 */
 
 // clang-format off
 constexpr std::string_view FIELD[64] = {
-    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
-    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
-    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
-    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
-    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
-    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
-    "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
+  "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
+  "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+  "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+  "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+  "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+  "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+  "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+  "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
 };
 
 enum NotationToIndex : uint8_t {
-    a1, b1, c1, d1, e1, f1, g1, h1,
-    a2, b2, c2, d2, e2, f2, g2, h2,
-    a3, b3, c3, d3, e3, f3, g3, h3,
-    a4, b4, c4, d4, e4, f4, g4, h4,
-    a5, b5, c5, d5, e5, f5, g5, h5,
-    a6, b6, c6, d6, e6, f6, g6, h6,
-    a7, b7, c7, d7, e7, f7, g7, h7,
-    a8, b8, c8, d8, e8, f8, g8, h8,
+  a1, b1, c1, d1, e1, f1, g1, h1,
+  a2, b2, c2, d2, e2, f2, g2, h2,
+  a3, b3, c3, d3, e3, f3, g3, h3,
+  a4, b4, c4, d4, e4, f4, g4, h4,
+  a5, b5, c5, d5, e5, f5, g5, h5,
+  a6, b6, c6, d6, e6, f6, g6, h6,
+  a7, b7, c7, d7, e7, f7, g7, h7,
+  a8, b8, c8, d8, e8, f8, g8, h8,
 };
 // clang-format on
 
@@ -105,5 +109,6 @@ enum GamePhase : uint8_t { OPENING, ENDGAME, PHASES };
 
 constexpr uint64_t ZERO{0};
 constexpr uint64_t ONE{1};
-constexpr uint8_t MAX_PLY{100}; // fifty full moves rule without pawn moves or without captures
+constexpr uint8_t MAX_PLY{100};        // fifty-move rule that is Board concept
+constexpr int16_t MAX_SEARCH_PLY{128}; // sizes every ply-indexed array
 constexpr int32_t INF = std::numeric_limits<int32_t>::max();

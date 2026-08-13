@@ -181,7 +181,6 @@ if (ATENIKA_BUILD_TESTS)
         tests/perft_test.cpp
         tests/mate_test.cpp
         tests/pv_test.cpp
-        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

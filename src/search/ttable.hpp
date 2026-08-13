@@ -18,6 +18,8 @@
 // enum class to prevent collision with PieceType::NONE
 enum class TTFlag : uint8_t { NONE, ALPHA, EXACT, BETA };
 
+// TODO: a 16-bit move (from, to, promotion only).
+// https://www.chessprogramming.org/Encoding_Moves
 struct TTEntry {
   // Upper half bits of the Zobrist key. Since lower bits already chose current slot,
   // This bits are stored to confirm that everything is ok and we chose proper slot.
@@ -32,7 +34,7 @@ struct TTEntry {
 
 // static_assert, because changing this layout changes the number of slots in the
 // table, and so changes bench.
-static_assert(sizeof(TTEntry) == 20, "TTEntry layout changed: bench will differ across platforms");
+static_assert(sizeof(TTEntry) == 16, "TTEntry layout changed: bench will differ across platforms");
 
 namespace TTable {
   constexpr size_t DEFAULT_HASH_MB = 16;

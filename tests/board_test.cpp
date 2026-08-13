@@ -21,6 +21,16 @@ public:
   }
 };
 
+namespace {
+  // Returns the board to the position it started from, four plies later.
+  void play_knight_cycle(Board &board) {
+    board.make(Move(g1, f3, KNIGHT));
+    board.make(Move(g8, f6, KNIGHT));
+    board.make(Move(f3, g1, KNIGHT));
+    board.make(Move(f6, g8, KNIGHT));
+  }
+} // namespace
+
 Board BoardTest::board = Board("rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R w KQ - 36 17");
 
 // Check get_pieces method for pawns
@@ -163,4 +173,13 @@ TEST_F(BoardTest, get_fen_full_castling) {
   std::string expected = "rnbq1k1r/pp1Pbppp/2p5/6K1/2B5/8/PPP1NnPP/RNBQ3R b KQkq - 0 0";
 
   ASSERT_EQ(expected, board.get_fen());
+}
+
+TEST_F(BoardTest, threefold_needs_three_occurrences) {
+  Board board;
+  play_knight_cycle(board);
+  EXPECT_FALSE(board.threefold_rule());
+
+  play_knight_cycle(board);
+  EXPECT_TRUE(board.threefold_rule());
 }
