@@ -365,8 +365,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     ++depth;
 
   // Greatly speeds up the work. Should be +100 Elo (unverified)
-  if (null_move && !in_check && board.get_ply() && board.curr_player_has_big_pieces() &&
-      depth >= 4) {
+  if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() && depth >= 4) {
     board.make_null_move();
     int32_t score = _negamax(board, depth - 4, -alpha - 1, -alpha, false);
     board.unmake_null_move();

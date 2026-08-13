@@ -180,6 +180,6 @@ TEST_F(BoardTest, threefold_needs_three_occurrences) {
   play_knight_cycle(board);
   EXPECT_FALSE(board.threefold_rule());
 
-  play_knight_cycle(board);            // occurrence 3 — a real threefold
-  EXPECT_TRUE(board.threefold_rule()); // fails today
+  play_knight_cycle(board);
+  EXPECT_TRUE(board.threefold_rule());
 }
