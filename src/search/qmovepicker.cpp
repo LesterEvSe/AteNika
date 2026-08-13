@@ -8,27 +8,26 @@
 QMovePicker::QMovePicker(MoveList *move_list, const Move &tt_move)
     : m_move_list(*move_list), m_curr_node(0), m_size(0) {
   for (uint8_t i = 0; i < m_move_list.size(); ++i) {
-    if (m_move_list[i] == tt_move) {
-      m_move_list[i].set_score(INF);
-      continue;
-    }
+    int32_t score;
 
     switch (m_move_list[i].get_flag()) {
       case Move::CAPTURE_PROMOTION:
-        m_move_list[i].set_score(
+        score =
             MvvLva::PROMOTION_BONUS + MvvLva::CAPTURE_BONUS +
-            MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()]);
-        ++m_size;
+            MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
         break;
 
       case Move::EN_PASSANT:
       case Move::CAPTURE:
-        m_move_list[i].set_score(
+        score =
             MvvLva::CAPTURE_BONUS +
-            MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()]);
-        ++m_size;
-      default: break;
+            MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
+        break;
+      default: m_move_list[i].set_score(0); continue;
     }
+
+    m_move_list[i].set_score(m_move_list[i] == tt_move ? INF : score);
+    ++m_size;
   }
 }
 
