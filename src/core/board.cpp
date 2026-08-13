@@ -304,11 +304,11 @@ void Board::make(const Move &move) {
       break;
 
     default: // Move::QUIET
-      m_ply = (move.get_move_piece() == PAWN) ? ZERO : m_ply;
       break;
   }
 
-  if (move.get_flag() != Move::QUIET)
+  // Castling is reversible for the ply.
+  if (move.is_capture() || move.get_move_piece() == PAWN)
     m_ply = ZERO;
 
   update_bitboards();
