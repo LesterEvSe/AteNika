@@ -114,7 +114,7 @@ jobs:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           {
-            echo "bench `$BENCH`; identical on Linux, Windows and macOS."
+            echo "bench $BENCH; identical on Linux, Windows and macOS."
             echo
             echo "Rating: to be measured against this binary, then filled in here."
           } > notes.md
