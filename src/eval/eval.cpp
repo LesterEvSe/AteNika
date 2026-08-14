@@ -68,6 +68,10 @@ int32_t Eval::evaluate(const Board &board) {
   const bitboard wP = board.get_pieces(WHITE, PAWN); // for black passed (here too)
   const bitboard all_pawns = bP | wP; // for open and semi open files for rooks and queens
 
+  // TODO: Need to be checked with sprt
+  // if (!all_pawns && detail::material_draw(board))
+  //   return 0;
+
   // Pawns
   bitboard pieces = board.get_pieces(WHITE, PAWN);
   while (pieces) {
@@ -75,7 +79,7 @@ int32_t Eval::evaluate(const Board &board) {
     score += detail::PST[PAWN][detail::FLIP[sq]];
     mat_white += detail::MATERIAL_BONUS[PAWN];
 
-    score += (pieces & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
+    score += (wP & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
     score += (bP & detail::_wp_passed_mask[sq] ? 0 : detail::PASSED_PAWNS[get_rank(sq)]);
   }
 
@@ -85,7 +89,7 @@ int32_t Eval::evaluate(const Board &board) {
     score -= detail::PST[PAWN][sq];
     mat_black += detail::MATERIAL_BONUS[PAWN];
 
-    score -= (pieces & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
+    score -= (bP & detail::ISOLATED_PAWNS_MASK[get_file(sq)]) ? 0 : detail::ISOLATED_PAWN;
     score -= (wP & detail::_bp_passed_mask[sq] ? 0 : detail::PASSED_PAWNS[7 - get_rank(sq)]);
   }
 

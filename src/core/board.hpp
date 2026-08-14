@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
@@ -10,7 +11,7 @@
 #include "core/zobrist_hash.hpp"
 
 struct HistoryNode {
-  uint96 hash;
+  uint64_t hash;
   uint8_t ply;
   uint8_t ep; // en_passant_cell
   uint8_t castling_rights;
@@ -57,16 +58,16 @@ private:
      the kingside right without having moved anything itself.
   */
   // clang-format off
-    static constexpr uint8_t CASTLING[64] = {
-        13, 15, 15, 15, 12, 15, 15, 14,   // a1 .. h1
-        15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15,
-        7,  15, 15, 15, 3,  15, 15, 11    // a8 .. h8
-    };
+  static constexpr uint8_t CASTLING[64] = {
+    13, 15, 15, 15, 12, 15, 15, 14,   // a1 .. h1
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+     15, 15, 15, 15, 15, 15, 15, 15,
+    7,  15, 15, 15, 3,  15, 15, 11    // a8 .. h8
+  };
   // clang-format on
 
   /* Using the Fen order
@@ -86,6 +87,7 @@ private:
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);
+  [[nodiscard]] bool has_repetition(uint8_t needed) const;
 
 public:
   /* using short FEN (Forsyth-Edwards Notation). detailed in defs.hpp
@@ -133,6 +135,7 @@ public:
   [[nodiscard]] bool king_in_check(Color color) const;
   [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
   [[nodiscard]] bool threefold_rule() const;
+  [[nodiscard]] bool is_repetition() const;
 
   void make(const Move &move);
   void unmake(const Move &move);

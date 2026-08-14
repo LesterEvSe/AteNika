@@ -12,12 +12,9 @@
 class Board;
 
 namespace Search {
-  // Depth cap for a "go" that names no depth. Deliberately far below MAX_PLY
-  // (100), which also sizes the killer arrays: check extensions are still
-  // unbounded (Phase 1.4), so a deep search can index past their end. This
-  // engine reaches ~depth 8 at blitz time controls, so the cap never binds in
-  // a game; it only bounds "go infinite".
-  constexpr int16_t MAX_SEARCH_DEPTH = 32;
+  // Needs to "go" or "go infinite" command. So it actually can terminate.
+  // But in blitz it is not a problem, because of much lower depth.
+  constexpr int16_t MAX_SEARCH_DEPTH = 50;
 
   // Everything one "go" can constrain. Zero means "not given"; set_limits
   // resolves the combination into the flat limits the search actually reads.

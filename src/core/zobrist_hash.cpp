@@ -6,32 +6,30 @@
 #include "bitboard/bitfunc.hpp"
 #include "core/board.hpp"
 
-std::mt19937_64 ZobristHash::gen64{PRNG}; // NOLINT(bugprone-random-generator-seed)
-std::mt19937 ZobristHash::gen32{PRNG};    // NOLINT(bugprone-random-generator-seed)
-std::uniform_int_distribution<uint64_t> ZobristHash::dist64;
-std::uniform_int_distribution<uint32_t> ZobristHash::dist32;
+std::mt19937_64 ZobristHash::gen{PRNG}; // NOLINT(bugprone-random-generator-seed)
+std::uniform_int_distribution<uint64_t> ZobristHash::dist;
 
-uint96 ZobristHash::PIECE_KEYS[COLOR_SIZE][PIECE_SIZE][64];
-uint96 ZobristHash::EN_PASSANT_FILE[8];
-uint96 ZobristHash::QS_CASTLE[COLOR_SIZE];
-uint96 ZobristHash::KS_CASTLE[COLOR_SIZE];
-uint96 ZobristHash::WHITE_MOVE;
+uint64_t ZobristHash::PIECE_KEYS[COLOR_SIZE][PIECE_SIZE][64];
+uint64_t ZobristHash::EN_PASSANT_FILE[8];
+uint64_t ZobristHash::QS_CASTLE[COLOR_SIZE];
+uint64_t ZobristHash::KS_CASTLE[COLOR_SIZE];
+uint64_t ZobristHash::WHITE_MOVE;
 
 void ZobristHash::init() {
   for (uint8_t j = 0; j < PIECE_SIZE; ++j)
     for (uint8_t k = 0; k < 64; ++k) {
-      PIECE_KEYS[BLACK][j][k] = {dist64(gen64), dist32(gen32)};
-      PIECE_KEYS[WHITE][j][k] = {dist64(gen64), dist32(gen32)};
+      PIECE_KEYS[BLACK][j][k] = dist(gen);
+      PIECE_KEYS[WHITE][j][k] = dist(gen);
     }
 
   for (auto &i : EN_PASSANT_FILE)
-    i = {dist64(gen64), dist32(gen32)};
+    i = dist(gen);
 
   for (uint8_t i = 0; i < COLOR_SIZE; ++i) {
-    QS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
-    KS_CASTLE[i] = {dist64(gen64), dist32(gen32)};
+    QS_CASTLE[i] = dist(gen);
+    KS_CASTLE[i] = dist(gen);
   }
-  WHITE_MOVE = {dist64(gen64), dist32(gen32)};
+  WHITE_MOVE = dist(gen);
 }
 
 void ZobristHash::set_hash(const Board &board) {
@@ -65,14 +63,13 @@ void ZobristHash::set_hash(const Board &board) {
   }
 }
 
-uint96 ZobristHash::get_hash() const { return m_hash; }
+uint64_t ZobristHash::get_hash() const { return m_hash; }
 
-void ZobristHash::operator=(const uint96 &hash) { m_hash = hash; }
+void ZobristHash::operator=(const uint64_t &hash) { m_hash = hash; }
 
 bool operator==(const ZobristHash &left, const ZobristHash &right) {
   return left.m_hash == right.m_hash;
 }
-
 
 void ZobristHash::xor_piece(Color col, PieceType piece, uint8_t cell) {
   m_hash ^= PIECE_KEYS[col][piece][cell];

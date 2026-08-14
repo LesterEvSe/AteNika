@@ -4,19 +4,12 @@
 #include "search/movepicker.hpp"
 
 #include "search/mvv_lva.hpp"
-#include "search/ttable.hpp"
 
-MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &order_info)
+MovePicker::MovePicker(MoveList *move_list, const Move &tt_move, OrderInfo &order_info)
     : m_move_list(*move_list), m_curr_node(0) {
-  Move best_move;
-  if (TTable::in_table(hash))
-    best_move = TTable::get(hash).move;
-  else
-    best_move = Move();
-
   for (uint8_t i = 0; i < m_move_list.size(); ++i) {
-    if (m_move_list[i] == best_move) {
-      m_move_list[i].set_score(INF);
+    if (m_move_list[i] == tt_move) {
+      m_move_list.set_score(i, INF);
       continue;
     }
 
@@ -45,25 +38,31 @@ MovePicker::MovePicker(MoveList *move_list, const ZobristHash &hash, OrderInfo &
               order_info.get_history(m_move_list[i].get_from_cell(), m_move_list[i].get_to_cell());
         break;
     }
-    m_move_list[i].set_score(score);
+    m_move_list.set_score(i, score);
   }
 }
 
 bool MovePicker::has_next() const { return m_curr_node < m_move_list.size(); }
 
 const Move &MovePicker::get_next() {
-  int32_t score = m_move_list[m_curr_node].get_score();
+  int32_t score = m_move_list.get_score(m_curr_node);
   uint8_t max_val_ind = m_curr_node;
 
   for (uint8_t i = m_curr_node + 1; i < m_move_list.size(); ++i) {
-    if (score < m_move_list[i].get_score()) {
-      score = m_move_list[i].get_score();
+    if (score < m_move_list.get_score(i)) {
+      score = m_move_list.get_score(i);
       max_val_ind = i;
     }
   }
 
-  Move temp = m_move_list[m_curr_node];
+  Move temp_move = m_move_list[m_curr_node];
+  int32_t temp_score = m_move_list.get_score(m_curr_node);
+
   m_move_list[m_curr_node] = m_move_list[max_val_ind];
-  m_move_list[max_val_ind] = temp;
+  m_move_list.set_score(m_curr_node, score);
+
+  m_move_list[max_val_ind] = temp_move;
+  m_move_list.set_score(max_val_ind, temp_score);
+
   return m_move_list[m_curr_node++];
 }

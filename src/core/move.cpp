@@ -23,6 +23,8 @@ Move::Move(Board &board, const std::string &move) {
     throw std::invalid_argument("You can't make that move");
 }
 
+// I think it can be done more optimized
+bool Move::is_capture() const { return m_flag & CAPTURE; }
 uint8_t Move::get_from_cell() const { return m_from; }
 uint8_t Move::get_to_cell() const { return m_to; }
 Move::Flag Move::get_flag() const { return m_flag; }
@@ -31,11 +33,8 @@ PieceType Move::get_move_piece() const { return m_move_piece; }
 PieceType Move::get_captured_piece() const { return m_captured_piece; }
 PieceType Move::get_promotion_piece() const { return m_promotion_piece; }
 
-int32_t Move::get_score() const { return m_score; }
-void Move::set_score(int32_t val) { m_score = val; }
-
 // Basic check if such a move can exist at all
-bool Move::isMove(const std::string &move) {
+bool Move::is_move(const std::string &move) {
   if (move.size() != 4 && move.size() != 5)
     return false;
 
@@ -47,8 +46,6 @@ bool Move::isMove(const std::string &move) {
   }
   return true;
 }
-
-bool operator<(const Move &left, const Move &right) { return left.m_score < right.m_score; }
 
 bool operator==(const Move &left, const Move &right) {
   return left.m_from == right.m_from && left.m_to == right.m_to && left.m_flag == right.m_flag &&

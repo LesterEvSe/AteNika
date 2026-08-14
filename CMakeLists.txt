@@ -38,7 +38,6 @@ add_library(atenika_core OBJECT
     src/cli/uci.cpp
     src/cli/extras.cpp
 
-    src/core/uint96.cpp
     src/core/zobrist_hash.cpp
     src/core/move.cpp
     src/core/move_list.cpp
@@ -182,7 +181,6 @@ if (ATENIKA_BUILD_TESTS)
         tests/perft_test.cpp
         tests/mate_test.cpp
         tests/pv_test.cpp
-        # tests/perft_comparison_test.cpp   # dead since count_bits became std::popcount
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
