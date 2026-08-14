@@ -306,7 +306,8 @@ void Search::iter_deep(Board &board, bool print_info) {
   // depth 1 finished, moves[0] rescues it. If the position has no legal moves at
   // all it stays null, and the caller reports "0000" for the GUI to adjudicate.
   if (detail::_best_move.get_flag() == Move::NULL_MOVE) {
-    MoveList moves = Movegen(board).get_legal_moves();
+    Movegen movegen(board);
+    MoveList &moves = movegen.get_legal_moves();
 
     if (moves.size() > 0)
       detail::_best_move = moves[0];
@@ -369,7 +370,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     board.make_null_move();
     ++_order_info;
 
-    int32_t score = -_negamax(board, depth - 4, -alpha - 1, -alpha, false);
+    int32_t score = -_negamax(board, depth - 4, -beta, -beta + 1, false);
 
     --_order_info;
     board.unmake_null_move();
@@ -382,7 +383,8 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       return beta;
   }
 
-  MoveList move_list = Movegen(board).get_legal_moves();
+  Movegen movegen(board);
+  MoveList &move_list = movegen.get_legal_moves();
 
   // get size in O(1)
   // checkmate or stalemate
@@ -427,8 +429,10 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             ++_fhf;
           ++_fh;
 
-          if (!move.is_capture())
-            _order_info.add_killer(curr_best_move);
+          if (!move.is_capture()) {
+            _order_info.add_killer(move);
+            _order_info.add_history(move.get_from_cell(), move.get_to_cell(), depth);
+          }
 
           if (!_stop)
             TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
@@ -446,10 +450,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
           _pv_length[ply] = _pv_length[ply + 1];
         }
-
-        if (!(move.get_flag() & Move::CAPTURE))
-          _order_info.add_history(curr_best_move.get_from_cell(), curr_best_move.get_to_cell(),
-                                  depth);
       }
     }
     first_move = false;
@@ -489,7 +489,8 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (stand_pat > alpha)
     alpha = stand_pat;
 
-  MoveList move_list = Movegen(board).get_legal_moves();
+  Movegen movegen(board);
+  MoveList &move_list = movegen.get_legal_moves();
   if (move_list.size() == 0)
     return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
 
