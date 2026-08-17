@@ -60,12 +60,13 @@ ctest --preset sanitize
 
 ### GitHub
 
-[Shallow Blue](https://github.com/GunshipPenguin/shallow-blue) a lot  
+[Shallow Blue](https://github.com/GunshipPenguin/shallow-blue) a lot (on early stages)  
 [Stockfish](https://github.com/official-stockfish/Stockfish)  
+[Stash-bot](https://github.com/mhouppin/stash-bot) for testing
 
 ### Other
 
 [Chessprogramming Wiki](https://www.chessprogramming.org/Main_Page)  
 [Chess Database Information](https://chess.stackexchange.com/questions/18046/what-are-the-biggest-free-chess-game-databases-is-it-legal-to-download-games-fr)  
 [FICS Database](https://www.ficsgames.org/)  
-[UCI protocol](https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf#file-uci-protocol-specification-txt)  
+[UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html)  

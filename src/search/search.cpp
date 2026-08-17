@@ -351,7 +351,17 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (ply > _seldepth)
     _seldepth = ply;
 
-  if (board.get_ply() >= MAX_PLY || (ply > 0 && board.is_repetition()))
+  // A mate delivered on the fiftieth move stands; the draw claim never happens.
+  // So the terminal test has to come first, and only a position with a legal
+  // reply is a draw here.
+  if (board.get_ply() >= MAX_PLY) {
+    Movegen fifty_movegen(board);
+    if (fifty_movegen.get_legal_moves().size() > 0)
+      return 0;
+    return board.king_in_check(board.get_curr_move()) ? -INF + ply : 0;
+  }
+
+  if (ply > 0 && board.is_repetition())
     return 0;
 
   ZobristHash zob_hash = board.get_zob_hash();
@@ -508,7 +518,14 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (ply > _seldepth)
     _seldepth = ply;
 
-  if (board.get_ply() >= MAX_PLY || board.is_repetition())
+  if (board.get_ply() >= MAX_PLY) {
+    Movegen fifty_movegen(board);
+    if (fifty_movegen.get_legal_moves().size() > 0)
+      return 0;
+    return board.king_in_check(board.get_curr_move()) ? -INF + ply : 0;
+  }
+
+  if (board.is_repetition())
     return 0;
 
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
