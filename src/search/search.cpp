@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cmath> // for lmr and std::log
 #include <cstdio>
 #include <format>
 #include <print>
@@ -103,6 +104,12 @@ namespace Search::detail {
   Move _best_pv[MAX_SEARCH_PLY];
   int16_t _best_pv_length;
 
+  // https://chessprogramming.org/Late_Move_Reductions
+  // Setup max moves to 64, because very unlickely that we reach more than 64 moves
+  // During LMR, so just do it that way, instead of refering
+  // to the 218 (max possible moves in position)
+  int16_t _lmr[MAX_SEARCH_DEPTH + 1][64];
+
   // Declared ahead of the definitions below: iter_deep calls into them before
   // they appear, and _negamax and _quiescence are mutually recursive.
   void _info(int depth, int elapsed);
@@ -138,6 +145,11 @@ void Search::init() {
   detail::_depth = 10;
   detail::_max_nodes = 0;
   detail::_debug_info = false;
+
+  // Currently leave as it is. Tune it later.
+  for (int d = 1; d <= MAX_SEARCH_DEPTH; ++d)
+    for (int m = 1; m < 64; ++m)
+      detail::_lmr[d][m] = static_cast<int16_t>(0.75 + std::log(d) * std::log(m) / 2.25);
 }
 
 bool Search::detail::_check_limits() {
@@ -400,20 +412,38 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
   // PVS - Principal Variation Search
   // https://www.chessprogramming.org/Principal_Variation_Search
-  bool full_window = true;
   bool first_move = true;
+
+  // Must be done before ++_order_info
+  const Move killer1 = _order_info.get_killer1();
+  const Move killer2 = _order_info.get_killer2();
   ++_order_info;
 
+  // https://chessprogramming.org/Late_Move_Reductions
+  int16_t move_count = 0;
   while (move_picker.has_next()) {
     Move move = move_picker.get_next();
+    ++move_count;
     board.make(move);
 
     int32_t score;
-    if (full_window)
+    if (move_count == 1)
       score = -_negamax(board, depth - 1, -beta, -alpha, true);
     else {
-      score = -_negamax(board, depth - 1, -alpha - 1, -alpha, true);
-      if (score > alpha)
+      int16_t r = 0;
+      // Never at the root: it is the only node whose move choice is the engine's
+      // output, and root ordering here has no memory of the previous iteration's
+      // per-move scores, so a late root quiet is not reliably a bad one.
+      if (ply > 0 && depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() &&
+          !(move == killer1) && !(move == killer2)) {
+        r = _lmr[std::min<int>(depth, MAX_SEARCH_DEPTH)][std::min<int>(move_count, 63)];
+        r = std::clamp<int16_t>(r, 0, depth - 2);
+      }
+      score = -_negamax(board, depth - 1 - r, -alpha - 1, -alpha, true);
+
+      if (r > 0 && score > alpha)
+        score = -_negamax(board, depth - 1, -alpha - 1, -alpha, true);
+      if (score > alpha && score < beta)
         score = -_negamax(board, depth - 1, -beta, -alpha, true);
     }
     board.unmake(move);
@@ -440,7 +470,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
           return beta;
         }
         alpha = score;
-        full_window = false;
 
         if (ply + 1 < MAX_SEARCH_PLY) {
           _pv[ply][ply] = move;
