@@ -434,8 +434,8 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       // Never at the root: it is the only node whose move choice is the engine's
       // output, and root ordering here has no memory of the previous iteration's
       // per-move scores, so a late root quiet is not reliably a bad one.
-      if (depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() && !(move == killer1) &&
-          !(move == killer2)) {
+      if (ply > 0 && depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() &&
+          !(move == killer1) && !(move == killer2)) {
         r = _lmr[std::min<int>(depth, MAX_SEARCH_DEPTH)][std::min<int>(move_count, 63)];
         r = std::clamp<int16_t>(r, 0, depth - 2);
       }

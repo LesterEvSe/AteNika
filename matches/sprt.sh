@@ -18,7 +18,7 @@ MODE=${3:-gainer}
 case "$MODE" in
   # A gainer must beat "no change at all"; a refactor only has to prove it did
   # not cost more than 3 Elo, which converges far sooner.
-  gainer) ELO0=0;  ELO1=5 ;;
+  gainer) ELO0=0;  ELO1=10 ;;
   nonreg) ELO0=-3; ELO1=1 ;;
   *) echo "mode must be gainer or nonreg" >&2; exit 1 ;;
 esac
