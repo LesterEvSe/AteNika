@@ -375,12 +375,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (tt != nullptr && ply > 0 && tt->depth >= depth) {
     const int32_t score = _score_from_tt(tt->score, ply);
 
-    if (tt->flag == TTFlag::EXACT)
+    if ((tt->flag == TTFlag::EXACT) || (tt->flag == TTFlag::BETA && score >= beta) ||
+        (tt->flag == TTFlag::ALPHA && score <= alpha))
       return score;
-    if (tt->flag == TTFlag::BETA && score >= beta)
-      return beta;
-    if (tt->flag == TTFlag::ALPHA && score <= alpha)
-      return alpha;
   }
 
   bool in_check = board.king_in_check(board.get_curr_move());
@@ -402,7 +399,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
     // to prevent bug with mate
     if (score >= beta && std::abs(score) < MATE_BOUND)
-      return beta;
+      return score;
   }
 
   Movegen movegen(board);
@@ -477,7 +474,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
           if (!_stop)
             TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
                         TTFlag::BETA);
-          return beta;
+          return curr_best_score;
         }
         alpha = score;
 
@@ -500,9 +497,10 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
                   TTFlag::EXACT);
     else
-      TTable::add(zob_hash, curr_best_move, _score_to_tt(alpha, ply), depth, TTFlag::ALPHA);
+      TTable::add(zob_hash, curr_best_move, _score_to_tt(curr_best_score, ply), depth,
+                  TTFlag::ALPHA);
   }
-  return alpha;
+  return curr_best_score;
 }
 
 int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
@@ -529,11 +527,11 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     return 0;
 
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-  int32_t stand_pat = Eval::evaluate(board);
-  if (stand_pat >= beta)
-    return beta;
-  if (stand_pat > alpha)
-    alpha = stand_pat;
+  int32_t best_score = Eval::evaluate(board);
+  if (best_score >= beta)
+    return best_score;
+  if (best_score > alpha)
+    alpha = best_score;
 
   Movegen movegen(board);
   MoveList &move_list = movegen.get_legal_moves();
@@ -545,30 +543,32 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   const TTEntry *tt = TTable::probe(board.get_zob_hash());
   QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
 
-  Move curr_best = Move();
   bool first_move = true;
   ++_order_info;
 
   while (q_move_picker.has_next()) {
     Move move = q_move_picker.get_next();
     board.make(move);
-    stand_pat = -_quiescence(board, -beta, -alpha);
+    const int32_t score = -_quiescence(board, -beta, -alpha);
     board.unmake(move);
 
-    if (stand_pat > alpha) {
-      if (stand_pat >= beta) {
-        --_order_info;
-        if (first_move)
-          ++_fhf;
-        ++_fh;
-        return beta;
+    if (score > best_score) {
+      best_score = score;
+
+      if (score > alpha) {
+        if (score >= beta) {
+          --_order_info;
+          if (first_move)
+            ++_fhf;
+          ++_fh;
+          return best_score;
+        }
+        alpha = score;
       }
-      alpha = stand_pat;
-      curr_best = move;
     }
     first_move = false;
   }
   --_order_info;
 
-  return alpha;
+  return best_score;
 }
