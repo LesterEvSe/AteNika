@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <cmath> // for lmr and std::log
+#include <cmath> // for std::log in lmr
 #include <cstdio>
 #include <format>
 #include <print>
@@ -28,6 +28,9 @@ namespace {
   // Held back from every time budget. Covers pipe latency, process scheduling
   // and the 2048-node granularity of _check_limits.
   constexpr int32_t MOVE_OVERHEAD_MS = 50;
+
+  constexpr int16_t ASPIRATION_MIN_DEPTH = 4;
+  constexpr int32_t ASPIRATION_DELTA = 25;
 
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
@@ -132,6 +135,7 @@ void Search::detail::_restart() {
   _mate = "";
   _seldepth = 0;
   _root_depth = 0;
+  _best_score = 0;
   _best_pv_length = 0;
 
   _order_info = OrderInfo();
@@ -275,17 +279,46 @@ void Search::iter_deep(Board &board, bool print_info) {
 
   TTable::new_search();
 
+  int32_t prev_score = 0;
+
   for (int16_t i = 1; i <= detail::_depth; ++i) {
     detail::_root_depth = i;
-    detail::_best_score = detail::_negamax(board, i, -INF, INF, true);
+
+    int32_t alpha = -INF;
+    int32_t beta = INF;
+    int32_t delta = ASPIRATION_DELTA;
+
+    if (i >= ASPIRATION_MIN_DEPTH && std::abs(prev_score) < MATE_BOUND) {
+      alpha = prev_score - delta;
+      beta = prev_score + delta;
+    }
+
+    int32_t score = 0;
+    while (true) {
+      score = detail::_negamax(board, i, alpha, beta, true);
+      if (detail::_stop)
+        break;
+
+      if (score <= alpha && alpha > -INF)
+        alpha = static_cast<int32_t>(std::max<int64_t>(int64_t{score} - delta, -INF));
+      else if (score >= beta && beta < INF)
+        beta = static_cast<int32_t>(std::min<int64_t>(int64_t{score} + delta, INF));
+      else
+        break;
+
+      delta += delta / 2;
+    }
+
+    if (detail::_stop)
+      break;
+
+    detail::_best_score = score;
+    prev_score = score;
 
     // static_cast for MSVC W4 warnings
     auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                             std::chrono::steady_clock::now() - detail::_start)
                                             .count());
-
-    if (detail::_stop)
-      break;
 
     // Only a completed iteration gets to publish its line.
     if (detail::_pv_length[0] > 0) {
