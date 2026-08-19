@@ -54,6 +54,8 @@ public:
         m_captured_piece(captured_piece), m_promotion_piece(promotion_piece) {}
 
   [[nodiscard]] bool is_capture() const;
+  // capture, en passant, or promotion
+  [[nodiscard]] bool is_tactical() const;
   [[nodiscard]] uint8_t get_from_cell() const;
   [[nodiscard]] uint8_t get_to_cell() const;
   [[nodiscard]] Move::Flag get_flag() const;

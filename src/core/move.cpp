@@ -23,8 +23,8 @@ Move::Move(Board &board, const std::string &move) {
     throw std::invalid_argument("You can't make that move");
 }
 
-// I think it can be done more optimized
 bool Move::is_capture() const { return m_flag & CAPTURE; }
+bool Move::is_tactical() const { return m_flag & CAPTURE_PROMOTION; }
 uint8_t Move::get_from_cell() const { return m_from; }
 uint8_t Move::get_to_cell() const { return m_to; }
 Move::Flag Move::get_flag() const { return m_flag; }
