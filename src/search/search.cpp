@@ -35,15 +35,13 @@ namespace {
   // Currently disaster with -231 elo
   // https://www.chessprogramming.org/Futility_Pruning#move-count-based-pruning
   // Late move pruning. 3 + depth * depth formula.
-  //constexpr int16_t LMP_MAX_DEPTH = 4;
+  // constexpr int16_t LMP_MAX_DEPTH = 4;
 
-  // Maybe because of bad evaluation on the current stage I have approximately -95 elo with
-  // RFP_MARGIN 120. https://www.chessprogramming.org/Reverse_Futility_Pruning or static null move
-  // pruning.
+  // These two prove itself as +118 +/- 35 with sprt.
+  // https://www.chessprogramming.org/Reverse_Futility_Pruning or static null move pruning.
   constexpr int16_t RFP_MAX_DEPTH = 6;
   constexpr int32_t RFP_MARGIN = 80;
 
-  // The same problem here with FUTILITY_MARGIN 150
   // https://www.chessprogramming.org/Futility_Pruning
   constexpr int16_t FUTILITY_MAX_DEPTH = 3;
   constexpr int32_t FUTILITY_MARGIN = 100;
