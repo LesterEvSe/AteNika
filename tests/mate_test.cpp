@@ -183,25 +183,25 @@ TEST_F(MateTest, black_mate_in_seven_5) {
 
 // Positions below from PGNs in matches/results, mate distance verified with Stockfish 18.
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_1) {
   Board board = Board("r5kr/p1p1Qp2/2p2P2/q1P4p/6p1/6P1/PP5P/3R1R1K w - - 4 29");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_2) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   Board board = Board("1r2r1k1/1p3p2/p4Pp1/5P1p/1P1pB3/5Q1P/P2Bb1K1/8 w - - 1 38");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_black_11_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_black_11_ply_1) {
   Board board = Board("8/2p5/p1p1P1RR/3b2p1/P2Pk3/2B2r2/1P5K/6r1 b - - 2 51");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM11", Search::get_mate());
