@@ -32,18 +32,21 @@ namespace {
   constexpr int16_t ASPIRATION_MIN_DEPTH = 4;
   constexpr int32_t ASPIRATION_DELTA = 25;
 
+  // Currently disaster with -231 elo
   // https://www.chessprogramming.org/Futility_Pruning#move-count-based-pruning
   // Late move pruning. 3 + depth * depth formula.
-  constexpr int16_t LMP_MAX_DEPTH = 4;
+  //constexpr int16_t LMP_MAX_DEPTH = 4;
 
   // Maybe because of bad evaluation on the current stage I have approximately -95 elo with
   // RFP_MARGIN 120. https://www.chessprogramming.org/Reverse_Futility_Pruning or static null move
-  // pruning. constexpr int16_t RFP_MAX_DEPTH = 6; constexpr int32_t RFP_MARGIN = 80;
+  // pruning.
+  constexpr int16_t RFP_MAX_DEPTH = 6;
+  constexpr int32_t RFP_MARGIN = 80;
 
   // The same problem here with FUTILITY_MARGIN 150
   // https://www.chessprogramming.org/Futility_Pruning
-  // constexpr int16_t FUTILITY_MAX_DEPTH = 3;
-  // constexpr int32_t FUTILITY_MARGIN = 100;
+  constexpr int16_t FUTILITY_MAX_DEPTH = 3;
+  constexpr int32_t FUTILITY_MARGIN = 100;
 
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
@@ -430,15 +433,15 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (in_check && ply < 2 * _root_depth)
     ++depth;
 
-  // const int32_t static_eval = in_check ? 0 : Eval::evaluate(board);
+  const int32_t static_eval = in_check ? 0 : Eval::evaluate(board);
 
   // Am I too far ahead to bother?
   // If my score much more than that I can have, so I do not bother to improve it.
   // We can cut off, because searching probably does not change the decision
   // Reverse futility. ply > 0 because we need some move.
-  // if (!in_check && ply > 0 && depth <= RFP_MAX_DEPTH && std::abs(beta) < MATE_BOUND &&
-  //     static_eval - RFP_MARGIN * depth >= beta)
-  //   return static_eval - RFP_MARGIN * depth;
+  if (!in_check && ply > 0 && depth <= RFP_MAX_DEPTH && std::abs(beta) < MATE_BOUND &&
+      static_eval - RFP_MARGIN * depth >= beta)
+    return static_eval - RFP_MARGIN * depth;
 
   // Greatly speeds up the work. Approximately +150 Elo
   if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() && depth >= 4) {
@@ -493,12 +496,12 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     // then assume next one does not improve the alpha.
     if (ply > 0 && !in_check && !move.is_tactical() && curr_best_score > -MATE_BOUND) {
       // Have enough moves already failed?
-      if (depth <= LMP_MAX_DEPTH && move_count >= 3 + depth * depth)
-        continue;
+      // if (depth <= LMP_MAX_DEPTH && move_count >= 3 + depth * depth)
+      //   continue;
 
       // Is this move too far behind to catch up?
-      // if (depth <= FUTILITY_MAX_DEPTH && static_eval + FUTILITY_MARGIN * depth <= alpha)
-      //   continue;
+      if (depth <= FUTILITY_MAX_DEPTH && static_eval + FUTILITY_MARGIN * depth <= alpha)
+        continue;
     }
 
     board.make(move);
