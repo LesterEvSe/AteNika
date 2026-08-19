@@ -22,4 +22,5 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-dev-0.3.0 | 2868302  | 5010987    | 2026-08-12 | +16.31 +/- 14.64 (1258 games, stopped early) |
 | atenika-0.3.0    | a8d61cd  | 13459037   | 2026-08-14 | vs atenika-0.2.0 +254.73 +/- 34.82 (376 games) H1 \[0; 5] accepted |
 | atenika-0.3.1   | 490b85d  | 2719121    | 2026-08-17 | vs previous +92.57 +/- 31.17 H1 \[0; 10] accepted |
-| atenika-0.3.1-alt | 9dc3f93  | 1435641    | 2026-08-17 | vs previous +11.33 +/- 24.75 (460 games, stopped early) |
+| atenika-0.3.1-alt | 9dc3f93  | 1435641    | 2026-08-17 | vs previous +11.33 +/- 24.75 (460 games, stopped early), decline feature |
+| atenika-0.3.2   | bc72f9d  | 19304650   | 2026-08-18 | vs 0.3.1 +43 +/- 14.80 H1 \[0; 5] accepted |
