@@ -32,6 +32,18 @@ namespace {
   constexpr int16_t ASPIRATION_MIN_DEPTH = 4;
   constexpr int32_t ASPIRATION_DELTA = 25;
 
+  // https://www.chessprogramming.org/Futility_Pruning#move-count-based-pruning
+  // Late move pruning. 3 + depth * depth formula.
+  constexpr int16_t LMP_MAX_DEPTH = 4;
+
+  // https://www.chessprogramming.org/Reverse_Futility_Pruning or static null move pruning.
+  constexpr int16_t RFP_MAX_DEPTH = 6;
+  constexpr int32_t RFP_MARGIN = 120;
+
+  // https://www.chessprogramming.org/Futility_Pruning
+  constexpr int16_t FUTILITY_MAX_DEPTH = 3;
+  constexpr int32_t FUTILITY_MARGIN = 150;
+
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
   // counts plies, hence the halving.
@@ -417,7 +429,17 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   if (in_check && ply < 2 * _root_depth)
     ++depth;
 
-  // Greatly speeds up the work. Should be +100 Elo (unverified)
+  const int32_t static_eval = in_check ? 0 : Eval::evaluate(board);
+
+  // Am I too far ahead to bother?
+  // If my score much more than that I can have, so I do not bother to improve it.
+  // We can cut off, because searching probably does not change the decision
+  // Reverse futility. ply > 0 because we need some move.
+  if (!in_check && ply > 0 && depth <= RFP_MAX_DEPTH && std::abs(beta) < MATE_BOUND &&
+      static_eval - RFP_MARGIN * depth >= beta)
+    return static_eval - RFP_MARGIN * depth;
+
+  // Greatly speeds up the work. Approximately +150 Elo
   if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() && depth >= 4) {
     board.make_null_move();
     ++_order_info;
@@ -464,6 +486,20 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   while (move_picker.has_next()) {
     Move move = move_picker.get_next();
     ++move_count;
+
+    // Late move pruning, then futility. Stops pruning if every move leads to defeat.
+    // MovePicker sorts best-first, so if many moves we haven't good moves,
+    // then assume next one does not improve the alpha.
+    if (ply > 0 && !in_check && !move.is_tactical() && curr_best_score > -MATE_BOUND) {
+      // Have enough moves already failed?
+      if (depth <= LMP_MAX_DEPTH && move_count >= 3 + depth * depth)
+        continue;
+
+      // Is this move too far behind to catch up?
+      if (depth <= FUTILITY_MAX_DEPTH && static_eval + FUTILITY_MARGIN * depth <= alpha)
+        continue;
+    }
+
     board.make(move);
 
     int32_t score;
@@ -471,9 +507,8 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       score = -_negamax(board, depth - 1, -beta, -alpha, true);
     else {
       int16_t r = 0;
-      // Never at the root: it is the only node whose move choice is the engine's
-      // output, and root ordering here has no memory of the previous iteration's
-      // per-move scores, so a late root quiet is not reliably a bad one.
+
+      // Never do it in the root.
       if (ply > 0 && depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() &&
           !(move == killer1) && !(move == killer2)) {
         r = _lmr[std::min<int>(depth, MAX_SEARCH_DEPTH)][std::min<int>(move_count, 63)];
