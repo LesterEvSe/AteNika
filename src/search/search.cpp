@@ -47,6 +47,16 @@ namespace {
   constexpr int16_t FUTILITY_MAX_DEPTH = 3;
   constexpr int32_t FUTILITY_MARGIN = 100;
 
+  // https://www.chessprogramming.org/Null_Move_Pruning#Adaptive_Null_Move_Pruning
+  constexpr int16_t NULL_MOVE_MIN_DEPTH = 4;
+  constexpr int16_t NULL_MOVE_BASE_R = 3;
+  constexpr int16_t NULL_MOVE_DEPTH_DIV = 6;
+  constexpr int32_t NULL_MOVE_EVAL_DIV = 200;
+  constexpr int32_t NULL_MOVE_MAX_R = 3;
+
+  // https://www.chessprogramming.org/Delta_Pruning
+  constexpr int32_t DELTA_MARGIN = 200;
+
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
   // counts plies, hence the halving.
@@ -428,6 +438,10 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       return score;
   }
 
+  /// https://chessprogramming.org/Internal_Iterative_Reductions
+  if (tt == nullptr && depth >= 4)
+    --depth;
+
   bool in_check = board.king_in_check(board.get_curr_move());
   if (in_check && ply < 2 * _root_depth)
     ++depth;
@@ -443,11 +457,19 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return static_eval - RFP_MARGIN * depth;
 
   // Greatly speeds up the work. Approximately +150 Elo
-  if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() && depth >= 4) {
+  if (null_move && !in_check && ply > 0 && board.curr_player_has_big_pieces() &&
+      depth >= NULL_MOVE_MIN_DEPTH) {
+    // beta is INF whenever the root window is wide, so the subtraction has to be
+    // guarded or it overflows.
+    const int32_t surplus = std::abs(beta) < MATE_BOUND ? static_eval - beta : 0;
+    const auto r =
+        static_cast<int16_t>(NULL_MOVE_BASE_R + depth / NULL_MOVE_DEPTH_DIV +
+                             std::clamp(surplus / NULL_MOVE_EVAL_DIV, 0, NULL_MOVE_MAX_R));
+
     board.make_null_move();
     ++_order_info;
 
-    int32_t score = -_negamax(board, depth - 4, -beta, -beta + 1, false);
+    int32_t score = -_negamax(board, static_cast<int16_t>(depth - r), -beta, -beta + 1, false);
 
     --_order_info;
     board.unmake_null_move();
@@ -590,7 +612,8 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     return 0;
 
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-  int32_t best_score = Eval::evaluate(board);
+  const int32_t stand_pat = Eval::evaluate(board);
+  int32_t best_score = stand_pat;
   if (best_score >= beta)
     return best_score;
   if (best_score > alpha)
@@ -611,6 +634,18 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
 
   while (q_move_picker.has_next()) {
     Move move = q_move_picker.get_next();
+
+    // Even winning the victim outright leaves this move below alpha, so it
+    // cannot change what this node returns. QMovePicker only yields captures,
+    // so get_captured_piece() is never NONE here.
+    int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
+    if (move.get_flag() == Move::CAPTURE_PROMOTION)
+      gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
+              Eval::detail::MATERIAL_BONUS[PAWN];
+
+    if (stand_pat + gain + DELTA_MARGIN <= alpha)
+      continue;
+
     board.make(move);
     const int32_t score = -_quiescence(board, -beta, -alpha);
     board.unmake(move);
