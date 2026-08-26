@@ -52,6 +52,7 @@ add_library(atenika_core OBJECT
     src/search/order_info.cpp
     src/search/ttable.cpp
     src/search/movepicker.cpp
+    src/search/see.cpp
     src/search/qmovepicker.cpp
     src/search/search.cpp
     src/search/bench.cpp
@@ -181,6 +182,7 @@ if (ATENIKA_BUILD_TESTS)
         tests/perft_test.cpp
         tests/mate_test.cpp
         tests/pv_test.cpp
+        tests/see_test.cpp
         # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

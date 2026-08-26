@@ -26,3 +26,4 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-0.3.2   | bc72f9d  | 19304650   | 2026-08-18 | vs 0.3.1 +43 +/- 14.80 H1 \[0; 5] accepted |
 | atenika-0.3.3   | 14a9a08  | 5212673    | 2026-08-19 | +118.70 +/- 34.98 H1 \[0; 10] accepted |
 | atenika-0.3.4    | af3c614  | 3892577    | 2026-08-21 | dropped LMP (min_depth 2, quiet-only count, non-PV) -12.87 +/- 26.07 (540 games, LLR -0.87), stopped early; no measurable gain, not shipped |
+| atenika-0.3.5    | 92cdf2e  | 3783197    | 2026-08-26 |  |

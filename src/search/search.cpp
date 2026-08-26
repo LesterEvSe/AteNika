@@ -18,6 +18,7 @@
 #include "search/movepicker.hpp"
 #include "search/order_info.hpp"
 #include "search/qmovepicker.hpp"
+#include "search/see.hpp"
 #include "search/ttable.hpp"
 
 namespace {
@@ -644,6 +645,11 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
               Eval::detail::MATERIAL_BONUS[PAWN];
 
     if (stand_pat + gain + DELTA_MARGIN <= alpha)
+      continue;
+
+    // A capture that loses material cannot be the move that makes this position
+    // quiet, and searching it only deepens the tree.
+    if (See::can_lose_material(move) && See::see(board, move) < 0)
       continue;
 
     board.make(move);
