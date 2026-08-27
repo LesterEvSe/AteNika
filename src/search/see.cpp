@@ -13,10 +13,10 @@ namespace {
   // times than there are pieces on the board.
   constexpr int16_t MAX_SWAPS = 34;
 
-  bitboard _attackers_to(const Board &board, uint8_t cell, bitboard occ) {
+  bitboard _attackers_to(const Board &board, uint8_t cell, bitboard occupancy) {
     const bitboard queens = board.get_pieces(WHITE, QUEEN) | board.get_pieces(BLACK, QUEEN);
-    const bitboard diagonal = board.get_pieces(WHITE, BISHOP) | board.get_pieces(BLACK, BISHOP);
-    const bitboard straight = board.get_pieces(WHITE, ROOK) | board.get_pieces(BLACK, ROOK);
+    const bitboard bishops = board.get_pieces(WHITE, BISHOP) | board.get_pieces(BLACK, BISHOP);
+    const bitboard rooks = board.get_pieces(WHITE, ROOK) | board.get_pieces(BLACK, ROOK);
 
     // get_pawn_attacks(WHITE, cell) is where a white pawn on `cell` would strike,
     // which is exactly where a black pawn attacking `cell` has to stand.
@@ -26,9 +26,9 @@ namespace {
               (board.get_pieces(WHITE, KNIGHT) | board.get_pieces(BLACK, KNIGHT));
     result |= Attacks::get_king_attacks(cell) &
               (board.get_pieces(WHITE, KING) | board.get_pieces(BLACK, KING));
-    result |= Attacks::get_bishop_attacks(cell, occ) & (diagonal | queens);
-    result |= Attacks::get_rook_attacks(cell, occ) & (straight | queens);
-    return result & occ;
+    result |= Attacks::get_bishop_attacks(cell, occupancy) & (bishops | queens);
+    result |= Attacks::get_rook_attacks(cell, occupancy) & (rooks | queens);
+    return result & occupancy;
   }
 
   // PIECES is in ascending value order, so the first hit is the cheapest attacker.
@@ -56,7 +56,7 @@ int32_t See::see(const Board &board, const Move &move) {
   const uint8_t to = move.get_to_cell();
   const Color mover = board.get_curr_move();
 
-  bitboard occ = board.get_all_pieces();
+  bitboard occupancy = board.get_all_pieces();
   bitboard from_bb = ONE << move.get_from_cell();
 
   int32_t gain[MAX_SWAPS];
@@ -66,7 +66,7 @@ int32_t See::see(const Board &board, const Move &move) {
     gain[0] = VALUE[PAWN];
     // The captured pawn is beside the destination, not on it, and removing it
     // is what can expose a rook down the rank.
-    reset(occ, static_cast<uint8_t>(mover == WHITE ? to - 8 : to + 8));
+    reset(occupancy, static_cast<uint8_t>(mover == WHITE ? to - 8 : to + 8));
   } else {
     gain[0] = move.is_capture() ? VALUE[move.get_captured_piece()] : 0;
   }
@@ -80,24 +80,24 @@ int32_t See::see(const Board &board, const Move &move) {
   }
 
   const bitboard queens = board.get_pieces(WHITE, QUEEN) | board.get_pieces(BLACK, QUEEN);
-  const bitboard diagonal =
+  const bitboard bishops =
       board.get_pieces(WHITE, BISHOP) | board.get_pieces(BLACK, BISHOP) | queens;
-  const bitboard straight = board.get_pieces(WHITE, ROOK) | board.get_pieces(BLACK, ROOK) | queens;
+  const bitboard rooks = board.get_pieces(WHITE, ROOK) | board.get_pieces(BLACK, ROOK) | queens;
 
   Color side = board.get_opponent_move();
-  bitboard attackers = _attackers_to(board, to, occ);
+  bitboard attackers = _attackers_to(board, to, occupancy);
 
   while (d < MAX_SWAPS - 1) {
     ++d;
     gain[d] = VALUE[on_square] - gain[d - 1];
 
-    occ &= ~from_bb;
+    occupancy &= ~from_bb;
     attackers &= ~from_bb;
 
     // Removing the piece can uncover a slider that was standing behind it.
-    attackers |= (Attacks::get_bishop_attacks(to, occ) & diagonal) |
-                 (Attacks::get_rook_attacks(to, occ) & straight);
-    attackers &= occ;
+    attackers |= (Attacks::get_bishop_attacks(to, occupancy) & bishops) |
+                 (Attacks::get_rook_attacks(to, occupancy) & rooks);
+    attackers &= occupancy;
 
     from_bb = _least_valuable(board, attackers, side, on_square);
     if (from_bb == ZERO)

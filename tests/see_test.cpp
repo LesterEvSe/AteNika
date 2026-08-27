@@ -8,9 +8,8 @@
 #include "core/board.hpp"
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
-#include "search/see.hpp"
+#include "search/see.hpp" // You can find the piece values here.
 
-// Piece values are See::VALUE: P 100, N 320, B 330, R 500, Q 900.
 class SeeTest : public testing::Test {
 public:
   static void SetUpTestCase() {

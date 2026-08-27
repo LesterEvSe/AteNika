@@ -13,8 +13,6 @@
 //
 // More here: https://www.chessprogramming.org/Static_Exchange_Evaluation
 namespace See {
-  // KING is deliberately larger than the sum of everything else: a sequence that
-  // ends in the king being taken must never look survivable.
   constexpr int32_t VALUE[PIECE_SIZE]{100, 320, 330, 500, 900, 10'000};
 
   [[nodiscard]] int32_t see(const Board &board, const Move &move);
