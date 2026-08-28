@@ -33,6 +33,41 @@ namespace {
   constexpr int16_t ASPIRATION_MIN_DEPTH = 4;
   constexpr int32_t ASPIRATION_DELTA = 25;
 
+  // Time management. The soft limit decides whether to open another iteration,
+  // the hard limit aborts one already running.
+  //
+  // Measured over 397 game-sides at 8+0.08: the engine finished its games having
+  // spent 75% of its clock. Iteration prediction alone does not recover that --
+  // at an EBF near 2, stopping past half the budget is already optimal for a
+  // single move. The gain has to come from spending the allocation and from
+  // moving time between critical and obvious positions, which is what the
+  // stability and panic scaling below do.
+  constexpr int32_t DEFAULT_MOVES_LEFT = 20;
+  constexpr int32_t MAX_MOVES_LEFT = 30;
+
+  // Share of the move's allocation to spend before declining to open another
+  // iteration. This was an unnamed 0.5; the games above are what argue for
+  // raising it.
+  constexpr double SOFT_USE_FRACTION = 0.62;
+
+  // Bounds how wrong the prediction is allowed to be.
+  constexpr int32_t HARD_LIMIT_FACTOR = 3;
+  constexpr int32_t HARD_LIMIT_CLOCK_SHARE = 5;
+
+  // A best move that never moves is the ordinary case, not a signal to hurry, so
+  // stability only trims and it trims gently.
+  constexpr int16_t STABILITY_CAP = 8;
+  constexpr double STABILITY_STEP = 0.02;
+  constexpr int32_t PANIC_SCORE_DROP = 40;
+  constexpr double PANIC_BONUS = 0.4;
+  constexpr double SOFT_SCALE_MIN = 0.80;
+  constexpr double SOFT_SCALE_MAX = 1.50;
+
+  // Cumulative-elapsed ratio, not per-iteration: the per-iteration series is far
+  // noisier and predicted the measured timings worse.
+  constexpr double EBF_MIN = 1.4;
+  constexpr double EBF_MAX = 3.5;
+
   // Currently skipped because has no gain from it.
   // https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
   // Late move pruning, 3 + depth * depth. Depth 1 is skipped on purpose: measured
@@ -93,7 +128,8 @@ namespace {
 namespace Search::detail {
   // Limits
   int64_t _nodes;
-  int32_t _ms_allocated;
+  int32_t _ms_allocated; // hard limit, enforced inside the search by _check_limits
+  int32_t _soft_limit;   // consulted only between iterations
   bool _without_time;
   int16_t _depth;
   int64_t _max_nodes;
@@ -171,6 +207,7 @@ void Search::detail::_restart() {
 void Search::init() {
   detail::_restart();
   detail::_ms_allocated = 5000;
+  detail::_soft_limit = 5000;
   detail::_without_time = false;
   detail::_depth = 10;
   detail::_max_nodes = 0;
@@ -229,6 +266,7 @@ void Search::set_time(int32_t ms_allocated) {
   else if (ms_allocated > 0) {
     detail::_without_time = false;
     detail::_ms_allocated = ms_allocated;
+    detail::_soft_limit = ms_allocated;
   }
 }
 
@@ -251,23 +289,30 @@ void Search::set_limits(const Limits &limits, Color side_to_move) {
 
   detail::_without_time = false;
   if (limits.movetime > 0) {
+    // "Think for exactly this long" leaves nothing to allocate, so both limits
+    // are the same and only the iteration prediction decides when to stop.
     detail::_ms_allocated = limits.movetime;
+    detail::_soft_limit = limits.movetime;
     return;
   }
 
-  // Classic budget: an even slice of the remaining clock plus half the
-  // increment. iter_deep already treats half of _ms_allocated as a soft limit
-  // and will not open an iteration it cannot plausibly finish, so the real
-  // spend lands between _ms_allocated / 2 and _ms_allocated.
   const int32_t remaining = limits.time[side_to_move];
-  const int32_t moves_left = limits.movestogo > 0 ? std::min<int32_t>(limits.movestogo, 30) : 20;
-  int32_t budget = remaining / moves_left + limits.inc[side_to_move] / 2;
+  const int32_t moves_left =
+      limits.movestogo > 0 ? std::min(limits.movestogo, MAX_MOVES_LEFT) : DEFAULT_MOVES_LEFT;
+
+  const int32_t alloc = remaining / moves_left + limits.inc[side_to_move] * 3 / 4;
+  int32_t soft = static_cast<int32_t>(alloc * SOFT_USE_FRACTION);
+  int32_t hard = std::min(remaining / HARD_LIMIT_CLOCK_SHARE, alloc * HARD_LIMIT_FACTOR);
 
   // Never plan to spend the whole clock. Pipe latency, process scheduling and
   // the 2048-node granularity of _check_limits all overshoot a little, and
   // flagging loses the game outright no matter how good the move was.
-  budget = std::min(budget, remaining - MOVE_OVERHEAD_MS);
-  detail::_ms_allocated = std::max(budget, 1);
+  const int32_t cap = std::max(remaining - MOVE_OVERHEAD_MS, 1);
+  hard = std::clamp(hard, 1, cap);
+  soft = std::clamp(soft, 1, hard);
+
+  detail::_ms_allocated = hard;
+  detail::_soft_limit = soft;
 }
 
 
@@ -306,6 +351,9 @@ void Search::iter_deep(Board &board, bool print_info) {
   TTable::new_search();
 
   int32_t prev_score = 0;
+  int32_t prev_elapsed = 0;
+  int16_t stability = 0;
+  Move prev_best = Move();
 
   for (int16_t i = 1; i <= detail::_depth; ++i) {
     detail::_root_depth = i;
@@ -338,6 +386,7 @@ void Search::iter_deep(Board &board, bool print_info) {
     if (detail::_stop)
       break;
 
+    const int32_t score_drop = i > 1 ? prev_score - score : 0;
     detail::_best_score = score;
     prev_score = score;
 
@@ -366,8 +415,34 @@ void Search::iter_deep(Board &board, bool print_info) {
       break;
     }
 
-    if (!detail::_without_time && elapsed >= (detail::_ms_allocated / 2))
-      break;
+    if (detail::_best_move == prev_best)
+      stability = std::min<int16_t>(stability + 1, STABILITY_CAP);
+    else
+      stability = 0;
+    prev_best = detail::_best_move;
+
+    if (!detail::_without_time) {
+      // An answer that has not moved in several iterations is unlikely to move
+      // now; one that just changed, or a score that fell, buys more time.
+      double scale = 1.0 - STABILITY_STEP * stability;
+      if (score_drop >= PANIC_SCORE_DROP)
+        scale += PANIC_BONUS;
+
+      const double budget = detail::_soft_limit * std::clamp(scale, SOFT_SCALE_MIN, SOFT_SCALE_MAX);
+
+      // The soft limit governs the average spend across the game.
+      if (elapsed >= budget)
+        break;
+
+      // The prediction only guards the hard limit. Opening an iteration that
+      // gets killed is pure loss, because iter_deep publishes nothing from an
+      // incomplete one, so its whole cost buys zero depth.
+      const double ebf = prev_elapsed > 0 ? static_cast<double>(elapsed) / prev_elapsed : EBF_MAX;
+      if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > detail::_ms_allocated)
+        break;
+
+      prev_elapsed = elapsed;
+    }
   }
 
   // A "go" command must always be answered; otherwise, the GUI will wait forever,
