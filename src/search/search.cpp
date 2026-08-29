@@ -200,11 +200,14 @@ void Search::detail::_restart() {
   _best_score = 0;
   _best_pv_length = 0;
 
-  _order_info = OrderInfo();
+  _order_info.new_search();
   _best_move = Move();
 }
 
+void Search::new_game() { detail::_order_info.new_game(); }
+
 void Search::init() {
+  detail::_order_info.new_game();
   detail::_restart();
   detail::_ms_allocated = 5000;
   detail::_soft_limit = 5000;
@@ -570,7 +573,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
-  MovePicker move_picker = MovePicker(&move_list, tt_move, _order_info);
+  MovePicker move_picker = MovePicker(board.get_curr_move(), &move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -633,7 +636,8 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
           if (!move.is_capture()) {
             _order_info.add_killer(move);
-            _order_info.add_history(move.get_from_cell(), move.get_to_cell(), depth);
+            _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
+                                    depth);
           }
 
           if (!_stop)
