@@ -5,7 +5,8 @@
 
 #include "search/mvv_lva.hpp"
 
-MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, OrderInfo &order_info)
+MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, const Move &prev_move,
+                       OrderInfo &order_info)
     : m_move_list(*move_list), m_curr_node(0) {
   for (uint8_t i = 0; i < m_move_list.size(); ++i) {
     if (m_move_list[i] == tt_move) {
@@ -13,7 +14,7 @@ MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, Or
       continue;
     }
 
-    // Warning!!! The value is not initialized, so we need to reset it later
+    // Warning!!! The value is not initialized, so we need to set up it later
     int32_t score;
     switch (m_move_list[i].get_flag()) {
       case Move::CAPTURE_PROMOTION:
@@ -34,8 +35,10 @@ MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, Or
         else if (m_move_list[i] == order_info.get_killer2())
           score = OrderInfo::KILLER2_BONUS;
         else
+          // Their sum still less than KILLER2_BONUS.
           score = order_info.get_history(color, m_move_list[i].get_from_cell(),
-                                         m_move_list[i].get_to_cell());
+                                         m_move_list[i].get_to_cell()) +
+                  order_info.get_cont_hist(prev_move, m_move_list[i]);
         break;
     }
     m_move_list.set_score(i, score);

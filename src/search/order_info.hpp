@@ -10,8 +10,16 @@
 class OrderInfo {
 private:
   int16_t m_ply;
+
+  // https://www.chessprogramming.org/History_Heuristic
+  // https://www.chessprogramming.org/Butterfly_Boards
   int32_t m_history[COLOR_SIZE][64][64]; // color, from square, to square
   Move m_killers1[MAX_SEARCH_PLY], m_killers2[MAX_SEARCH_PLY];
+
+  // Continuation history. Generalises the countermove heuristic, which keeps only
+  // the single best reply where this one scores every reply.
+  // https://www.chessprogramming.org/Countermove_Heuristic
+  int32_t m_cont_hist[PIECE_SIZE][64][PIECE_SIZE][64]; // prev piece/to, piece/to
 
 public:
   static constexpr int32_t KILLER1_BONUS = 200'000;
@@ -34,6 +42,9 @@ public:
 
   void add_killer(Move move);
   void add_history(Color color, uint8_t from, uint8_t to, int16_t depth);
+
+  void add_cont_hist(const Move &prev, const Move &move, int16_t depth);
+  [[nodiscard]] int32_t get_cont_hist(const Move &prev, const Move &move) const;
 
   [[nodiscard]] Move get_killer1() const;
   [[nodiscard]] Move get_killer2() const;

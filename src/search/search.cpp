@@ -169,6 +169,9 @@ namespace Search::detail {
   Move _best_pv[MAX_SEARCH_PLY];
   int16_t _best_pv_length;
 
+  // Need for previous move in Movepicker and better move ordering.
+  Move _move_stack[MAX_SEARCH_PLY];
+
   // https://chessprogramming.org/Late_Move_Reductions
   // Setup max moves to 64, because very unlickely that we reach more than 64 moves
   // During LMR, so just do it that way, instead of refering
@@ -548,6 +551,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         static_cast<int16_t>(NULL_MOVE_BASE_R + depth / NULL_MOVE_DEPTH_DIV +
                              std::clamp(surplus / NULL_MOVE_EVAL_DIV, 0, NULL_MOVE_MAX_R));
 
+    _move_stack[ply] = Move();
     board.make_null_move();
     ++_order_info;
 
@@ -573,7 +577,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
-  MovePicker move_picker = MovePicker(board.get_curr_move(), &move_list, tt_move, _order_info);
+  const Move prev_move = ply > 0 ? _move_stack[ply - 1] : Move();
+  MovePicker move_picker =
+      MovePicker(board.get_curr_move(), &move_list, tt_move, prev_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -600,6 +606,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         continue;
     }
 
+    _move_stack[ply] = move;
     board.make(move);
 
     int32_t score;
@@ -638,6 +645,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             _order_info.add_killer(move);
             _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
                                     depth);
+            _order_info.add_cont_hist(prev_move, move, depth);
           }
 
           if (!_stop)
