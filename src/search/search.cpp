@@ -135,8 +135,12 @@ namespace Search::detail {
   int64_t _max_nodes;
   std::atomic<bool> _stop;
 
-  int64_t _fh;  // cut-off at n move. The moves are accumulating.
-  int64_t _fhf; // cut-off at first move.
+  // Split by search for more precise information.
+  // *Searched* move, not *Generated* one.
+  int64_t _fh;    // main search: cut-offs
+  int64_t _fhf;   // main search: cut-offs on the first searched move
+  int64_t _q_fh;  // quiescence: cut-offs
+  int64_t _q_fhf; // quiescence: cut-offs on the first searched move
 
   // Search
   OrderInfo _order_info;
@@ -197,6 +201,8 @@ void Search::detail::_restart() {
 
   _fh = 0;
   _fhf = 0;
+  _q_fh = 0;
+  _q_fhf = 0;
   _mate = "";
   _seldepth = 0;
   _root_depth = 0;
@@ -339,13 +345,17 @@ void Search::detail::_info(int depth, int elapsed) {
                format_score(_best_score), _nodes, nps, elapsed, pv);
 
   // moq — move ordering quality, the share of fail-highs that resolved on the
-  // first move. Phase 2 reads it to judge whether staged generation is worth
-  // the work, so it survives the move to UCI on the "info string" channel.
-  if (_debug_info)
-    std::println("info string moq {}% fh {} fhf {}",
-                 static_cast<int>(100.0 * static_cast<double>(_fhf) /
-                                  static_cast<double>(_fh == 0 ? 1 : _fh)),
-                 _fh, _fhf);
+  // first move. Read "main" to judge ordering changes (killers, history,
+  // continuation history); read "qs" to judge whether staged generation in 3.3
+  // is worth the work.
+  if (_debug_info) {
+    const auto share = [](int64_t part, int64_t total) {
+      return static_cast<int>(100.0 * static_cast<double>(part) /
+                              static_cast<double>(total == 0 ? 1 : total));
+    };
+    std::println("info string moq main {}% (fh {} fhf {}) qs {}% (fh {} fhf {})",
+                 share(_fhf, _fh), _fh, _fhf, share(_q_fhf, _q_fh), _q_fh, _q_fhf);
+  }
 
   std::fflush(stdout);
 }
@@ -593,6 +603,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   // https://chessprogramming.org/Late_Move_Reductions
   int16_t move_count = 0;
 
+  // Separate from move_count on purpose to debug info.
+  int16_t searched = 0;
+
   while (move_picker.has_next()) {
     Move move = move_picker.get_next();
     ++move_count;
@@ -606,6 +619,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         continue;
     }
 
+    ++searched;
     _move_stack[ply] = move;
     board.make(move);
 
@@ -637,7 +651,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       if (score > alpha) {
         if (score >= beta) {
           --_order_info;
-          if (move_count == 1)
+          if (searched == 1)
             ++_fhf;
           ++_fh;
 
@@ -720,7 +734,7 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   const TTEntry *tt = TTable::probe(board.get_zob_hash());
   QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
 
-  bool first_move = true;
+  int16_t searched = 0;
   ++_order_info;
 
   while (q_move_picker.has_next()) {
@@ -742,6 +756,7 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     if (See::can_lose_material(move) && See::see(board, move) < 0)
       continue;
 
+    ++searched;
     board.make(move);
     const int32_t score = -_quiescence(board, -beta, -alpha);
     board.unmake(move);
@@ -752,15 +767,16 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
       if (score > alpha) {
         if (score >= beta) {
           --_order_info;
-          if (first_move)
-            ++_fhf;
-          ++_fh;
+
+          if (searched == 1)
+            ++_q_fhf;
+          ++_q_fh;
+
           return best_score;
         }
         alpha = score;
       }
     }
-    first_move = false;
   }
   --_order_info;
 
