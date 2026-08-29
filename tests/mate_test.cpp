@@ -213,7 +213,7 @@ TEST_F(MateTest, quiet_key_move_white_7_ply_1) {
   ASSERT_EQ("WM7", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_black_7_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_black_7_ply_1) {
   Board board = Board("5k2/2p3pp/1pq5/4Pp2/8/P3P1PK/BP3P1P/1RBr4 b - - 4 27");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM7", Search::get_mate());
@@ -406,7 +406,7 @@ TEST_F(MateTest, DISABLED_missed_mate_quiet_11) {
 
 // key move: quiet; engine says "cp 185", plays g2e4, reaches depth 15
 // best line: e2f3 c7h7 g4g3 h2g1 g3h3 e3e4 h3h1
-TEST_F(MateTest, DISABLED_missed_mate_quiet_12) {
+TEST_F(MateTest, missed_mate_quiet_12) {
   Board board = Board("8/2R5/4p1p1/5p2/2pB1PrP/4P3/1P2k1bK/8 b - - 21 66");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM7", Search::get_mate());

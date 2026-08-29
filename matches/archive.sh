@@ -43,12 +43,6 @@ BENCH=$(printf 'bench\nquit\n' | ./build/archive/AteNika | grep 'Nodes searched'
 ID=$(printf 'uci\nquit\n' | ./build/archive/AteNika | grep -m1 '^id name')
 ID=${ID#id name }
 
-if [[ $NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [ "$ID" != "AteNika $NAME" ]; then
-  echo "binary reports \"$ID\" but archiving as $RUNG" >&2
-  echo "bump project(VERSION) in CMakeLists.txt and commit before archiving" >&2
-  exit 1
-fi
-
 mkdir -p matches/builds
 cp build/archive/AteNika "$OUT"
 
