@@ -386,7 +386,10 @@ void Search::iter_deep(Board &board, bool print_info) {
     if (detail::_stop)
       break;
 
-    const int32_t score_drop = i > 1 ? prev_score - score : 0;
+    // Widened, because INF - (-INF) can overflow.
+    const int32_t score_drop =
+        i > 1 ? static_cast<int32_t>(std::clamp<int64_t>(int64_t{prev_score} - score, -INF, INF))
+              : 0;
     detail::_best_score = score;
     prev_score = score;
 
