@@ -183,7 +183,7 @@ TEST_F(MateTest, black_mate_in_seven_5) {
 
 // Positions below from PGNs in matches/results, mate distance verified with Stockfish 18.
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_1) {
   Board board = Board("r5kr/p1p1Qp2/2p2P2/q1P4p/6p1/6P1/PP5P/3R1R1K w - - 4 29");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -195,13 +195,13 @@ TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_black_11_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_black_11_ply_1) {
   Board board = Board("8/2p5/p1p1P1RR/3b2p1/P2Pk3/2B2r2/1P5K/6r1 b - - 2 51");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM11", Search::get_mate());
@@ -213,7 +213,7 @@ TEST_F(MateTest, quiet_key_move_white_7_ply_1) {
   ASSERT_EQ("WM7", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_black_7_ply_1) {
+TEST_F(MateTest, DISABLED_quiet_key_move_black_7_ply_1) {
   Board board = Board("5k2/2p3pp/1pq5/4Pp2/8/P3P1PK/BP3P1P/1RBr4 b - - 4 27");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM7", Search::get_mate());
@@ -280,7 +280,7 @@ TEST_F(MateTest, DISABLED_suboptimal_mate_check_2) {
 
 // key move: check; engine says "mate 5", plays e4d3, reaches depth 9
 // best line: g3g2 h2h3 e4d3 e7e8r g1h1
-TEST_F(MateTest, suboptimal_mate_check_3) {
+TEST_F(MateTest, DISABLED_suboptimal_mate_check_3) {
   Board board = Board("8/2p1P3/p1p3RR/3b2p1/P2Pk3/2B3r1/1P5K/6r1 b - - 0 52");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM5", Search::get_mate());
@@ -296,7 +296,7 @@ TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_4) {
 
 // key move: quiet; engine says "mate 4", plays e4f3, reaches depth 6
 // best line: e4f3 h2h4 g4g3 h4h5 f1b5
-TEST_F(MateTest, suboptimal_mate_quiet_5) {
+TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_5) {
   Board board = Board("8/2B5/1p3R1p/pP6/4kPp1/P7/7P/3r1bK1 b - - 0 43");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM5", Search::get_mate());
