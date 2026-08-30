@@ -24,6 +24,8 @@ public:
     Search::set_depth(16);
     Search::set_time(INF);
   }
+
+  void SetUp() override { Search::new_game(); }
 };
 
 TEST_F(MateTest, mate_in_3_vice_lesson_60) {

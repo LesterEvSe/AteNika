@@ -29,4 +29,3 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-0.3.5    | 92cdf2e  | 3783197    | 2026-08-26 | vs 0.3.3 +30.50 +/- 12.35 H1 \[0; 5] accepted |
 | atenika-0.3.6    | 05b9ed8  | 2770619    | 2026-08-26 | +56.86 +/- 22.58 H1 \[0; 10] accepted |
 | atenika-0.3.7    | fe08dad  | 2770619    | 2026-08-28 | +66.55 +/- 25.49 H1 \[0; 10] accepted |
-| atenika-0.3.8    | 39e4505  | 2976007    | 2026-08-30 |  |

@@ -19,6 +19,7 @@ void OrderInfo::new_search() {
   m_ply = 0;
   std::fill(std::begin(m_killers1), std::end(m_killers1), Move());
   std::fill(std::begin(m_killers2), std::end(m_killers2), Move());
+  std::memset(m_history, 0, sizeof(m_history));
 }
 
 void OrderInfo::new_game() {
