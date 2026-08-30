@@ -93,6 +93,14 @@ namespace {
   // https://www.chessprogramming.org/Delta_Pruning
   constexpr int32_t DELTA_MARGIN = 200;
 
+  // History-based reduction. Ordering quiets among themselves buys little here,
+  // because LMR exempts the first three moves, every tactical move and both
+  // killers -- so the history table only ever sorts moves that are all reduced
+  // anyway. Feeding it into the reduction instead is what gives it a say in
+  // which moves get searched properly. Main knob: the divisor.
+  constexpr int32_t LMR_HISTORY_DIV = 2'048;
+  constexpr int16_t LMR_HISTORY_MAX = 2;
+
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
   // counts plies, hence the halving.
@@ -172,9 +180,6 @@ namespace Search::detail {
   // half-built, so it never reaches here.
   Move _best_pv[MAX_SEARCH_PLY];
   int16_t _best_pv_length;
-
-  // Need for previous move in Movepicker and better move ordering.
-  // Move _move_stack[MAX_SEARCH_PLY];
 
   // https://chessprogramming.org/Late_Move_Reductions
   // Setup max moves to 64, because very unlickely that we reach more than 64 moves
@@ -561,7 +566,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         static_cast<int16_t>(NULL_MOVE_BASE_R + depth / NULL_MOVE_DEPTH_DIV +
                              std::clamp(surplus / NULL_MOVE_EVAL_DIV, 0, NULL_MOVE_MAX_R));
 
-    // _move_stack[ply] = Move();
     board.make_null_move();
     ++_order_info;
 
@@ -587,13 +591,10 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
-  MovePicker move_picker = MovePicker(board.get_curr_move(), &move_list, tt_move, _order_info);
-
-  /*
-  const Move prev_move = ply > 0 ? _move_stack[ply - 1] : Move();
-  MovePicker move_picker =
-      MovePicker(board.get_curr_move(), &move_list, tt_move, prev_move, _order_info);
-  */
+  // Captured before the loop: inside it the board is made, so get_curr_move()
+  // would answer with the opponent.
+  const Color us = board.get_curr_move();
+  MovePicker move_picker = MovePicker(us, &move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -624,7 +625,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     }
 
     ++searched;
-    // _move_stack[ply] = move;
     board.make(move);
 
     int32_t score;
@@ -637,6 +637,13 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       if (ply > 0 && depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() &&
           !(move == killer1) && !(move == killer2)) {
         r = _lmr[std::min<int>(depth, MAX_SEARCH_DEPTH)][std::min<int>(move_count, 63)];
+
+        // A quiet the history table already likes gets searched closer to full
+        // depth. One-directional on purpose: nothing is reduced *more* yet, so a
+        // failure here is the coupling, not a second new constant.
+        const int32_t hist = _order_info.get_history(us, move.get_from_cell(), move.get_to_cell());
+        r -= std::min<int16_t>(static_cast<int16_t>(hist / LMR_HISTORY_DIV), LMR_HISTORY_MAX);
+
         r = std::clamp<int16_t>(r, 0, depth - 2);
       }
       score = -_negamax(board, depth - 1 - r, -alpha - 1, -alpha, true);
@@ -663,7 +670,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             _order_info.add_killer(move);
             _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
                                     depth);
-            // _order_info.add_cont_hist(board.get_curr_move(), prev_move, move, depth);
           }
 
           if (!_stop)

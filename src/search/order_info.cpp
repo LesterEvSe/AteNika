@@ -7,10 +7,7 @@
 #include <cstring> // for std::memset
 
 // killers will be initialized automatically
-OrderInfo::OrderInfo() : m_ply(0) {
-  std::memset(m_history, 0, sizeof(m_history));
-  // std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
-}
+OrderInfo::OrderInfo() : m_ply(0) { std::memset(m_history, 0, sizeof(m_history)); }
 
 void OrderInfo::operator++() { ++m_ply; }
 void OrderInfo::operator--() { --m_ply; }
@@ -22,31 +19,7 @@ void OrderInfo::new_search() {
   std::memset(m_history, 0, sizeof(m_history));
 }
 
-void OrderInfo::new_game() {
-  new_search();
-  std::memset(m_history, 0, sizeof(m_history));
-  // std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
-}
-
-/*
-void OrderInfo::add_cont_hist(Color color, const Move &prev, const Move &move, int16_t depth) {
-  if (prev.get_flag() == Move::NULL_MOVE)
-    return;
-
-  const int32_t bonus = std::min(int32_t{depth} * depth, MAX_BONUS);
-  int32_t &entry = m_cont_hist[color][prev.get_move_piece()][prev.get_to_cell()]
-                              [move.get_move_piece()][move.get_to_cell()];
-  entry += bonus - entry * bonus / MAX_HISTORY;
-}
-
-int32_t OrderInfo::get_cont_hist(Color color, const Move &prev, const Move &move) const {
-  if (prev.get_flag() == Move::NULL_MOVE)
-    return 0;
-
-  return m_cont_hist[color][prev.get_move_piece()][prev.get_to_cell()][move.get_move_piece()]
-                    [move.get_to_cell()];
-}
-*/
+void OrderInfo::new_game() { new_search(); }
 
 // Gravity and setup bonus (restricted by MAX_BONUS and MAX_HISTORY)
 void OrderInfo::add_history(Color color, uint8_t from, uint8_t to, int16_t depth) {

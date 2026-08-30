@@ -29,3 +29,20 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-0.3.5    | 92cdf2e  | 3783197    | 2026-08-26 | vs 0.3.3 +30.50 +/- 12.35 H1 \[0; 5] accepted |
 | atenika-0.3.6    | 05b9ed8  | 2770619    | 2026-08-26 | +56.86 +/- 22.58 H1 \[0; 10] accepted |
 | atenika-0.3.7    | fe08dad  | 2770619    | 2026-08-28 | +66.55 +/- 25.49 H1 \[0; 10] accepted |
+| atenika-0.3.8    | 7d4cbf0  | 2663901    | 2026-08-30 |  |
+
+## Rejected features
+
+Kept here because a feature that measures flat is worth remembering — otherwise
+it gets re-implemented, and each attempt costs a day of SPRT throughput.
+
+| feature | roadmap | measured | verdict |
+| ------- | ------- | -------- | ------- |
+| Late move pruning (min_depth 2, quiet-only count, non-PV) | 3, *+20–30* | -12.87 +/- 26.07 (540 games, LLR -0.87) | dropped `af3c614` |
+| Continuation history, no colour dimension | 10, *+25–40* | -76.13 +/- 48.10 (102 games, LOS 0.06%) | bug: every cell shared by both reply directions |
+| Continuation history, colour-indexed | 10, *+25–40* | -44.41 +/- 49.85 (118 games, LOS 3.77%) | dropped; table too sparse to learn at these depths |
+| History persisting across moves (9c) | part of 9 | -31.35 +/- 40.03 (200 games) | reverted; also broke `bench`, `PvTest`, `MateTest` |
+| Butterfly + gravity, per-search clear (9a+9b) | 9, *+10–20* | -0.00 +/- 40.58 (180 games, PairsRatio 1.04) | kept as a correctness fix, not a gainer |
+
+**The pattern.** Every one of these touches quiet-move ordering in the main
+search

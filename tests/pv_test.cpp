@@ -31,6 +31,8 @@ public:
     Search::set_time(INF);
     Search::set_max_nodes(0);
 
+    // Each test starts from an empty table, so a PV never depends on what the
+    // test before it happened to store.
     TTable::clear();
     Search::new_game();
   }
