@@ -11,13 +11,37 @@ class Movegen {
 private:
   const Board &m_board;
   MoveList m_moves;
-  MoveList m_legal_moves;
+
+  Color m_us;
+  Color m_them;
+  uint8_t m_king_cell;
+  bool m_double_check;
+
+  // Answer to the question: "Can this move can stop check?"
+  bitboard m_check_mask;
+
+  // Occupancy with our own king cleared, for testing where the king may step.
+  bitboard m_king_occupancy;
+
+  // Only the entries named by m_pinned are written or read.
+  bitboard m_pinned;
+  bitboard m_pin_ray[64];
+
+  void init_masks();
+
+  // Destinations open to the piece on `from`, check and pin applied.
+  [[nodiscard]] bitboard allowed_from(uint8_t from) const;
+  [[nodiscard]] bool target_ok(uint8_t from, uint8_t to) const;
+  [[nodiscard]] bitboard king_targets(bitboard targets) const;
+
+  // En passant is the one case pins and check masks do not decide, because two
+  // pawns leave the rank at once.
+  [[nodiscard]] bool is_legal_slow(const Move &move) const;
 
   void add_moves(uint8_t from, bitboard moves, PieceType piece);
   void add_attacks(uint8_t from, bitboard attacks, PieceType move_piece, Color defender);
 
   void gen_moves();
-  void gen_legal_moves();
 
   void gen_white_moves();
   void gen_black_moves();

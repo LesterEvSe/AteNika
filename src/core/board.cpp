@@ -206,6 +206,10 @@ bool Board::king_in_check(Color color) const {
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
 bool Board::under_attack(Color defender, uint8_t cell) const {
+  return under_attack(defender, cell, get_all_pieces());
+}
+
+bool Board::under_attack(Color defender, uint8_t cell, bitboard blockers) const {
   Color attacker = get_opposite_move(defender);
   if (get_pieces(attacker, PAWN) & Attacks::get_pawn_attacks(defender, cell))
     return true;
@@ -215,7 +219,6 @@ bool Board::under_attack(Color defender, uint8_t cell) const {
     return true;
 
   // Sliding Attacks
-  bitboard blockers = get_all_pieces();
   if ((get_pieces(attacker, ROOK) | get_pieces(attacker, QUEEN)) &
       Attacks::get_rook_attacks(cell, blockers))
     return true;

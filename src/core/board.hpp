@@ -134,6 +134,10 @@ public:
   [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
   [[nodiscard]] bool king_in_check(Color color) const;
   [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
+
+  // Movegen passes the occupancy with the moving king cleared
+  // to allow the sliding figures to move more freely.
+  [[nodiscard]] bool under_attack(Color defender, uint8_t cell, bitboard blockers) const;
   [[nodiscard]] bool threefold_rule() const;
   [[nodiscard]] bool is_repetition() const;
 
