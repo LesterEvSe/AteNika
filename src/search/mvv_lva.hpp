@@ -21,6 +21,9 @@ namespace MvvLva {
   constexpr int32_t CAPTURE_BONUS = 400'000;
   constexpr int32_t PROMOTION_BONUS = 300'000;
 
+  // Sorts below every quiet, because history is bounded to [0, MAX_HISTORY].
+  constexpr int32_t BAD_CAPTURE_BONUS = -400'000;
+
   extern int32_t mvv_lva[PIECE_SIZE - 1][PIECE_SIZE];
   void init();
 }; // namespace MvvLva

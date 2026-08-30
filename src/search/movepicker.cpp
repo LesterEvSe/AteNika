@@ -4,9 +4,13 @@
 #include "search/movepicker.hpp"
 
 #include "search/mvv_lva.hpp"
+#include "search/see.hpp"
 
-MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, OrderInfo &order_info)
+MovePicker::MovePicker(const Board &board, MoveList *move_list, const Move &tt_move,
+                       OrderInfo &order_info)
     : m_move_list(*move_list), m_curr_node(0) {
+  const Color color = board.get_curr_move();
+
   for (uint8_t i = 0; i < m_move_list.size(); ++i) {
     if (m_move_list[i] == tt_move) {
       m_move_list.set_score(i, INF);
@@ -22,11 +26,15 @@ MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, Or
             MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
         break;
       case Move::EN_PASSANT:
-      case Move::CAPTURE:
+      case Move::CAPTURE: {
+        const bool losing = See::can_lose_material(m_move_list[i]) &&
+                            See::see(board, m_move_list[i]) < 0;
+
         score =
-            MvvLva::CAPTURE_BONUS +
+            (losing ? MvvLva::BAD_CAPTURE_BONUS : MvvLva::CAPTURE_BONUS) +
             MvvLva::mvv_lva[m_move_list[i].get_captured_piece()][m_move_list[i].get_move_piece()];
         break;
+      }
       case Move::PROMOTION: score = MvvLva::PROMOTION_BONUS; break;
       default:
         if (m_move_list[i] == order_info.get_killer1())

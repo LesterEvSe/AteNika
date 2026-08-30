@@ -583,7 +583,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   // Captured before the loop: inside it the board is made, so get_curr_move()
   // would answer with the opponent.
   const Color us = board.get_curr_move();
-  MovePicker move_picker = MovePicker(us, &move_list, tt_move, _order_info);
+  MovePicker move_picker = MovePicker(board, &move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
