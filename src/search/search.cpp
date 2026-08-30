@@ -615,8 +615,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     Move move = move_picker.get_next();
     ++move_count;
 
-    // Late move pruning, then futility. Stops pruning if every move leads to defeat.
-    // MovePicker sorts best-first, so if many moves we haven't good moves,
+    // Futility. MovePicker sorts best-first, so if many moves we haven't good moves,
     // then assume next one does not improve the alpha.
     if (ply > 0 && !in_check && !move.is_tactical() && curr_best_score > -MATE_BOUND) {
       // Is this move too far behind to catch up?
