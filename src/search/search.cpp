@@ -93,6 +93,14 @@ namespace {
   // https://www.chessprogramming.org/Delta_Pruning
   constexpr int32_t DELTA_MARGIN = 200;
 
+  // History-based reduction. Ordering quiets among themselves buys little here,
+  // because LMR exempts the first three moves, every tactical move and both
+  // killers -- so the history table only ever sorts moves that are all reduced
+  // anyway. Feeding it into the reduction instead is what gives it a say in
+  // which moves get searched properly. Main knob: the divisor.
+  constexpr int32_t LMR_HISTORY_DIV = 2'048;
+  constexpr int16_t LMR_HISTORY_MAX = 2;
+
   // UCI reports mate distance in moves, signed from the side to move: positive
   // when we deliver it, negative when we are the one being mated. The search
   // counts plies, hence the halving.
@@ -135,8 +143,12 @@ namespace Search::detail {
   int64_t _max_nodes;
   std::atomic<bool> _stop;
 
-  int64_t _fh;  // cut-off at n move. The moves are accumulating.
-  int64_t _fhf; // cut-off at first move.
+  // Split by search for more precise information.
+  // *Searched* move, not *Generated* one.
+  int64_t _fh;    // main search: cut-offs
+  int64_t _fhf;   // main search: cut-offs on the first searched move
+  int64_t _q_fh;  // quiescence: cut-offs
+  int64_t _q_fhf; // quiescence: cut-offs on the first searched move
 
   // Search
   OrderInfo _order_info;
@@ -194,17 +206,22 @@ void Search::detail::_restart() {
 
   _fh = 0;
   _fhf = 0;
+  _q_fh = 0;
+  _q_fhf = 0;
   _mate = "";
   _seldepth = 0;
   _root_depth = 0;
   _best_score = 0;
   _best_pv_length = 0;
 
-  _order_info = OrderInfo();
+  _order_info.new_search();
   _best_move = Move();
 }
 
+void Search::new_game() { detail::_order_info.new_game(); }
+
 void Search::init() {
+  detail::_order_info.new_game();
   detail::_restart();
   detail::_ms_allocated = 5000;
   detail::_soft_limit = 5000;
@@ -333,13 +350,17 @@ void Search::detail::_info(int depth, int elapsed) {
                format_score(_best_score), _nodes, nps, elapsed, pv);
 
   // moq — move ordering quality, the share of fail-highs that resolved on the
-  // first move. Phase 2 reads it to judge whether staged generation is worth
-  // the work, so it survives the move to UCI on the "info string" channel.
-  if (_debug_info)
-    std::println("info string moq {}% fh {} fhf {}",
-                 static_cast<int>(100.0 * static_cast<double>(_fhf) /
-                                  static_cast<double>(_fh == 0 ? 1 : _fh)),
-                 _fh, _fhf);
+  // first move. Read "main" to judge ordering changes (killers, history,
+  // continuation history); read "qs" to judge whether staged generation in 3.3
+  // is worth the work.
+  if (_debug_info) {
+    const auto share = [](int64_t part, int64_t total) {
+      return static_cast<int>(100.0 * static_cast<double>(part) /
+                              static_cast<double>(total == 0 ? 1 : total));
+    };
+    std::println("info string moq main {}% (fh {} fhf {}) qs {}% (fh {} fhf {})", share(_fhf, _fh),
+                 _fh, _fhf, share(_q_fhf, _q_fh), _q_fh, _q_fhf);
+  }
 
   std::fflush(stdout);
 }
@@ -570,7 +591,10 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
-  MovePicker move_picker = MovePicker(&move_list, tt_move, _order_info);
+  // Captured before the loop: inside it the board is made, so get_curr_move()
+  // would answer with the opponent.
+  const Color us = board.get_curr_move();
+  MovePicker move_picker = MovePicker(us, &move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -583,6 +607,9 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 
   // https://chessprogramming.org/Late_Move_Reductions
   int16_t move_count = 0;
+
+  // Separate from move_count on purpose to debug info.
+  int16_t searched = 0;
 
   while (move_picker.has_next()) {
     Move move = move_picker.get_next();
@@ -597,6 +624,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         continue;
     }
 
+    ++searched;
     board.make(move);
 
     int32_t score;
@@ -609,6 +637,13 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       if (ply > 0 && depth >= 3 && move_count > 3 && !in_check && !move.is_tactical() &&
           !(move == killer1) && !(move == killer2)) {
         r = _lmr[std::min<int>(depth, MAX_SEARCH_DEPTH)][std::min<int>(move_count, 63)];
+
+        // A quiet the history table already likes gets searched closer to full
+        // depth. One-directional on purpose: nothing is reduced *more* yet, so a
+        // failure here is the coupling, not a second new constant.
+        const int32_t hist = _order_info.get_history(us, move.get_from_cell(), move.get_to_cell());
+        r -= std::min<int16_t>(static_cast<int16_t>(hist / LMR_HISTORY_DIV), LMR_HISTORY_MAX);
+
         r = std::clamp<int16_t>(r, 0, depth - 2);
       }
       score = -_negamax(board, depth - 1 - r, -alpha - 1, -alpha, true);
@@ -627,13 +662,14 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
       if (score > alpha) {
         if (score >= beta) {
           --_order_info;
-          if (move_count == 1)
+          if (searched == 1)
             ++_fhf;
           ++_fh;
 
           if (!move.is_capture()) {
             _order_info.add_killer(move);
-            _order_info.add_history(move.get_from_cell(), move.get_to_cell(), depth);
+            _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
+                                    depth);
           }
 
           if (!_stop)
@@ -708,7 +744,7 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   const TTEntry *tt = TTable::probe(board.get_zob_hash());
   QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
 
-  bool first_move = true;
+  int16_t searched = 0;
   ++_order_info;
 
   while (q_move_picker.has_next()) {
@@ -730,6 +766,7 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
     if (See::can_lose_material(move) && See::see(board, move) < 0)
       continue;
 
+    ++searched;
     board.make(move);
     const int32_t score = -_quiescence(board, -beta, -alpha);
     board.unmake(move);
@@ -740,15 +777,16 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
       if (score > alpha) {
         if (score >= beta) {
           --_order_info;
-          if (first_move)
-            ++_fhf;
-          ++_fh;
+
+          if (searched == 1)
+            ++_q_fhf;
+          ++_q_fh;
+
           return best_score;
         }
         alpha = score;
       }
     }
-    first_move = false;
   }
   --_order_info;
 

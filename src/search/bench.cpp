@@ -74,6 +74,7 @@ int64_t Bench::run(int depth) {
     // Each position starts from an empty table, so the result depends only
     // on the binary and not on the order positions happen to run in.
     TTable::clear();
+    Search::new_game();
 
     Board board(POSITIONS[i]);
     Search::iter_deep(board, false);
