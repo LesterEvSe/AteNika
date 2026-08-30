@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25...4.4)
 
 project(AteNika
-    VERSION     0.3.0
+    VERSION     0.4.0
     DESCRIPTION "A chess engine written in C++23"
     LANGUAGES   CXX
 )
