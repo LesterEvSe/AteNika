@@ -35,13 +35,6 @@ namespace {
 
   // Time management. The soft limit decides whether to open another iteration,
   // the hard limit aborts one already running.
-  //
-  // Measured over 397 game-sides at 8+0.08: the engine finished its games having
-  // spent 75% of its clock. Iteration prediction alone does not recover that --
-  // at an EBF near 2, stopping past half the budget is already optimal for a
-  // single move. The gain has to come from spending the allocation and from
-  // moving time between critical and obvious positions, which is what the
-  // stability and panic scaling below do.
   constexpr int32_t DEFAULT_MOVES_LEFT = 20;
   constexpr int32_t MAX_MOVES_LEFT = 30;
 
@@ -93,11 +86,7 @@ namespace {
   // https://www.chessprogramming.org/Delta_Pruning
   constexpr int32_t DELTA_MARGIN = 200;
 
-  // History-based reduction. Ordering quiets among themselves buys little here,
-  // because LMR exempts the first three moves, every tactical move and both
-  // killers -- so the history table only ever sorts moves that are all reduced
-  // anyway. Feeding it into the reduction instead is what gives it a say in
-  // which moves get searched properly. Main knob: the divisor.
+  // History-based reduction.
   constexpr int32_t LMR_HISTORY_DIV = 2'048;
   constexpr int16_t LMR_HISTORY_MAX = 2;
 
@@ -733,10 +722,11 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (best_score > alpha)
     alpha = best_score;
 
-  Movegen movegen(board);
+  Movegen movegen(board, Movegen::QUIESCENCE);
   MoveList &move_list = movegen.get_legal_moves();
-  if (move_list.size() == 0)
-    return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
+
+  if (move_list.size() == 0 && movegen.in_check())
+    return -INF + _order_info.get_ply();
 
   // Quiescence never cuts on the table and never writes to it, so the entry is
   // only used to order the first move.

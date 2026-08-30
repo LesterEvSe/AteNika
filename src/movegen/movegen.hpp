@@ -8,6 +8,10 @@
 #include "core/move_list.hpp"
 
 class Movegen {
+public:
+  // Need both of it, to control it.
+  enum Mode : uint8_t { ALL, QUIESCENCE };
+
 private:
   const Board &m_board;
   MoveList m_moves;
@@ -16,6 +20,8 @@ private:
   Color m_them;
   uint8_t m_king_cell;
   bool m_double_check;
+  bool m_in_check;
+  bool m_captures_only;
 
   // Answer to the question: "Can this move can stop check?"
   bitboard m_check_mask;
@@ -75,8 +81,11 @@ private:
   void gen_black_queen_moves();
 
 public:
-  explicit Movegen(const Board &board);
+  explicit Movegen(const Board &board, Mode mode = ALL);
   [[nodiscard]] MoveList &get_legal_moves();
+
+  // Free to the caller: init_masks has to find the checkers anyway.
+  [[nodiscard]] bool in_check() const;
 };
 
 #endif // ATENIKA_MOVEGEN_HPP

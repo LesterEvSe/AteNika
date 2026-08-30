@@ -21,12 +21,14 @@ namespace {
   }
 } // namespace
 
-Movegen::Movegen(const Board &board) : m_board(board) {
+Movegen::Movegen(const Board &board, Mode mode) : m_board(board) {
   init_masks();
+  m_captures_only = mode == QUIESCENCE && !m_in_check;
   gen_moves();
 }
 
 MoveList &Movegen::get_legal_moves() { return m_moves; }
+bool Movegen::in_check() const { return m_in_check; }
 
 void Movegen::init_masks() {
   m_us = m_board.get_curr_move();
@@ -47,6 +49,7 @@ void Movegen::init_masks() {
       (Attacks::get_rook_attacks(m_king_cell, occupancy) & rooks);
 
   const uint8_t count = count_bits(checkers);
+  m_in_check = count > 0;
   m_double_check = count > 1;
 
   if (count == 0)
@@ -152,12 +155,16 @@ void Movegen::gen_black_moves() {
 }
 
 void Movegen::gen_white_pawn_moves_and_captures() {
-  gen_white_pawn_moves();
+  if (!m_captures_only)
+    gen_white_pawn_moves();
+
   gen_white_left_pawn_captures();
   gen_white_right_pawn_captures();
 }
 void Movegen::gen_black_pawn_moves_and_captures() {
-  gen_black_pawn_moves();
+  if (!m_captures_only)
+    gen_black_pawn_moves();
+
   gen_black_left_pawn_captures();
   gen_black_right_pawn_captures();
 }
@@ -360,30 +367,32 @@ void Movegen::gen_black_right_pawn_captures() {
 
 void Movegen::gen_white_king_moves() {
   uint8_t king_cell = lsb(m_board.get_pieces(WHITE, KING));
-  if (m_board.can_white_ks_castle())
-    m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
-  if (m_board.can_white_qs_castle())
-    m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
-
   bitboard moves = Attacks::get_king_attacks(king_cell);
   bitboard attacks = king_targets(moves & m_board.get_side_pieces(BLACK));
-  moves = king_targets(moves & m_board.get_free_cells());
 
-  add_moves(king_cell, moves, KING);
+  if (!m_captures_only) {
+    if (m_board.can_white_ks_castle())
+      m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
+    if (m_board.can_white_qs_castle())
+      m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
+
+    add_moves(king_cell, king_targets(moves & m_board.get_free_cells()), KING);
+  }
   add_attacks(king_cell, attacks, KING, BLACK);
 }
 void Movegen::gen_black_king_moves() {
   uint8_t king_cell = lsb(m_board.get_pieces(BLACK, KING));
-  if (m_board.can_black_ks_castle())
-    m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
-  if (m_board.can_black_qs_castle())
-    m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
-
   bitboard moves = Attacks::get_king_attacks(king_cell);
   bitboard attacks = king_targets(moves & m_board.get_side_pieces(WHITE));
-  moves = king_targets(moves & m_board.get_free_cells());
 
-  add_moves(king_cell, moves, KING);
+  if (!m_captures_only) {
+    if (m_board.can_black_ks_castle())
+      m_moves.emplace_back(Move(king_cell, king_cell + 2, KING, Move::KSIDE_CASTLING));
+    if (m_board.can_black_qs_castle())
+      m_moves.emplace_back(Move(king_cell, king_cell - 2, KING, Move::QSIDE_CASTLING));
+
+    add_moves(king_cell, king_targets(moves & m_board.get_free_cells()), KING);
+  }
   add_attacks(king_cell, attacks, KING, WHITE);
 }
 
@@ -397,9 +406,9 @@ void Movegen::gen_white_knight_moves() {
 
     bitboard moves = Attacks::get_knight_attacks(cell);
     bitboard attacks = moves & m_board.get_side_pieces(BLACK) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, KNIGHT);
 
-    add_moves(cell, moves, KNIGHT);
     add_attacks(cell, attacks, KNIGHT, BLACK);
   }
 }
@@ -413,9 +422,9 @@ void Movegen::gen_black_knight_moves() {
 
     bitboard moves = Attacks::get_knight_attacks(cell);
     bitboard attacks = moves & m_board.get_side_pieces(WHITE) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, KNIGHT);
 
-    add_moves(cell, moves, KNIGHT);
     add_attacks(cell, attacks, KNIGHT, WHITE);
   }
 }
@@ -430,9 +439,9 @@ void Movegen::gen_white_rook_moves() {
 
     bitboard moves = Attacks::get_rook_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(BLACK) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, ROOK);
 
-    add_moves(cell, moves, ROOK);
     add_attacks(cell, attacks, ROOK, BLACK);
   }
 }
@@ -446,9 +455,9 @@ void Movegen::gen_black_rook_moves() {
 
     bitboard moves = Attacks::get_rook_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(WHITE) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, ROOK);
 
-    add_moves(cell, moves, ROOK);
     add_attacks(cell, attacks, ROOK, WHITE);
   }
 }
@@ -463,9 +472,9 @@ void Movegen::gen_white_bishop_moves() {
 
     bitboard moves = Attacks::get_bishop_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(BLACK) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, BISHOP);
 
-    add_moves(cell, moves, BISHOP);
     add_attacks(cell, attacks, BISHOP, BLACK);
   }
 }
@@ -479,9 +488,9 @@ void Movegen::gen_black_bishop_moves() {
 
     bitboard moves = Attacks::get_bishop_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(WHITE) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, BISHOP);
 
-    add_moves(cell, moves, BISHOP);
     add_attacks(cell, attacks, BISHOP, WHITE);
   }
 }
@@ -496,9 +505,9 @@ void Movegen::gen_white_queen_moves() {
 
     bitboard moves = Attacks::get_queen_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(BLACK) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, QUEEN);
 
-    add_moves(cell, moves, QUEEN);
     add_attacks(cell, attacks, QUEEN, BLACK);
   }
 }
@@ -512,9 +521,9 @@ void Movegen::gen_black_queen_moves() {
 
     bitboard moves = Attacks::get_queen_attacks(cell, m_board.get_all_pieces());
     bitboard attacks = moves & m_board.get_side_pieces(WHITE) & allowed;
-    moves &= free_cells & allowed;
+    if (!m_captures_only)
+      add_moves(cell, moves & free_cells & allowed, QUEEN);
 
-    add_moves(cell, moves, QUEEN);
     add_attacks(cell, attacks, QUEEN, WHITE);
   }
 }

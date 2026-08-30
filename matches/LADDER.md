@@ -47,3 +47,4 @@ search
 | atenika-0.3.6    | 05b9ed8  | 2770619    | 2026-08-26 | +56.86 +/- 22.58 H1 \[0; 10] accepted |
 | atenika-0.3.7    | fe08dad  | 2770619    | 2026-08-28 | +66.55 +/- 25.49 H1 \[0; 10] accepted |
 | atenika-0.3.8    | 9a418fb  | 2724987    | 2026-08-30 | butterfly history + gravity + history-based LMR relief; +4.32 +/- 30.28 (322 games, LLR 0.01). Not resolved, shipped as a correctness fix. Drop history *heuristic*, costs 15.4% more nodes. |
+| atenika-0.4.1    | 124e296  | 16650230   | 2026-08-30 |  |
