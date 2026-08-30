@@ -12,8 +12,7 @@ private:
   uint8_t m_curr_node;
 
 public:
-  explicit MovePicker(Color color, MoveList *move_list, const Move &tt_move, const Move &prev_move,
-                      OrderInfo &order_info);
+  explicit MovePicker(Color color, MoveList *move_list, const Move &tt_move, OrderInfo &order_info);
   [[nodiscard]] bool has_next() const;
   const Move &get_next(); // Using selection sorting in place, O(n) at a time
 };

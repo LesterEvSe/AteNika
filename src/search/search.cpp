@@ -174,7 +174,7 @@ namespace Search::detail {
   int16_t _best_pv_length;
 
   // Need for previous move in Movepicker and better move ordering.
-  Move _move_stack[MAX_SEARCH_PLY];
+  // Move _move_stack[MAX_SEARCH_PLY];
 
   // https://chessprogramming.org/Late_Move_Reductions
   // Setup max moves to 64, because very unlickely that we reach more than 64 moves
@@ -353,8 +353,8 @@ void Search::detail::_info(int depth, int elapsed) {
       return static_cast<int>(100.0 * static_cast<double>(part) /
                               static_cast<double>(total == 0 ? 1 : total));
     };
-    std::println("info string moq main {}% (fh {} fhf {}) qs {}% (fh {} fhf {})",
-                 share(_fhf, _fh), _fh, _fhf, share(_q_fhf, _q_fh), _q_fh, _q_fhf);
+    std::println("info string moq main {}% (fh {} fhf {}) qs {}% (fh {} fhf {})", share(_fhf, _fh),
+                 _fh, _fhf, share(_q_fhf, _q_fh), _q_fh, _q_fhf);
   }
 
   std::fflush(stdout);
@@ -561,7 +561,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
         static_cast<int16_t>(NULL_MOVE_BASE_R + depth / NULL_MOVE_DEPTH_DIV +
                              std::clamp(surplus / NULL_MOVE_EVAL_DIV, 0, NULL_MOVE_MAX_R));
 
-    _move_stack[ply] = Move();
+    // _move_stack[ply] = Move();
     board.make_null_move();
     ++_order_info;
 
@@ -587,9 +587,13 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     return in_check ? -INF + _order_info.get_ply() : 0;
 
 
+  MovePicker move_picker = MovePicker(board.get_curr_move(), &move_list, tt_move, _order_info);
+
+  /*
   const Move prev_move = ply > 0 ? _move_stack[ply - 1] : Move();
   MovePicker move_picker =
       MovePicker(board.get_curr_move(), &move_list, tt_move, prev_move, _order_info);
+  */
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -620,7 +624,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     }
 
     ++searched;
-    _move_stack[ply] = move;
+    // _move_stack[ply] = move;
     board.make(move);
 
     int32_t score;
@@ -659,7 +663,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             _order_info.add_killer(move);
             _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
                                     depth);
-            _order_info.add_cont_hist(board.get_curr_move(), prev_move, move, depth);
+            // _order_info.add_cont_hist(board.get_curr_move(), prev_move, move, depth);
           }
 
           if (!_stop)

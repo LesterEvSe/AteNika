@@ -9,7 +9,7 @@
 // killers will be initialized automatically
 OrderInfo::OrderInfo() : m_ply(0) {
   std::memset(m_history, 0, sizeof(m_history));
-  std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
+  // std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
 }
 
 void OrderInfo::operator++() { ++m_ply; }
@@ -24,9 +24,10 @@ void OrderInfo::new_search() {
 void OrderInfo::new_game() {
   new_search();
   std::memset(m_history, 0, sizeof(m_history));
-  std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
+  // std::memset(m_cont_hist, 0, sizeof(m_cont_hist));
 }
 
+/*
 void OrderInfo::add_cont_hist(Color color, const Move &prev, const Move &move, int16_t depth) {
   if (prev.get_flag() == Move::NULL_MOVE)
     return;
@@ -44,6 +45,7 @@ int32_t OrderInfo::get_cont_hist(Color color, const Move &prev, const Move &move
   return m_cont_hist[color][prev.get_move_piece()][prev.get_to_cell()][move.get_move_piece()]
                     [move.get_to_cell()];
 }
+*/
 
 // Gravity and setup bonus (restricted by MAX_BONUS and MAX_HISTORY)
 void OrderInfo::add_history(Color color, uint8_t from, uint8_t to, int16_t depth) {
