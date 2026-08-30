@@ -16,6 +16,9 @@ uint64_t ZobristHash::KS_CASTLE[COLOR_SIZE];
 uint64_t ZobristHash::WHITE_MOVE;
 
 void ZobristHash::init() {
+  // Reseeded, to fix bug with different hashes from the test to test.
+  gen.seed(PRNG);
+
   for (uint8_t j = 0; j < PIECE_SIZE; ++j)
     for (uint8_t k = 0; k < 64; ++k) {
       PIECE_KEYS[BLACK][j][k] = dist(gen);

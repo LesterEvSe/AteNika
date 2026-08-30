@@ -21,12 +21,13 @@ if [ -n "$DIRTY" ]; then
 fi
 
 SHA=$(git rev-parse --short HEAD)
-OUT="matches/builds/atenika-$NAME"
+RUNG="atenika-$NAME"
+OUT="matches/builds/$RUNG"
 
 # The ladder is append-only, so re-running for a name already recorded would
 # leave two rows claiming to be the same rung.
-if grep -q "^| $NAME " matches/LADDER.md; then
-  echo "$NAME is already in LADDER.md; pick another name or drop that row" >&2
+if grep -q "^| $RUNG " matches/LADDER.md; then
+  echo "$RUNG is already in LADDER.md; pick another name or drop that row" >&2
   exit 1
 fi
 
@@ -39,9 +40,12 @@ cmake --build build/archive -j"$(nproc)" > /dev/null
 
 BENCH=$(printf 'bench\nquit\n' | ./build/archive/AteNika | grep 'Nodes searched' | grep -oE '[0-9]+')
 
+ID=$(printf 'uci\nquit\n' | ./build/archive/AteNika | grep -m1 '^id name')
+ID=${ID#id name }
+
 mkdir -p matches/builds
 cp build/archive/AteNika "$OUT"
 
 printf '| %-16s | %-8s | %-10s | %-10s | %s |\n' \
-       "$NAME" "$SHA" "$BENCH" "$(date -I)" "" >> matches/LADDER.md
-echo "archived $OUT   sha $SHA   bench $BENCH"
+       "$RUNG" "$SHA" "$BENCH" "$(date -I)" "" >> matches/LADDER.md
+echo "archived $OUT   sha $SHA   bench $BENCH   id \"$ID\""

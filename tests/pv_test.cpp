@@ -34,6 +34,7 @@ public:
     // Each test starts from an empty table, so a PV never depends on what the
     // test before it happened to store.
     TTable::clear();
+    Search::new_game();
   }
 
   static void expect_pv_is_legal(Board board) {

@@ -15,6 +15,7 @@
 #include "movegen/perft.hpp"
 #include "search/bench.hpp"
 #include "search/search.hpp"
+#include "search/ttable.hpp"
 
 namespace {
   using Output::reply;
@@ -138,6 +139,8 @@ bool Extras::dispatch(Board &board, const std::string &token, std::istringstream
 void Extras::help() {
   reply("UCI commands:");
   reply("  uci                       identify the engine and list its options");
+  reply("  debug [on|off]            move-ordering stats (moq, fh, fhf) as \"info string\"");
+  reply("                            lines during a search; off by default");
   reply("  isready                   answered with \"readyok\", also during a search");
   reply("  ucinewgame                forget everything learned from the previous game");
   reply("  position startpos [moves ...]");
@@ -146,6 +149,8 @@ void Extras::help() {
   reply("  go [wtime ms] [btime ms] [winc ms] [binc ms] [movestogo n]");
   reply("  stop                      end the search now and print the best move so far");
   reply("  setoption name <id> value <x>");
+  reply("                            \"Hash\" is the only option: {}-{} MB, default {}",
+        TTable::MIN_HASH_MB, TTable::MAX_HASH_MB, TTable::DEFAULT_HASH_MB);
   reply("  quit\n");
 
   reply("Non-standard commands:");

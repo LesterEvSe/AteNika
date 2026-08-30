@@ -6,4 +6,5 @@ build/*
 # Engines, books and PGNs
 matches/*
 !matches/*.sh
+!matches/*.py
 !matches/*.md

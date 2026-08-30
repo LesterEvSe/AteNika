@@ -30,6 +30,9 @@ namespace Search {
 
   void init();
 
+  // Need to reset order_info for uci.
+  void new_game();
+
   // Driving a search. This is the whole surface UCI needs: resolve one "go"
   // into limits, run it, interrupt it, read the answer back.
   void set_limits(const Limits &limits, Color side_to_move);

@@ -213,6 +213,7 @@ void Uci::start() {
 
     } else if (token == "ucinewgame") {
       TTable::clear();
+      Search::new_game();
       board = Board();
 
     } else if (token == "position") {

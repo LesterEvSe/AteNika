@@ -8,7 +8,9 @@
 #include "core/board.hpp"
 #include "core/zobrist_hash.hpp"
 #include "eval/eval.hpp"
+#include "search/mvv_lva.hpp"
 #include "search/search.hpp"
+#include "search/ttable.hpp"
 
 // Check mate for n ply
 class MateTest : public testing::Test {
@@ -17,10 +19,23 @@ public:
     ZobristHash::init();
     Rays::init();
     Attacks::init();
+    MvvLva::init();
     Eval::init();
     Search::init();
+  }
+
+  // Each test starts from empty tables, so a result never depends on which
+  // tests happened to run before it. PvTest guards the same way.
+  // Per test, not per fixture: PvTest leaves Search::set_depth at 5-8 and never
+  // restores it, so a depth set once in SetUpTestCase is gone by the time these
+  // run. Clearing both tables keeps a result from depending on run order too.
+  void SetUp() override {
     Search::set_depth(16);
     Search::set_time(INF);
+    Search::set_max_nodes(0);
+
+    TTable::clear();
+    Search::new_game();
   }
 };
 
@@ -179,48 +194,233 @@ TEST_F(MateTest, black_mate_in_seven_5) {
   ASSERT_EQ("BM7", Search::get_mate());
 }
 
-// White Mate in 15
-/*
-4r2b/p1pppN2/1p1P4/3B1p2/2Pk4/BK6/4P1N1/8 w - - bm Nf7-g5; ce +M8; pv Nf7-g5 Kd4-e5 Ba3-b2+ Ke5xd6
-Ng5-f7+ Kd6-c5 Bb2-a3+ Kc5-d4 Kb3-c2 f5-f4 e2-e3+ f4xe3 Ng2-h4 e3-e2 Nh4-f5+;
-4r2r/p3ppk1/3p1np1/q2P1PQ1/1pp1PN1P/5n2/PPP5/1KN1R1R1 w - - bm Nf4-e6+; ce +M8; pv Nf4-e6+ Kg7-g8
-Qg5xg6+ f7xg6 Rg1xg6+ Kg8-h7 Ne6-g5+ Nf3xg5 h4xg5 Qa5xa2+ Nc1xa2 e7-e6 Re1-h1+ Nf6-h5 Rh1xh5+;
-4r3/1pPnqk2/7P/2pP4/p1P2B2/2PB3Q/P7/1K6 w - - bm Qh3-f5+; ce +M8; pv Qh3-f5+ Kf7-g8 Qf5-g6+ Kg8-h8
-d5-d6 Qe7-e1+ Bf4-c1 Qe1xc1+ Kb1xc1 Re8-e1+ Kc1-c2 Re1-c1+ Kc2xc1 b7-b6 Qg6-h7+;
-4r3/2R2p2/1n5k/p3PR1p/r2P1N2/3K3P/6P1/8 w - - bm Rc7xf7; ce +M8; pv Rc7xf7 Ra4-a3+ Kd3-e4 Ra3-e3+
-Ke4xe3 Nb6-d5+ Nf4xd5 Re8-f8 Rf5-f6+ Kh6-g5 Rf7-g7+ Kg5-h4 Nd5-f4 a5-a4 g2-g3+;
-4rk2/1b4qp/6pN/pp6/2B2b2/P1n1B2Q/5PPP/4RK2 w - - bm Be3-c5+; ce +M8; pv Be3-c5+ Bf4-d6 Bc5xd6+
-Re8-e7 Re1xe7 Bb7xg2+ Kf1xg2 Qg7xe7 Qh3-e6 Kf8-g7 Nh6-f5+ g6xf5 Bd6-e5+ Qe7-f6 Qe6xf6+;
-4rrk1/p1pb1ppp/1p6/n1qPB3/8/2PBR3/5PPP/3QR1K1 w - - bm Bd3xh7+; ce +M8; pv Bd3xh7+ Kg8-h8 Qd1-h5
-Bd7-g4 Be5xg7+ Kh8xg7 Qh5-g5+ Kg7xh7 Qg5-h4+ Bg4-h5 Qh4xh5+ Kh7-g7 Re3-g3+ Kg7-f6 Qh5-f3+;
-5B2/6PP/4NppP/3Bk1Pq/PP2P3/K1p5/1pppp3/8 w - - bm h7-h8N; ce +M8; pv h7-h8N b2-b1N+ Ka3-b3 c2-c1N+
-Kb3-c4 Nb1-a3+ Kc4-c5 Nc1-b3+ Kc5-b6 Na3-c4+ Kb6-c7 f6xg5 g7-g8N g5-g4 Nh8-f7+;
-5B2/Kn3b1k/p5p1/2p5/6p1/8/2r2r2/6Q1 w - - bm Qg1-a1; ce +M8; pv Qg1-a1 Rc2-b2 Qa1-c1 Rb2-d2 Qc1-c3
-Rd2-d4 Qc3-e3 Rd4-f4 Qe3-e5 Rf4-f6 Qe5-g5 g4-g3 Qg5-h6+ Kh7-g8 Qh6-g7+;
-5Bn1/7n/1b2Np2/4pP2/2p1p1Bp/pp4kP/4P3/3N3K w - - bm Ne6-g7; ce +M8; pv Ne6-g7 Kg3-f4 e2-e3+ Bb6xe3
-Ng7-e6+ Kf4-g3 Bf8-b4 c4-c3 Bb4xc3 Be3-f2 Bc3xe5+ f6xe5 Nd1-c3 e4-e3 Nc3-e2+;
-5K1k/3p2p1/5pPp/5p2/2p1P3/2p4P/8/6N1 w - -
- */
+// Positions below from PGNs in matches/results, mate distance verified with Stockfish 18.
 
-// Black Mate in 15
-/*
-3r2k1/Q4p2/Bp2p1pp/3r4/1P1n3q/P7/1P3PPP/2R1R1K1 b - - bm Nd4-f3+; ce +M8; pv Nd4-f3+ Kg1-f1 Nf3xh2+
-Kf1-g1 Nh2-f3+ Kg1-f1 Rd5-d2 Qa7xf7+ Kg8xf7 Rc1-c7+ Kf7-f8 Rc7-f7+ Kf8xf7 g2-g3 Qh4-h1+;
-3r3k/1p5p/7p/p4B2/4pKP1/3q3P/Pb1N1P2/3R1R2 b - - bm Rd8-e8 Rd8-d5; ce +M8; pv Rd8-e8 g4-g5 Bb2-e5+
-Kf4-g4 Qd3-e2+ Kg4-h4 h6xg5+ Kh4xg5 Re8-g8+ Bf5-g6 h7xg6 f2-f3 Qe2-g2+ Kg5-h6 Be5-f4+;
-3rk3/p1p2pp1/2p5/3bP3/7Q/6P1/PPP1KP2/RN5q b - - bm Qh1-d1+; ce +M8; pv Qh1-d1+ Ke2-e3 Qd1-e1+ Ke3-d3
-Bd5-e4+ Kd3-c4 Qe1-e2+ Kc4-b4 Rd8-b8+ Kb4-c5 Rb8-b5+ Kc5-d4 c6-c5+ Kd4-c3 Qe2xc2+;
-3rq1k1/pQ4pN/8/5p2/1p6/P1b1BP2/4KP1n/RB6 b - - bm Rd8-d2+; ce +M8; pv Rd8-d2+ Ke2-e1 Rd2-a2+ Ke1-d1
-Qe8-d8+ Qb7-d7 Qd8xd7+ Kd1-c1 Bc3-d2+ Kc1-d1 Bd2xe3+ Bb1-d3 Qd7xd3+ Kd1-e1 Nh2xf3+;
-4r1k1/5bp1/1p6/1Rp4p/2Pp1QPq/3P1P2/2P1r1B1/5RK1 b - - bm Re2xg2+; ce +M8; pv Re2xg2+ Kg1xg2 Re8-e2+
-Rf1-f2 Re2xf2+ Kg2-g1 Rf2-e2 Qf4-b8+ Kg8-h7 Qb8-g8+ Bf7xg8 Rb5-b1 Qh4-h2+ Kg1-f1 Qh2-f2+;
-4r1k1/5pp1/p6p/3n4/Pp2r3/8/1qQB2PP/2NK1B1R b - - bm Re4-e1+; ce +M8; pv Re4-e1+ Bd2xe1 Nd5-e3+
-Kd1-e2 Ne3xc2+ Ke2-f3 Nc2xe1+ Kf3-g4 Re8-e4+ Kg4-g3 Re4-e3+ Kg3-g4 Qb2-d4+ Kg4-h5 Re3-e5+;
-4r1k1/8/2p5/2p1Rpq1/6P1/1PP4Q/P5K1/RN1r4 b - - bm Re8xe5; ce +M8; pv Re8xe5 Qh3-f3 Re5-e1 c3-c4
-Re1-g1+ Kg2-f2 Rd1-e1 Qf3-g3 Re1-f1+ Kf2-e2 Rg1xg3 g4xf5 Qg5-e3+ Ke2xf1 Rg3-g1+;
-4r2k/pp6/3p4/1P3P2/2Pp3p/P2PnK1b/3QN1rP/1R2R3 b - - bm Bh3-g4+; ce +M8; pv Bh3-g4+ Kf3-f4 Rg2-f2+
-Kf4-g5 Re8-g8+ Kg5-f6 Rf2xf5+ Kf6-e6 Rg8-g6+ Ke6-e7 Rg6-g7+ Ke7-e8 Bg4-h5+ Ke8-d8 Rf5-f8+;
-5N1k/1b4pp/1p3q2/p3n3/P1B1p1r1/1P6/1Q2RPPP/5RK1 b - - bm Ne5-f3+; ce +M8; pv Ne5-f3+ Kg1-h1 Rg4-h4
-h2-h3 Qf6-d6 Qb2xg7+ Kh8xg7 Nf8-e6+ Kg7-h8 Ne6-f4 Rh4xh3+ g2xh3 Qd6xf4 h3-h4 Qf4-h2+;
-5bk1/p4ppp/Qp6/4B3/1P6/Pq2P1P1/2rr1P1P/R4RK1 b - -
- */
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_1) {
+  Board board = Board("r5kr/p1p1Qp2/2p2P2/q1P4p/6p1/6P1/PP5P/3R1R1K w - - 4 29");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM11", Search::get_mate());
+}
+
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
+  Board board = Board("1r2r1k1/1p3p2/p4Pp1/5P1p/1P1pB3/5Q1P/P2Bb1K1/8 w - - 1 38");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM11", Search::get_mate());
+}
+
+TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
+  Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM11", Search::get_mate());
+}
+
+TEST_F(MateTest, DISABLED_quiet_key_move_black_11_ply_1) {
+  Board board = Board("8/2p5/p1p1P1RR/3b2p1/P2Pk3/2B2r2/1P5K/6r1 b - - 2 51");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM11", Search::get_mate());
+}
+
+TEST_F(MateTest, quiet_key_move_white_7_ply_1) {
+  Board board = Board("7k/5R2/7p/6p1/4N3/8/1r4P1/6K1 w - - 0 41");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM7", Search::get_mate());
+}
+
+TEST_F(MateTest, DISABLED_quiet_key_move_black_7_ply_1) {
+  Board board = Board("5k2/2p3pp/1pq5/4Pp2/8/P3P1PK/BP3P1P/1RBr4 b - - 4 27");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM7", Search::get_mate());
+}
+
+TEST_F(MateTest, quiet_key_move_white_5_ply_1) {
+  Board board = Board("rk1nr3/ppR4R/7p/4p3/4N3/PP2P3/2P1KPP1/8 w - - 1 33");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM5", Search::get_mate());
+}
+
+// A mate delivered on the fiftieth move stands - the game ends before any draw
+// can be claimed. Both of these were scored as quiet centipawn positions until
+// the terminal test was moved ahead of the MAX_PLY return.
+TEST_F(MateTest, mate_on_the_fiftieth_move_1) {
+  Board board = Board("8/8/4p3/5p2/2b4N/4k2P/1Q2n1PK/3q4 b - - 99 94");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM1", Search::get_mate());
+}
+
+TEST_F(MateTest, mate_on_the_fiftieth_move_2) {
+  Board board = Board("8/8/3qp3/5p2/2b4N/4k2P/1Q2n1P1/7K b - - 97 93");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM3", Search::get_mate());
+}
+
+TEST_F(MateTest, quiet_key_move_black_5_ply_1) {
+  Board board = Board("2B5/8/8/1b4p1/1B4P1/1p1rk3/1P6/2K5 b - - 37 67");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM5", Search::get_mate());
+}
+
+
+// Mined from matches/results, mate distance confirmed with Stockfish 18, then
+// AteNika re-tested at "go depth 20 nodes 30000000".
+//
+// Two causes are already identified and worth attacking before the rest:
+//
+//   B - iter_deep breaks on the first mate it finds, so a longer mate found at
+//       a shallow depth is locked in and the deeper iteration that would find
+//       the shorter line never runs. Mate-distance pruning is the real fix.
+//
+//   C - DISABLED_missed_mate_check_4 scores 0, a draw, with a halfmove clock of
+//       0, so it is not the fifty-move rule. That points at is_repetition()
+//       firing on the second occurrence, which is not yet a draw.
+
+// B: a mate is found, but not the shortest one
+
+// key move: capture; engine says "mate 4", plays f4g4, reaches depth 7
+// best line: f4g4 h5g4 e3g5 g8h8 g5g7
+TEST_F(MateTest, suboptimal_mate_capture_1) {
+  Board board = Board("5rk1/prn1Rp2/3p1P2/1qpP3p/5RbP/1B2QN2/1PP2P2/6K1 w - - 3 34");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM5", Search::get_mate());
+}
+
+// key move: check; engine says "mate 4", plays d2h6, reaches depth 8
+// best line: d2h6 h8g8 f5f6 b5a6 h6g7
+TEST_F(MateTest, DISABLED_suboptimal_mate_check_2) {
+  Board board = Board("r4r1k/1p3p2/1q1p2p1/pb1P1P1p/P1Pp4/1P4R1/2BQ2K1/R7 w - - 0 28");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM5", Search::get_mate());
+}
+
+// key move: check; engine says "mate 5", plays e4d3, reaches depth 9
+// best line: g3g2 h2h3 e4d3 e7e8r g1h1
+TEST_F(MateTest, suboptimal_mate_check_3) {
+  Board board = Board("8/2p1P3/p1p3RR/3b2p1/P2Pk3/2B3r1/1P5K/6r1 b - - 0 52");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM5", Search::get_mate());
+}
+
+// key move: quiet; engine says "mate 7", plays f1f5, reaches depth 12
+// best line: f1f5 a5d2 d1d2 h8h6 f5g5 h6g6 g5g6 a8e8 d2d8 e8d8 e5e7
+TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_4) {
+  Board board = Board("r4k1r/p1p2p2/2p2P2/q1P1Q2p/6p1/6P1/PP5P/3R1R1K w - - 2 28");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM11", Search::get_mate());
+}
+
+// key move: quiet; engine says "mate 4", plays e4f3, reaches depth 6
+// best line: e4f3 h2h4 g4g3 h4h5 f1b5
+TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_5) {
+  Board board = Board("8/2B5/1p3R1p/pP6/4kPp1/P7/7P/3r1bK1 b - - 0 43");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM5", Search::get_mate());
+}
+
+// key move: quiet; engine says "mate 4", plays g7g5, reaches depth 6
+// best line: g7h8 f4h5 h8h5 e1c1 h5h1
+TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_6) {
+  Board board = Board("r3r1k1/6q1/p2b4/1PpP1pP1/4nN2/4Bb2/PPQ2P2/R3R1K1 b - - 2 29");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM5", Search::get_mate());
+}
+
+// C: no mate found at all
+
+// key move: capture; engine says "cp 870", plays g4g3, reaches depth 20
+// best line: g4g3 b5f5 e2b2 f5g5 f3g4 g5g4 g3g4 f1e1 c4c3 e1d1 g4f3 d1c1 f3e3 c1d1 e3d3 d1c1 b2a2
+// c1b1 a2a3 b1c1 a3a1
+TEST_F(MateTest, DISABLED_missed_mate_capture_1) {
+  Board board = Board("8/8/8/1R3p2/2p3k1/P4bP1/1P2r3/5K2 b - - 6 47");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM21", Search::get_mate());
+}
+
+// key move: capture; engine says "cp 955", plays f1e1, reaches depth 20
+// best line: f1e1 g2g3 e1g1 e8d7 e6f6 d7h3 g5g4 a7h7 g4h3 h7h6 f6g5 h6g6 g5g6 g3g4 g1g2 h2h3 e2g1
+// h3h4 g2g4
+TEST_F(MateTest, DISABLED_missed_mate_capture_2) {
+  Board board = Board("4B3/R7/1P1pk2p/P1p1p1p1/2P1P3/4n3/4n1PK/4Br2 b - - 10 41");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM19", Search::get_mate());
+}
+
+// key move: capture; engine says "cp 685", plays d2d5, reaches depth 14
+// best line: c3a5 b7c6 a5a6 c6c5 e3c5 d6d5 c5a7 b8a8 a6c6 a8a7 c6c7 a7a8 e6a6
+TEST_F(MateTest, DISABLED_missed_mate_capture_3) {
+  Board board = Board("1k1r1brq/1pp3p1/2PpR1P1/p6p/P6P/1PQ1B1p1/2PR2K1/8 w - - 3 38");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM13", Search::get_mate());
+}
+
+// key move: check; engine says "cp 745", plays d2e2, reaches depth 20
+// best line: d2e2 e1f1 g4g3 b5f5 e2b2 f5g5 f3g4 g5g4 g3g4 f1e1 c4c3 e1d1 g4f3 d1c1 b2f2 c1b1 f3e3
+// a3a4 e3d3 a4a5 c3c2 b1b2 f2f1 b2b3 c2c1q b3b4 c1c4 b4a3 f1a1 a3b2 c4c3
+TEST_F(MateTest, DISABLED_missed_mate_check_4) {
+  Board board = Board("8/8/8/1R3p2/2p3k1/P4bP1/1P1r4/4K3 b - - 4 46");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM31", Search::get_mate());
+}
+
+// key move: check; engine says "cp 670", plays e8e5, reaches depth 19
+// best line: e8c6 a2d5 c6d5 g2h3 d1g1 c1d2 d5g2 h3h4 g2h2 h4g5 h2h3 d2b4 f8e8 f2f3 g1g3 g5f4 g7g5
+TEST_F(MateTest, DISABLED_missed_mate_check_5) {
+  Board board = Board("4qk2/2p3pp/1p6/4Pp2/8/P3P1P1/BP3PKP/1RBr4 b - - 2 26");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM17", Search::get_mate());
+}
+
+// key move: check; engine says "cp 580", plays f4e3, reaches depth 14
+// best line: g5e5 e8d8 f4g5 f7f6 f1f6 g7f6 e5f6 d8e8 a1f1 g8g5 f6g5 a6c7 g5g6 e8d8 f1f8 c7e8 g6e8
+TEST_F(MateTest, DISABLED_missed_mate_check_6) {
+  Board board = Board("r1q1kbr1/p2p1pp1/npbP4/1Np3Q1/2P1PB2/P2B4/1P5P/R4RK1 w q - 1 22");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM17", Search::get_mate());
+}
+
+// key move: check; engine says "cp 0", plays e4d3, reaches depth 16
+// best line: f8f3 h3h2 f3g3 g6g5 g3g5 h6h4 e4d3 h4h3 d3c2 h3f3 d5f3 h2h3 g1h1
+TEST_F(MateTest, DISABLED_missed_mate_check_7) {
+  Board board = Board("5r2/2p5/p1p1P1RR/3b2p1/P2Pk3/2B4K/1P6/6r1 b - - 0 50");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM13", Search::get_mate());
+}
+
+// key move: quiet; engine says "cp 1760", plays e5f4, reaches depth 18
+// best line: e5f5 g7f7 f5g6 f7f3 g4f3 h4g3 d7e8 g3f2 h5h4 f2f1 a3a2 f1g1 g6g5 g1f1 e8b5 f1e1 f3f2
+// e1d1 f2f1q
+TEST_F(MateTest, DISABLED_missed_mate_quiet_8) {
+  Board board = Board("8/3bP1R1/8/4k2p/6pK/r7/8/8 b - - 7 75");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM19", Search::get_mate());
+}
+
+// key move: quiet; engine says "cp 930", plays f3f7, reaches depth 14
+// best line: f3f7 d8d6 e3e7 d3d2 g3h2 c3g3 h2g3 d6d3 g3g2 d3g3 g2g3 d2d1q f7f8 g8h7 e7g7
+TEST_F(MateTest, DISABLED_missed_mate_quiet_9) {
+  Board board = Board("3r2k1/R5p1/8/7P/8/2qpQRK1/8/8 w - - 9 53");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM15", Search::get_mate());
+}
+
+// key move: quiet; engine says "cp 352", plays d2h6, reaches depth 16
+// best line: d2h6 h8g8 h6g5 g8h8 f6f7 d4e2 c3e2 b6b2 c1b2 d8g8 g5f6 g8g7 f6g7
+TEST_F(MateTest, DISABLED_missed_mate_quiet_10) {
+  Board board = Board("3r3k/pp5p/1q1p1R2/2p5/2PnP3/2N5/PP1QB1P1/2K4n w - - 7 27");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("WM13", Search::get_mate());
+}
+
+// key move: quiet; engine says "cp 140", plays b5c6, reaches depth 13
+// best line: e7h4 a3c5 d6c5 d1f1 b6g6 d2f3 h4h3 f3e1 g6g2 e1g2 h3g2
+TEST_F(MateTest, DISABLED_missed_mate_quiet_11) {
+  Board board = Board("4r1k1/2p1qpp1/pr1p3p/1b6/2P1Pn2/QB1n4/PP1N1PPP/R1BR2K1 b - - 0 24");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM11", Search::get_mate());
+}
+
+// key move: quiet; engine says "cp 185", plays g2e4, reaches depth 15
+// best line: e2f3 c7h7 g4g3 h2g1 g3h3 e3e4 h3h1
+TEST_F(MateTest, missed_mate_quiet_12) {
+  Board board = Board("8/2R5/4p1p1/5p2/2pB1PrP/4P3/1P2k1bK/8 b - - 21 66");
+  Search::iter_deep(board, false);
+  ASSERT_EQ("BM7", Search::get_mate());
+}
