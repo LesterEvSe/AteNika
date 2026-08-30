@@ -10,6 +10,7 @@
 #include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
+#include "search/ttable.hpp"
 
 // Check mate for n ply
 class MateTest : public testing::Test {
@@ -21,11 +22,21 @@ public:
     MvvLva::init();
     Eval::init();
     Search::init();
-    Search::set_depth(16);
-    Search::set_time(INF);
   }
 
-  void SetUp() override { Search::new_game(); }
+  // Each test starts from empty tables, so a result never depends on which
+  // tests happened to run before it. PvTest guards the same way.
+  // Per test, not per fixture: PvTest leaves Search::set_depth at 5-8 and never
+  // restores it, so a depth set once in SetUpTestCase is gone by the time these
+  // run. Clearing both tables keeps a result from depending on run order too.
+  void SetUp() override {
+    Search::set_depth(16);
+    Search::set_time(INF);
+    Search::set_max_nodes(0);
+
+    TTable::clear();
+    Search::new_game();
+  }
 };
 
 TEST_F(MateTest, mate_in_3_vice_lesson_60) {
@@ -197,7 +208,7 @@ TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -266,7 +277,7 @@ TEST_F(MateTest, quiet_key_move_black_5_ply_1) {
 
 // key move: capture; engine says "mate 4", plays f4g4, reaches depth 7
 // best line: f4g4 h5g4 e3g5 g8h8 g5g7
-TEST_F(MateTest, DISABLED_suboptimal_mate_capture_1) {
+TEST_F(MateTest, suboptimal_mate_capture_1) {
   Board board = Board("5rk1/prn1Rp2/3p1P2/1qpP3p/5RbP/1B2QN2/1PP2P2/6K1 w - - 3 34");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM5", Search::get_mate());
@@ -282,7 +293,7 @@ TEST_F(MateTest, DISABLED_suboptimal_mate_check_2) {
 
 // key move: check; engine says "mate 5", plays e4d3, reaches depth 9
 // best line: g3g2 h2h3 e4d3 e7e8r g1h1
-TEST_F(MateTest, DISABLED_suboptimal_mate_check_3) {
+TEST_F(MateTest, suboptimal_mate_check_3) {
   Board board = Board("8/2p1P3/p1p3RR/3b2p1/P2Pk3/2B3r1/1P5K/6r1 b - - 0 52");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM5", Search::get_mate());
