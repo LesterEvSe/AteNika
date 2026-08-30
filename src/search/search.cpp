@@ -659,7 +659,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
             _order_info.add_killer(move);
             _order_info.add_history(board.get_curr_move(), move.get_from_cell(), move.get_to_cell(),
                                     depth);
-            _order_info.add_cont_hist(prev_move, move, depth);
+            _order_info.add_cont_hist(board.get_curr_move(), prev_move, move, depth);
           }
 
           if (!_stop)

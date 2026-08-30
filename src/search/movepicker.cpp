@@ -38,7 +38,7 @@ MovePicker::MovePicker(Color color, MoveList *move_list, const Move &tt_move, co
           // Their sum still less than KILLER2_BONUS.
           score = order_info.get_history(color, m_move_list[i].get_from_cell(),
                                          m_move_list[i].get_to_cell()) +
-                  order_info.get_cont_hist(prev_move, m_move_list[i]);
+                  order_info.get_cont_hist(color, prev_move, m_move_list[i]);
         break;
     }
     m_move_list.set_score(i, score);
