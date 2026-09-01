@@ -17,7 +17,6 @@
 #include "movegen/movegen.hpp"
 #include "search/movepicker.hpp"
 #include "search/order_info.hpp"
-#include "search/qmovepicker.hpp"
 #include "search/see.hpp"
 #include "search/ttable.hpp"
 
@@ -692,7 +691,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 }
 
 int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
-  // check limits here
   if (_check_limits())
     return 0;
 
@@ -714,46 +712,56 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (board.is_repetition())
     return 0;
 
+  const bool in_check = board.king_in_check(board.get_curr_move());
+
   // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-  const int32_t stand_pat = Eval::evaluate(board);
-  int32_t best_score = stand_pat;
-  if (best_score >= beta)
-    return best_score;
-  if (best_score > alpha)
-    alpha = best_score;
+  // Standing pat is the option to decline to move, which does not exist in
+  // check, so a checked node starts from nothing and has to find a real evasion.
+  int32_t stand_pat = 0;
+  int32_t best_score = -INF;
+
+  if (!in_check) {
+    stand_pat = Eval::evaluate(board);
+    best_score = stand_pat;
+
+    if (best_score >= beta)
+      return best_score;
+    if (best_score > alpha)
+      alpha = best_score;
+  }
 
   Movegen movegen(board, Movegen::QUIESCENCE);
   MoveList &move_list = movegen.get_legal_moves();
 
-  if (move_list.size() == 0 && movegen.in_check())
-    return -INF + _order_info.get_ply();
+  if (move_list.size() == 0)
+    return in_check ? -INF + ply : best_score;
 
   // Quiescence never cuts on the table and never writes to it, so the entry is
   // only used to order the first move.
   const TTEntry *tt = TTable::probe(board.get_zob_hash());
-  QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
+  MovePicker move_picker =
+      MovePicker(board, &move_list, tt != nullptr ? tt->move : Move(), _order_info);
 
   int16_t searched = 0;
   ++_order_info;
 
-  while (q_move_picker.has_next()) {
-    Move move = q_move_picker.get_next();
+  while (move_picker.has_next()) {
+    Move move = move_picker.get_next();
 
-    // Even winning the victim outright leaves this move below alpha, so it
-    // cannot change what this node returns. QMovePicker only yields captures,
-    // so get_captured_piece() is never NONE here.
-    int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
-    if (move.get_flag() == Move::CAPTURE_PROMOTION)
-      gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
-              Eval::detail::MATERIAL_BONUS[PAWN];
+    // Neither prune is sound in check.
+    if (!in_check) {
+      int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
+      if (move.get_flag() == Move::CAPTURE_PROMOTION)
+        gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
+                Eval::detail::MATERIAL_BONUS[PAWN];
 
-    if (stand_pat + gain + DELTA_MARGIN <= alpha)
-      continue;
+      if (stand_pat + gain + DELTA_MARGIN <= alpha)
+        continue;
 
-    // A capture that loses material cannot be the move that makes this position
-    // quiet, and searching it only deepens the tree.
-    if (See::can_lose_material(move) && See::see(board, move) < 0)
-      continue;
+      // A capture that loses material cannot be the move that makes this position quiet.
+      if (See::can_lose_material(move) && See::see(board, move) < 0)
+        continue;
+    }
 
     ++searched;
     board.make(move);
