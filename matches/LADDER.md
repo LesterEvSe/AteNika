@@ -14,6 +14,8 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-0.3.0 | stash-1690 | 10+0.1 | 1000 | 1816.7 +/- 21.6 |
 | atenika-0.3.0 | stash-1886 | 10+0.1 | 1000 | 1880.2 +/- 19.8 |
 | atenika-0.4.0 | stash-2298 | 10+0.1 | 2000 | 2295.1 +/- 14.1 |
+| atenika-0.5.0 | stash-2298 | 10+0.1 | 1000 | 2457.8 +/- 21.4 |
+| atenika-0.5.0 | stash-2473 | 10+0.1 | 1000 | 2511.8 +/- 19.7 |
 
 ## Rejected features
 
