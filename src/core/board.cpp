@@ -101,7 +101,7 @@ Board::Board(const std::string &short_fen) {
     m_en_passant_cell = get_cell(en_passant);
 
   // istream has no uint8_t overload that reads a number, so parse as int and
-  // narrow explicitly — MSVC /W4 rejects the implicit form (C4244).
+  // narrow explicitly. MSVC /W4 rejects the implicit form (C4244).
   int temp_ply;
   iss >> temp_ply;
   m_ply = static_cast<uint8_t>(temp_ply);
@@ -200,9 +200,6 @@ bool Board::king_in_check(Color color) const {
   return under_attack(color, king_cell);
 }
 
-// This allows us not to go through absolutely all the pieces in order
-// to say whether some piece attack this cell or not.
-//
 // Main idea. If on the current square there is for example a WHITE KNIGHT,
 // and it attacks BLACK KNIGHT, therefore the cell under attack.
 bool Board::under_attack(Color defender, uint8_t cell) const {
@@ -408,7 +405,6 @@ void Board::unmake(const Move &move) {
       reset(m_pieces[m_player_move][move.get_promotion_piece()], to);
       break;
     default: // Move::QUIET and Move::LONG_PAWN_MOVE
-      // new code here
       set(m_pieces[m_player_move][move.get_move_piece()], move.get_from_cell());
       reset(m_pieces[m_player_move][move.get_move_piece()], to);
       break;

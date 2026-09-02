@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
@@ -83,7 +84,7 @@ private:
   static constexpr uint16_t MAX_MOVES{2048};
 
   int16_t m_moves{0};
-  HistoryNode m_history[MAX_MOVES]{};
+  std::vector<HistoryNode> m_history{MAX_MOVES};
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);

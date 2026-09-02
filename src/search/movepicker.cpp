@@ -27,8 +27,8 @@ MovePicker::MovePicker(const Board &board, MoveList *move_list, const Move &tt_m
         break;
       case Move::EN_PASSANT:
       case Move::CAPTURE: {
-        const bool losing = See::can_lose_material(m_move_list[i]) &&
-                            See::see(board, m_move_list[i]) < 0;
+        const bool losing =
+            See::can_lose_material(m_move_list[i]) && See::see(board, m_move_list[i]) < 0;
 
         score =
             (losing ? MvvLva::BAD_CAPTURE_BONUS : MvvLva::CAPTURE_BONUS) +

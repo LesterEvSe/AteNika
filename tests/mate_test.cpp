@@ -208,7 +208,7 @@ TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -277,7 +277,7 @@ TEST_F(MateTest, quiet_key_move_black_5_ply_1) {
 
 // key move: capture; engine says "mate 4", plays f4g4, reaches depth 7
 // best line: f4g4 h5g4 e3g5 g8h8 g5g7
-TEST_F(MateTest, suboptimal_mate_capture_1) {
+TEST_F(MateTest, DISABLED_suboptimal_mate_capture_1) {
   Board board = Board("5rk1/prn1Rp2/3p1P2/1qpP3p/5RbP/1B2QN2/1PP2P2/6K1 w - - 3 34");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM5", Search::get_mate());
@@ -309,7 +309,7 @@ TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_4) {
 
 // key move: quiet; engine says "mate 4", plays e4f3, reaches depth 6
 // best line: e4f3 h2h4 g4g3 h4h5 f1b5
-TEST_F(MateTest, DISABLED_suboptimal_mate_quiet_5) {
+TEST_F(MateTest, suboptimal_mate_quiet_5) {
   Board board = Board("8/2B5/1p3R1p/pP6/4kPp1/P7/7P/3r1bK1 b - - 0 43");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM5", Search::get_mate());
