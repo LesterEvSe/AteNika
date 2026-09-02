@@ -14,7 +14,7 @@ private:
   int32_t m_scores[218];
 
 public:
-  MoveList() : m_size(0), m_moves{Move()} {}
+  MoveList() : m_size(0) {}
   [[nodiscard]] uint8_t size() const;
 
   // Only 4 bytes, so can just copy it.

@@ -17,7 +17,7 @@ uint64_t ZobristHash::WHITE_MOVE;
 
 void ZobristHash::init() {
   // Reseeded, to fix bug with different hashes from the test to test.
-  gen.seed(PRNG);
+  gen.seed(PRNG); // NOLINT(bugprone-random-generator-seed)
 
   for (uint8_t j = 0; j < PIECE_SIZE; ++j)
     for (uint8_t k = 0; k < 64; ++k) {

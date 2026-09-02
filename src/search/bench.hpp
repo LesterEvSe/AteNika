@@ -19,7 +19,7 @@ namespace Bench {
 
   // Raise it once the search cheaper per ply (if next depth run under 10s);
   // changing it changes the number, so treat a depth change as its own commit.
-  constexpr int DEFAULT_DEPTH = 11;
+  constexpr int DEFAULT_DEPTH = 13;
 
   // Returns the total node count so callers can use it programmatically.
   int64_t run(int depth = DEFAULT_DEPTH);

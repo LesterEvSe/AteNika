@@ -33,15 +33,24 @@ namespace {
       "6k1/6p1/7p/P1N5/1r3p2/7P/1b3PP1/4R1K1 w - - 0 1",
       "8/3k4/8/8/8/8/4P3/4K3 w - - 0 1",
       "r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQ - 0 1",
+
+      // Some self-playing position out of UHO_4060_v4.
+      "r4rk1/ppp1q1bp/3pPn2/8/2Pnp1B1/8/PP1N1P1P/R1BQR1K1 w - - 5 9",
+      "2kr1b1Q/p2pq3/bpn2pp1/2pB4/8/2N3P1/PP1BPP1P/R3K2R w KQ - 3 9",
+      "3rr3/2p2ppk/pp2p2p/4N3/2p5/P5Pb/1P1N1P2/1K1R2R1 w - - 2 15",
+      "8/2k5/1pb2Bp1/p4p2/1p2Pb1P/7P/1PK2PB1/R7 w - a6 0 23",
+      "3r2k1/R4p1p/5pp1/5P2/3Nb3/4P2P/6P1/6K1 w - - 0 23",
+      "4k3/1P1N3p/p5p1/8/8/6P1/1P3P1P/6K1 w - - 1 33",
+      "8/8/7p/1pk1p1p1/p1p1r3/5NP1/1P1K1P2/R7 w - - 0 33",
+
+      // Halfmove clock near MAX_PLY.
+      "8/8/3k4/8/8/3K4/8/R2B3r w - - 92 60",
   };
 
   constexpr int POSITION_COUNT = sizeof(POSITIONS) / sizeof(POSITIONS[0]);
 
   // Need separate constant not to accidentally change DEFAULT_HASH_MB in TTable
   // and break bench code.
-
-  // A separate constant, so that changing DEFAULT_HASH_MB
-  // cannot silently move the bench fingerprint.
   constexpr size_t BENCH_HASH_MB = 16;
 
 } // namespace

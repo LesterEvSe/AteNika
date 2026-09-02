@@ -17,7 +17,6 @@
 #include "movegen/movegen.hpp"
 #include "search/movepicker.hpp"
 #include "search/order_info.hpp"
-#include "search/qmovepicker.hpp"
 #include "search/see.hpp"
 #include "search/ttable.hpp"
 
@@ -35,13 +34,6 @@ namespace {
 
   // Time management. The soft limit decides whether to open another iteration,
   // the hard limit aborts one already running.
-  //
-  // Measured over 397 game-sides at 8+0.08: the engine finished its games having
-  // spent 75% of its clock. Iteration prediction alone does not recover that --
-  // at an EBF near 2, stopping past half the budget is already optimal for a
-  // single move. The gain has to come from spending the allocation and from
-  // moving time between critical and obvious positions, which is what the
-  // stability and panic scaling below do.
   constexpr int32_t DEFAULT_MOVES_LEFT = 20;
   constexpr int32_t MAX_MOVES_LEFT = 30;
 
@@ -93,11 +85,7 @@ namespace {
   // https://www.chessprogramming.org/Delta_Pruning
   constexpr int32_t DELTA_MARGIN = 200;
 
-  // History-based reduction. Ordering quiets among themselves buys little here,
-  // because LMR exempts the first three moves, every tactical move and both
-  // killers -- so the history table only ever sorts moves that are all reduced
-  // anyway. Feeding it into the reduction instead is what gives it a say in
-  // which moves get searched properly. Main knob: the divisor.
+  // History-based reduction.
   constexpr int32_t LMR_HISTORY_DIV = 2'048;
   constexpr int16_t LMR_HISTORY_MAX = 2;
 
@@ -594,7 +582,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
   // Captured before the loop: inside it the board is made, so get_curr_move()
   // would answer with the opponent.
   const Color us = board.get_curr_move();
-  MovePicker move_picker = MovePicker(us, &move_list, tt_move, _order_info);
+  MovePicker move_picker = MovePicker(board, &move_list, tt_move, _order_info);
 
   Move curr_best_move = Move();
   int32_t curr_best_score = -INF;
@@ -615,8 +603,7 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
     Move move = move_picker.get_next();
     ++move_count;
 
-    // Late move pruning, then futility. Stops pruning if every move leads to defeat.
-    // MovePicker sorts best-first, so if many moves we haven't good moves,
+    // Futility. MovePicker sorts best-first, so if many moves we haven't good moves,
     // then assume next one does not improve the alpha.
     if (ply > 0 && !in_check && !move.is_tactical() && curr_best_score > -MATE_BOUND) {
       // Is this move too far behind to catch up?
@@ -704,7 +691,6 @@ int32_t Search::detail::_negamax(Board &board, int16_t depth, int32_t alpha, int
 }
 
 int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
-  // check limits here
   if (_check_limits())
     return 0;
 
@@ -726,45 +712,56 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
   if (board.is_repetition())
     return 0;
 
-  // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-  const int32_t stand_pat = Eval::evaluate(board);
-  int32_t best_score = stand_pat;
-  if (best_score >= beta)
-    return best_score;
-  if (best_score > alpha)
-    alpha = best_score;
+  const bool in_check = board.king_in_check(board.get_curr_move());
 
-  Movegen movegen(board);
+  // https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+  // Standing pat is the option to decline to move, which does not exist in
+  // check, so a checked node starts from nothing and has to find a real evasion.
+  int32_t stand_pat = 0;
+  int32_t best_score = -INF;
+
+  if (!in_check) {
+    stand_pat = Eval::evaluate(board);
+    best_score = stand_pat;
+
+    if (best_score >= beta)
+      return best_score;
+    if (best_score > alpha)
+      alpha = best_score;
+  }
+
+  Movegen movegen(board, Movegen::QUIESCENCE);
   MoveList &move_list = movegen.get_legal_moves();
+
   if (move_list.size() == 0)
-    return board.king_in_check(board.get_curr_move()) ? -INF + _order_info.get_ply() : 0;
+    return in_check ? -INF + ply : best_score;
 
   // Quiescence never cuts on the table and never writes to it, so the entry is
   // only used to order the first move.
   const TTEntry *tt = TTable::probe(board.get_zob_hash());
-  QMovePicker q_move_picker = QMovePicker(&move_list, tt != nullptr ? tt->move : Move());
+  MovePicker move_picker =
+      MovePicker(board, &move_list, tt != nullptr ? tt->move : Move(), _order_info);
 
   int16_t searched = 0;
   ++_order_info;
 
-  while (q_move_picker.has_next()) {
-    Move move = q_move_picker.get_next();
+  while (move_picker.has_next()) {
+    Move move = move_picker.get_next();
 
-    // Even winning the victim outright leaves this move below alpha, so it
-    // cannot change what this node returns. QMovePicker only yields captures,
-    // so get_captured_piece() is never NONE here.
-    int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
-    if (move.get_flag() == Move::CAPTURE_PROMOTION)
-      gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
-              Eval::detail::MATERIAL_BONUS[PAWN];
+    // Neither prune is sound in check.
+    if (!in_check) {
+      int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
+      if (move.get_flag() == Move::CAPTURE_PROMOTION)
+        gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
+                Eval::detail::MATERIAL_BONUS[PAWN];
 
-    if (stand_pat + gain + DELTA_MARGIN <= alpha)
-      continue;
+      if (stand_pat + gain + DELTA_MARGIN <= alpha)
+        continue;
 
-    // A capture that loses material cannot be the move that makes this position
-    // quiet, and searching it only deepens the tree.
-    if (See::can_lose_material(move) && See::see(board, move) < 0)
-      continue;
+      // A capture that loses material cannot be the move that makes this position quiet.
+      if (See::can_lose_material(move) && See::see(board, move) < 0)
+        continue;
+    }
 
     ++searched;
     board.make(move);

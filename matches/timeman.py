@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Where the engine's thinking time actually goes. Two questions, two modes.
 
     ./timeman.py search <engine> ["go args"] [positions]   one position at a time

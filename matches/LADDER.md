@@ -13,6 +13,7 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 | atenika-0.2.0 | stash-1690 | 10+0.1 | 2000 | 1555 +/- 15     |
 | atenika-0.3.0 | stash-1690 | 10+0.1 | 1000 | 1816.7 +/- 21.6 |
 | atenika-0.3.0 | stash-1886 | 10+0.1 | 1000 | 1880.2 +/- 19.8 |
+| atenika-0.4.0 | stash-2298 | 10+0.1 | 2000 | 2295.1 +/- 14.1 |
 
 ## Rejected features
 
@@ -46,3 +47,6 @@ search
 | atenika-0.3.6    | 05b9ed8  | 2770619    | 2026-08-26 | +56.86 +/- 22.58 H1 \[0; 10] accepted |
 | atenika-0.3.7    | fe08dad  | 2770619    | 2026-08-28 | +66.55 +/- 25.49 H1 \[0; 10] accepted |
 | atenika-0.3.8    | 9a418fb  | 2724987    | 2026-08-30 | butterfly history + gravity + history-based LMR relief; +4.32 +/- 30.28 (322 games, LLR 0.01). Not resolved, shipped as a correctness fix. Drop history *heuristic*, costs 15.4% more nodes. |
+| atenika-0.4.1    | 1fbe83f  | 16659372   | 2026-08-30 | vs 124e296 +36.73 +/- 18.70 H1 \[0; 10] accepted |
+| atenika-0.4.2    | 871b439  | 16990797   | 2026-08-30 | +26.71 +/- 14.93 H1 \[0; 10] accepted |
+| atenika-0.4.3    | 90fbd55  | 16191153   | 2026-09-01 | +14.88 +/- 16.03 (1098 games, stopped early). Change accepted |

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
@@ -83,7 +84,7 @@ private:
   static constexpr uint16_t MAX_MOVES{2048};
 
   int16_t m_moves{0};
-  HistoryNode m_history[MAX_MOVES]{};
+  std::vector<HistoryNode> m_history{MAX_MOVES};
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -134,6 +135,10 @@ public:
   [[nodiscard]] PieceType get_piece_at(Color color, uint8_t index) const;
   [[nodiscard]] bool king_in_check(Color color) const;
   [[nodiscard]] bool under_attack(Color defender, uint8_t cell) const;
+
+  // Movegen passes the occupancy with the moving king cleared
+  // to allow the sliding figures to move more freely.
+  [[nodiscard]] bool under_attack(Color defender, uint8_t cell, bitboard blockers) const;
   [[nodiscard]] bool threefold_rule() const;
   [[nodiscard]] bool is_repetition() const;
 
