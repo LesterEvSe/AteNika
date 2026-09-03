@@ -750,10 +750,9 @@ int32_t Search::detail::_quiescence(Board &board, int32_t alpha, int32_t beta) {
 
     // Neither prune is sound in check.
     if (!in_check) {
-      int32_t gain = Eval::detail::MATERIAL_BONUS[move.get_captured_piece()];
+      int32_t gain = See::VALUE[move.get_captured_piece()];
       if (move.get_flag() == Move::CAPTURE_PROMOTION)
-        gain += Eval::detail::MATERIAL_BONUS[move.get_promotion_piece()] -
-                Eval::detail::MATERIAL_BONUS[PAWN];
+        gain += See::VALUE[move.get_promotion_piece()] - See::VALUE[PAWN];
 
       if (stand_pat + gain + DELTA_MARGIN <= alpha)
         continue;
