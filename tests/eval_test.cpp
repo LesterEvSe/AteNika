@@ -81,6 +81,16 @@ public:
     SCOPED_TRACE(fen);
     ASSERT_EQ(fen, mirror(mirror(fen)));
   }
+
+  static void expect_dead_draw(const std::string &fen) {
+    SCOPED_TRACE(fen);
+    ASSERT_EQ(0, Eval::evaluate(Board(fen)));
+  }
+
+  static void expect_not_drawn(const std::string &fen) {
+    SCOPED_TRACE(fen);
+    ASSERT_NE(0, Eval::evaluate(Board(fen)));
+  }
 };
 
 TEST_F(EvalTest, mirror_flips_ranks_and_colours) {
@@ -128,4 +138,25 @@ TEST_F(EvalTest, mirror_symmetry_material_asymmetry) {
   expect_mirror_symmetric("4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1");
   expect_mirror_symmetric("8/8/4k3/8/8/4K3/8/6Q1 w - - 0 1");
   expect_mirror_symmetric("8/8/4k3/8/8/4K3/8/6Q1 b - - 0 1");
+}
+
+TEST_F(EvalTest, mate_impossible_is_a_draw) {
+  expect_dead_draw("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
+  expect_dead_draw("4k3/8/8/8/8/8/8/4KB2 w - - 0 1");
+  expect_dead_draw("4k3/8/8/8/8/8/8/3NKN2 w - - 0 1");
+  expect_dead_draw("1b2k3/8/8/8/8/8/8/2B1K3 w - - 0 1");
+  expect_dead_draw("4k3/8/8/8/8/8/8/1B1BKB2 w - - 0 1");
+  expect_dead_draw("1n2kn2/8/8/8/8/8/8/1B2KB2 w - - 0 1");
+}
+
+TEST_F(EvalTest, mate_possible_is_not_a_draw) {
+  expect_not_drawn("4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1");
+  expect_not_drawn("4k3/8/8/8/8/8/8/3BKN2 w - - 0 1");
+  expect_not_drawn("4k3/8/8/8/8/8/8/1N1NKN2 w - - 0 1");
+  expect_not_drawn("4k3/8/8/8/8/8/8/R3K3 w - - 0 1");
+}
+
+TEST_F(EvalTest, drawish_endings_are_not_claimed) {
+  expect_not_drawn("2b1k3/8/8/8/8/8/8/R3K3 w - - 0 1");
+  expect_not_drawn("r3k3/8/8/8/8/8/8/R2BK3 w - - 0 1");
 }

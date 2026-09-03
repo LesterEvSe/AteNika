@@ -25,38 +25,23 @@ void Eval::init() {
   }
 }
 
-// Test Pos. Eval from vice
-// 8/6R1/2k5/6P1/8/8/4nP2/6K1 w - - 1 41
-bool Eval::detail::material_draw(const Board &board) {
-  if (board.get_pieces(WHITE, QUEEN) || board.get_pieces(BLACK, QUEEN))
-    return false;
+namespace {
+  bool can_force_mate(const Board &board, Color color) {
+    if (board.get_pieces(color, QUEEN) || board.get_pieces(color, ROOK) ||
+        board.get_pieces(color, PAWN))
+      return true;
 
-  const uint8_t wR = count_bits(board.get_pieces(WHITE, ROOK));
-  const uint8_t bR = count_bits(board.get_pieces(BLACK, ROOK));
+    const bitboard bishops = board.get_pieces(color, BISHOP);
+    if ((bishops & WHITE_SQUARES) && (bishops & BLACK_SQUARES))
+      return true;
 
-  const uint8_t wB = count_bits(board.get_pieces(WHITE, BISHOP));
-  const uint8_t bB = count_bits(board.get_pieces(BLACK, BISHOP));
-
-  const uint8_t wN = count_bits(board.get_pieces(WHITE, KNIGHT));
-  const uint8_t bN = count_bits(board.get_pieces(BLACK, KNIGHT));
-
-  if (wR || bR) {
-    if (wR == 1 && bR == 1)
-      return wN + wB < 2 && bN + bB < 2;
-    if (wR == 1 && bR == 0)
-      return wN + wB == 0 && (bN + bB == 1 || bN + bB == 2);
-    if (wR == 0 && bR == 1)
-      return bN + bB == 0 && (wN + wB == 1 || wN + wB == 2);
-    return false;
+    const uint8_t knights = count_bits(board.get_pieces(color, KNIGHT));
+    return (bishops && knights) || knights > 2;
   }
+} // namespace
 
-  if (!wB && !bB)
-    return wN < 3 && bN < 3;
-  if (!wN && !bN)
-    return std::abs(wB - bB) < 2;
-  if ((wN < 3 && !wB) || (wB == 1 && !wN))
-    return (bN < 3 && !bB) || (bB == 1 && !bN);
-  return false;
+bool Eval::detail::material_draw(const Board &board) {
+  return !can_force_mate(board, WHITE) && !can_force_mate(board, BLACK);
 }
 
 int32_t Eval::evaluate(const Board &board) {
@@ -68,9 +53,8 @@ int32_t Eval::evaluate(const Board &board) {
   const bitboard wP = board.get_pieces(WHITE, PAWN); // for black passed (here too)
   const bitboard all_pawns = bP | wP; // for open and semi open files for rooks and queens
 
-  // TODO: Need to be checked with sprt
-  // if (!all_pawns && detail::material_draw(board))
-  //   return 0;
+  if (!all_pawns && detail::material_draw(board))
+    return 0;
 
   // Pawns
   bitboard pieces = board.get_pieces(WHITE, PAWN);
