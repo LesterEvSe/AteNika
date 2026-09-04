@@ -52,3 +52,4 @@ search
 | atenika-0.4.1    | 1fbe83f  | 16659372   | 2026-08-30 | vs 124e296 +36.73 +/- 18.70 H1 \[0; 10] accepted |
 | atenika-0.4.2    | 871b439  | 16990797   | 2026-08-30 | +26.71 +/- 14.93 H1 \[0; 10] accepted |
 | atenika-0.4.3    | 90fbd55  | 16191153   | 2026-09-01 | +14.88 +/- 16.03 (1098 games, stopped early). Change accepted |
+| atenika-0.5.1    | 815ff2e  | 16126415   | 2026-09-04 | vs 0.5.0 -1.22 +/- 14.95 (1142 games, stopped early). Change accepted |
