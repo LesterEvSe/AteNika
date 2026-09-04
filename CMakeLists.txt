@@ -183,7 +183,7 @@ if (ATENIKA_BUILD_TESTS)
         tests/mate_test.cpp
         tests/pv_test.cpp
         tests/see_test.cpp
-        # tests/eval_test.cpp   # re-enable once the evaluation is tapered (Phase 3.1)
+        tests/eval_test.cpp
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     target_link_libraries(AteNikaTest PRIVATE atenika_core GTest::gtest GTest::gtest_main)
