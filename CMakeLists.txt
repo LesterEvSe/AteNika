@@ -63,8 +63,7 @@ target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # Embedded network
 # Simpler option with #embed, but it is Clang feature, not default C++
 
-# TODO: Change it once we have real .nnue and push it instead of placeholder
-set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/placeholder.nnue")
+set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue")
 
 if (NOT EXISTS "${ATENIKA_NET}")
     message(FATAL_ERROR

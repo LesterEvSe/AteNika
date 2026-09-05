@@ -5,7 +5,6 @@
 #include "bitboard/rays.hpp"
 #include "cli/uci.hpp"
 #include "core/zobrist_hash.hpp"
-#include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
 
@@ -14,7 +13,6 @@ int main() {
   Rays::init();
   Attacks::init(); // Must be init after Rays
   MvvLva::init();
-  Eval::init();
   Search::init();
   Uci::start();
   return 0;

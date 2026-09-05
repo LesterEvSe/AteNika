@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
+#include <cstdlib>
 #include <format>
 #include <string>
 
@@ -19,7 +20,6 @@ public:
     ZobristHash::init();
     Rays::init();
     Attacks::init();
-    Eval::init();
   }
 
   static void expect_mirror_symmetric(const std::string &fen) {
@@ -62,8 +62,12 @@ TEST_F(EvalTest, mirror_is_an_involution) {
   expect_involution("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 }
 
-TEST_F(EvalTest, start_position_is_balanced) {
-  ASSERT_EQ(0, Eval::evaluate(Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")));
+TEST_F(EvalTest, start_position_is_near_equal) {
+  // A bound, not an identity: the symmetric piece-square tables guaranteed
+  // exactly 0, a trained net does not, and the first move is worth something.
+  const int32_t score =
+      Eval::evaluate(Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+  ASSERT_LT(std::abs(score), 150) << "start position evaluated " << score;
 }
 
 TEST_F(EvalTest, mirror_symmetry_dense_positions) {

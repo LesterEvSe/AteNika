@@ -10,7 +10,6 @@
 #include "core/board.hpp"
 #include "core/move_list.hpp"
 #include "core/zobrist_hash.hpp"
-#include "eval/eval.hpp"
 #include "movegen/movegen.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
@@ -23,7 +22,6 @@ public:
     Rays::init();
     Attacks::init(); // Must be init after Rays
     MvvLva::init();
-    Eval::init();
     Search::init();
   }
 
