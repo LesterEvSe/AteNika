@@ -7,6 +7,8 @@
 #   ./sprt.sh builds/atenika-0.3.0 builds/atenika-0.2.0 major      big feature [0, 10]
 #   ./sprt.sh builds/atenika-0.3.0 builds/atenika-0.2.0 nonreg     refactor [-3, 1]
 #
+#   NODES=100000 bash sprt.sh <new> <old> <mode>
+#
 # Each run saves its state to results/sprt-<stamp>.json every 20 games, so Ctrl-C
 # loses nothing. Continue it later with:
 #
@@ -41,6 +43,16 @@ esac
 
 BOOK=${BOOK:-./books/UHO_4060_v4.epd}
 TC=${TC:-8+0.08}
+
+# To estimate quality of evaluation.
+if [ -n "${NODES:-}" ]; then
+  LIMIT="nodes=$NODES"
+  LIMIT_DESC="nodes=$NODES"
+else
+  LIMIT="tc=$TC"
+  LIMIT_DESC="tc=$TC"
+fi
+
 # Physical cores, not threads: two engines sharing a core halve each other's NPS,
 # which turns a strength test into a scheduling test. 80% leaves the OS and
 # fastchess itself some room. Override with CONCURRENCY=N.
@@ -55,14 +67,14 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 PGN="results/sprt-$STAMP.pgn"
 STATE="results/sprt-$STAMP.json"
 
-echo "mode $MODE [$ELO0, $ELO1]   new=$NEW   old=$OLD"
+echo "mode $MODE [$ELO0, $ELO1]   $LIMIT_DESC   new=$NEW   old=$OLD"
 echo "Ctrl-C is safe, resume with: bash sprt.sh --resume $STATE"
 echo
 
 "$FASTCHESS" \
   -engine cmd="$NEW" name=new \
   -engine cmd="$OLD" name=old \
-  -each proto=uci tc="$TC" \
+  -each proto=uci "$LIMIT" \
   -openings file="$BOOK" format=epd order=random \
   -sprt elo0=$ELO0 elo1=$ELO1 alpha=0.05 beta=0.05 model=normalized \
   -rounds "$MAX_ROUNDS" -games 2 -repeat \

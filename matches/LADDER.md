@@ -53,3 +53,4 @@ search
 | atenika-0.4.2    | 871b439  | 16990797   | 2026-08-30 | +26.71 +/- 14.93 H1 \[0; 10] accepted |
 | atenika-0.4.3    | 90fbd55  | 16191153   | 2026-09-01 | +14.88 +/- 16.03 (1098 games, stopped early). Change accepted |
 | atenika-0.5.1    | 815ff2e  | 16126415   | 2026-09-04 | vs 0.5.0 -1.22 +/- 14.95 (1142 games, stopped early). Change accepted |
+| atenika-0.5.2    | 24f1602  | 9536577    | 2026-09-05 | +211.72 +/- 50.37 H1 \[0; 10] accepted with raw `sprt.sh`. +397.18 +/- 99.25 H1 \[0; 10] accepted with `NODES=100000 sprt.sh` |
