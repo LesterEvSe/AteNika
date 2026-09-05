@@ -20,14 +20,15 @@ cargo fmt
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-Checkpoints appear every 10 superbatches at
-`checkpoints/atenika-v1-N/atenika-v1-N.bin`.
+Checkpoints appear every 10 superbatches in `checkpoints/atenika-v1-N/`.
+The engine reads `quantised.bin`; `raw.bin` is the unquantised f32 weights and
+`optimiser_state/` exists to resume training.
 
 ## Using a net in the engine
 
 ```bash
-stat -c%s checkpoints/atenika-v1-40/atenika-v1-40.bin   # must equal sizeof(Network)
-cp checkpoints/atenika-v1-40/atenika-v1-40.bin ../nets/placeholder.nnue
+stat -c%s checkpoints/atenika-v1-40/quantised.bin   # must equal sizeof(Network)
+cp checkpoints/atenika-v1-40/quantised.bin ../nets/atenika.nnue
 cd .. && cmake --preset release && cmake --build --preset release
 ```
 

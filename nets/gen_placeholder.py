@@ -8,6 +8,7 @@
 #   int16 feature_biases[512]
 #   int16 output_weights[1024]        [stm accumulator, then non-stm]
 #   int16 output_bias                 already scaled by QA * QB
+#   padding to a multiple of 64       bullet aligns the struct to 64
 #
 #   usage: python3 nets/gen_placeholder.py nets/placeholder.nnue
 
@@ -40,8 +41,9 @@ def main() -> int:
     for _ in range(2 * HIDDEN):
         blob += struct.pack("<h", (next(rng) % 121) - 60)
     blob += struct.pack("<h", 0)
+    blob += b"\x00" * (-len(blob) % 64)
 
-    expected = INPUT * HIDDEN * 2 + HIDDEN * 2 + 2 * HIDDEN * 2 + 2
+    expected = -(-(INPUT * HIDDEN * 2 + HIDDEN * 2 + 2 * HIDDEN * 2 + 2) // 64) * 64
     assert len(blob) == expected, f"{len(blob)} != {expected}"
 
     with open(out, "wb") as f:

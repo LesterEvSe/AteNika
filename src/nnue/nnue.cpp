@@ -17,7 +17,8 @@ extern const unsigned char ATENIKA_NET[];
 namespace {
   using namespace NNUE::detail;
 
-  struct Network {
+  // alignas(64) mirrors bullet's `#[repr(C, align(64))]` accumulator.
+  struct alignas(64) Network {
     int16_t feature_weights[INPUT][HIDDEN];
     int16_t feature_biases[HIDDEN];
     int16_t output_weights[2 * HIDDEN];
