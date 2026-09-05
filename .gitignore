@@ -10,3 +10,7 @@ matches/*
 !matches/*.md
 
 placeholder.nnue
+
+# Rust
+trainer/target/
+trainer/checkpoints/
