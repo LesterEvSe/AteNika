@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
-#include <ranges>
-#include <sstream>
+#include <format>
 #include <string>
-#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -13,54 +11,7 @@
 #include "core/board.hpp"
 #include "core/zobrist_hash.hpp"
 #include "eval/eval.hpp"
-
-namespace {
-  char swap_case(char symbol) {
-    if (symbol >= 'a' && symbol <= 'z')
-      return static_cast<char>(symbol - 'a' + 'A');
-    if (symbol >= 'A' && symbol <= 'Z')
-      return static_cast<char>(symbol - 'A' + 'a');
-    return symbol;
-  }
-
-  std::string mirror(const std::string &fen) {
-    std::istringstream fen_stream(fen);
-    std::string placement;
-    std::string side;
-    std::string castling;
-    std::string en_passant;
-    std::string ply;
-    std::string moves;
-    fen_stream >> placement >> side >> castling >> en_passant >> ply >> moves;
-
-    std::vector<std::string> ranks;
-    std::string rank;
-    std::istringstream placement_stream(placement);
-    while (std::getline(placement_stream, rank, '/'))
-      ranks.push_back(rank);
-
-    std::string flipped;
-    for (const std::string &flipped_rank : std::views::reverse(ranks)) {
-      if (!flipped.empty())
-        flipped += '/';
-      for (const char symbol : flipped_rank)
-        flipped += swap_case(symbol);
-    }
-
-    std::string swapped_castling;
-    for (const char right : {'K', 'Q', 'k', 'q'})
-      if (castling.find(swap_case(right)) != std::string::npos)
-        swapped_castling += right;
-    if (swapped_castling.empty())
-      swapped_castling = "-";
-
-    if (en_passant != "-")
-      en_passant[1] = static_cast<char>('0' + 9 - (en_passant[1] - '0'));
-
-    return flipped + ' ' + (side == "w" ? "b" : "w") + ' ' + swapped_castling + ' ' + en_passant +
-           ' ' + ply + ' ' + moves;
-  }
-} // namespace
+#include "fen_mirror.hpp"
 
 class EvalTest : public testing::Test {
 public:
@@ -72,14 +23,14 @@ public:
   }
 
   static void expect_mirror_symmetric(const std::string &fen) {
-    const std::string mirrored = mirror(fen);
-    SCOPED_TRACE(fen + "  mirrors to  " + mirrored);
+    const std::string mirrored = FenMirror::mirror(fen);
+    SCOPED_TRACE(std::format("{}  mirrors to  {}", fen, mirrored));
     ASSERT_EQ(Eval::evaluate(Board(fen)), Eval::evaluate(Board(mirrored)));
   }
 
   static void expect_involution(const std::string &fen) {
     SCOPED_TRACE(fen);
-    ASSERT_EQ(fen, mirror(mirror(fen)));
+    ASSERT_EQ(fen, FenMirror::mirror(FenMirror::mirror(fen)));
   }
 
   static void expect_dead_draw(const std::string &fen) {
@@ -94,13 +45,14 @@ public:
 };
 
 TEST_F(EvalTest, mirror_flips_ranks_and_colours) {
-  ASSERT_EQ("6q1/8/4k3/8/8/4K3/8/8 b - - 0 1", mirror("8/8/4k3/8/8/4K3/8/6Q1 w - - 0 1"));
+  ASSERT_EQ("6q1/8/4k3/8/8/4K3/8/8 b - - 0 1",
+            FenMirror::mirror("8/8/4k3/8/8/4K3/8/6Q1 w - - 0 1"));
 }
 
 TEST_F(EvalTest, mirror_flips_castling_and_en_passant) {
-  ASSERT_EQ("4k3/8/8/8/8/8/8/R3K3 b Q - 0 1", mirror("r3k3/8/8/8/8/8/8/4K3 w q - 0 1"));
+  ASSERT_EQ("4k3/8/8/8/8/8/8/R3K3 b Q - 0 1", FenMirror::mirror("r3k3/8/8/8/8/8/8/4K3 w q - 0 1"));
   ASSERT_EQ("rnbqkbnr/pppp1ppp/8/8/3PpP2/8/PPP1P1PP/RNBQKBNR b KQkq f3 0 3",
-            mirror("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3"));
+            FenMirror::mirror("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3"));
 }
 
 TEST_F(EvalTest, mirror_is_an_involution) {

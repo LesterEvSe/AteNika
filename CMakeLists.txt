@@ -60,6 +60,42 @@ add_library(atenika_core OBJECT
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+# Embedded network
+# Simpler option with #embed, but it is Clang feature, not default C++
+
+# TODO: Change it once we have real .nnue and push it instead of placeholder
+set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/placeholder.nnue")
+
+if (NOT EXISTS "${ATENIKA_NET}")
+    message(FATAL_ERROR
+        "ATENIKA_NET does not exist: ${ATENIKA_NET}\n"
+        "Generate the placeholder:  python3 nets/gen_placeholder.py ${ATENIKA_NET}")
+endif()
+
+# Re-run configure when the net changes, or the build silently keeps the old one.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ATENIKA_NET}")
+
+file(SIZE "${ATENIKA_NET}" ATENIKA_NET_BYTE_COUNT)
+file(READ "${ATENIKA_NET}" ATENIKA_NET_HEX HEX)
+string(REGEX REPLACE "(..)" "0x\\1," ATENIKA_NET_BYTES "${ATENIKA_NET_HEX}")
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/nnue/net_data.cpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/net_data.cpp"
+    @ONLY
+)
+unset(ATENIKA_NET_HEX)
+unset(ATENIKA_NET_BYTES)
+
+target_sources(atenika_core PRIVATE
+    src/nnue/nnue.cpp
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/net_data.cpp"
+)
+
+# Lets nnue.cpp static_assert the blob against the struct it is cast to.
+target_compile_definitions(atenika_core PRIVATE ATENIKA_NET_SIZE=${ATENIKA_NET_BYTE_COUNT})
+
+
 # UCI "id name" has to carry the version: fastchess and ordo identify an engine
 # by that string, and a ladder of binaries all calling themselves "AteNika" is
 # unusable. Single source of truth is project(VERSION) above.
@@ -178,19 +214,20 @@ if (ATENIKA_BUILD_TESTS)
         tests/attacks_test.cpp
         tests/bitfunc_test.cpp
         tests/board_test.cpp
-        tests/zob_hash_test.cpp
-        tests/perft_test.cpp
+        tests/eval_test.cpp
         tests/mate_test.cpp
+        tests/nnue_test.cpp
+        tests/fen_mirror.hpp
+        tests/perft_test.cpp
         tests/pv_test.cpp
         tests/see_test.cpp
-        tests/eval_test.cpp
+        tests/zob_hash_test.cpp
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     target_link_libraries(AteNikaTest PRIVATE atenika_core GTest::gtest GTest::gtest_main)
 
     # Must match atenika_core. Its objects are LLVM bitcode or GCC IR under LTO,
-    # and a link line without -flto never loads the plugin that can read them —
-    # "file format not recognized" at link time.
+    # and a link line without -flto never loads the plugin that can read them.
     atenika_enable_lto(AteNikaTest)
 
     enable_testing()

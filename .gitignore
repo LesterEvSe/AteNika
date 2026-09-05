@@ -8,3 +8,5 @@ matches/*
 !matches/*.sh
 !matches/*.py
 !matches/*.md
+
+placeholder.nnue
