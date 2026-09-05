@@ -12,9 +12,7 @@ use bullet_lib::{
     value::{ValueTrainerBuilder, loader},
 };
 
-// These four and the SCReLU in build() must match src/nnue/nnue.hpp. A mismatch
-// produces a net that loads cleanly, evaluates nonsense, and says nothing about
-// why: the file size still matches, so the engine's static_assert cannot see it.
+// These four and the SCReLU in build() must match src/nnue/nnue.hpp.
 const HIDDEN_SIZE: usize = 512; // engine HIDDEN
 const SCALE: i32 = 400; // engine SCALE, network output -> centipawns
 const QA: i16 = 255; // engine QA, quantises feature weights and biases
@@ -33,12 +31,14 @@ fn main() {
         std::process::exit(1);
     });
 
-    let bytes = std::fs::metadata(&data).unwrap_or_else(|e| panic!("{data}: {e}")).len();
-    assert!(bytes % BYTES_PER_POSITION == 0, "{data} is not bulletformat: {bytes} bytes is not a multiple of {BYTES_PER_POSITION}");
+    let bytes = std::fs::metadata(&data)
+        .unwrap_or_else(|e| panic!("{data}: {e}"))
+        .len();
+    assert!(
+        bytes.is_multiple_of(BYTES_PER_POSITION),
+        "{data} is not bulletformat: {bytes} bytes is not a multiple of {BYTES_PER_POSITION}"
+    );
 
-    // One superbatch is one pass over the data, which is what the learning rate
-    // and checkpoint schedules below assume. Hardcoding it silently rescales both
-    // when the dataset changes.
     let positions = (bytes / BYTES_PER_POSITION) as usize;
     let batches_per_superbatch = positions / BATCH_SIZE;
     println!("{data}: {positions} positions, {batches_per_superbatch} batches per superbatch");
@@ -76,7 +76,11 @@ fn main() {
         // 0.75 leans on the search score over the game result: the labels come
         // from low-depth self-play, so the outcome is the noisier of the two.
         wdl_scheduler: wdl::ConstantWDL { value: 0.75 },
-        lr_scheduler: lr::StepLR { start: 0.001, gamma: 0.1, step: 18 },
+        lr_scheduler: lr::StepLR {
+            start: 0.001,
+            gamma: 0.1,
+            step: 18,
+        },
         save_rate: 10, // checkpoint every 10 superbatches
     };
 

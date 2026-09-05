@@ -15,7 +15,7 @@ namespace NNUE {
     constexpr int HIDDEN = 512;
 
     // Must match the trainer's quantisation, see nets/gen_placeholder.py.
-    // Using CReLU (Clipped ReLU) quantization params for this.
+    // Activation is SCReLU (squared clipped ReLU), matching the trainer.
 
     // Quantization, scales feature weights and biases,
     constexpr int32_t QA = 255;

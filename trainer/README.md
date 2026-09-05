@@ -14,6 +14,10 @@ Currently works with `g++-15`, so it need to be installed.
 
 ```bash
 cargo run --release -- <path-to-dataset.bin>
+
+# Lint with
+cargo fmt
+cargo clippy --workspace --all-targets -- -D warnings
 ```
 
 Checkpoints appear every 10 superbatches at

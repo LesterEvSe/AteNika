@@ -7,7 +7,7 @@
 #   int16 feature_weights[768][512]   input-major
 #   int16 feature_biases[512]
 #   int16 output_weights[1024]        [stm accumulator, then non-stm]
-#   int32 output_bias                 already scaled by QA * QB
+#   int16 output_bias                 already scaled by QA * QB
 #
 #   usage: python3 nets/gen_placeholder.py nets/placeholder.nnue
 
@@ -39,9 +39,9 @@ def main() -> int:
         blob += struct.pack("<h", (next(rng) % 61) - 30)
     for _ in range(2 * HIDDEN):
         blob += struct.pack("<h", (next(rng) % 121) - 60)
-    blob += struct.pack("<i", 0)
+    blob += struct.pack("<h", 0)
 
-    expected = INPUT * HIDDEN * 2 + HIDDEN * 2 + 2 * HIDDEN * 2 + 4
+    expected = INPUT * HIDDEN * 2 + HIDDEN * 2 + 2 * HIDDEN * 2 + 2
     assert len(blob) == expected, f"{len(blob)} != {expected}"
 
     with open(out, "wb") as f:

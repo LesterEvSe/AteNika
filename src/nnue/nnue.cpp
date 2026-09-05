@@ -21,7 +21,7 @@ namespace {
     int16_t feature_weights[INPUT][HIDDEN];
     int16_t feature_biases[HIDDEN];
     int16_t output_weights[2 * HIDDEN];
-    int32_t output_bias;
+    int16_t output_bias;
   };
 
   static_assert(ATENIKA_NET_SIZE == sizeof(Network),
@@ -85,16 +85,21 @@ void NNUE::detail::refresh(const Board &board, Accumulator &acc) {
 
 int32_t NNUE::detail::forward(const Accumulator &acc, Color side_to_move) {
   const Color them = side_to_move == WHITE ? BLACK : WHITE;
-  int32_t sum = net().output_bias;
+
+  // int64 to prevent overflow.
+  int64_t sum = 0;
 
   for (int i = 0; i < HIDDEN; ++i) {
-    sum += std::clamp<int32_t>(acc.values[side_to_move][i], 0, QA) * net().output_weights[i];
-    sum += std::clamp<int32_t>(acc.values[them][i], 0, QA) * net().output_weights[HIDDEN + i];
+    const int64_t us = std::clamp<int32_t>(acc.values[side_to_move][i], 0, QA);
+    const int64_t opponent = std::clamp<int32_t>(acc.values[them][i], 0, QA);
+
+    sum += us * us * net().output_weights[i];
+    sum += opponent * opponent * net().output_weights[HIDDEN + i];
   }
 
-  // The sum is in QA×QB units, rescale it to centipawns
-  // S
-  return sum * SCALE / (QA * QB);
+  sum /= QA;
+  sum += net().output_bias;
+  return static_cast<int32_t>(sum * SCALE / (QA * QB));
 }
 
 int32_t NNUE::evaluate(const Board &board) {
