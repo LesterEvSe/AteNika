@@ -8,11 +8,7 @@ search: drives "go" over positions drawn from the opening book.
     ./timeman.py search ../build/release/AteNika "movetime 2000"
     ./timeman.py search ../build/release/AteNika "wtime 8000 btime 8000 winc 80 binc 80"
 
-Read "unfinished" only in the wtime form. Under movetime the engine cannot bank
-what it does not spend -- stopping early just idles until the movetime expires
-and then plays the same move -- so an iteration that gets killed there costs
-nothing, and a high number is correct behaviour rather than waste. Under a real
-clock the unspent time carries to later moves, and then it is a real trade.
+Read "unfinished" only in the wtime form.
 
     ./timeman.py games results/sprt-20260826-221711.pgn
 
