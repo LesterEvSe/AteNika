@@ -21,6 +21,7 @@ option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)"   OF
 option(ATENIKA_WARNINGS    "Enable the warning set"                           ON)
 option(ATENIKA_WERROR      "Promote warnings to errors (dev and CI only)"     OFF)
 option(ATENIKA_DEBUG_HASH  "Verify the incremental Zobrist key on every make" OFF)
+option(ATENIKA_DEBUG_NNUE  "Verify the incremental NNUE accumulator on every make" OFF)
 
 set(ATENIKA_ARCH "x86-64-v3" CACHE STRING "Microarchitecture level for portable builds")
 
@@ -114,6 +115,9 @@ target_link_libraries(atenika_core PUBLIC Threads::Threads)
 # build, because it needs a deep perft walk to reach the rare cases.
 if (ATENIKA_DEBUG_HASH)
     target_compile_definitions(atenika_core PUBLIC ATENIKA_DEBUG_HASH)
+endif()
+if (ATENIKA_DEBUG_NNUE)
+    target_compile_definitions(atenika_core PUBLIC ATENIKA_DEBUG_NNUE)
 endif()
 
 

@@ -40,6 +40,45 @@ namespace {
   constexpr CastlePath BLACK_KS{(ONE << f8) | (ONE << g8), e8, f8, g8};
   constexpr CastlePath BLACK_QS{(ONE << b8) | (ONE << c8) | (ONE << d8), e8, d8, c8};
 
+  // Answers: What changes in our evaluation for this move?
+  NNUE::Delta nnue_delta(const Move &move, Color us, Color them) {
+    NNUE::Delta delta{};
+    const uint8_t to = move.get_to_cell();
+    const PieceType piece = move.get_move_piece();
+
+    delta.remove(us, piece, move.get_from_cell());
+
+    switch (move.get_flag()) {
+      case Move::CAPTURE: delta.remove(them, move.get_captured_piece(), to); break;
+
+      case Move::EN_PASSANT: delta.remove(them, PAWN, (us == WHITE) ? to - 8 : to + 8); break;
+
+      case Move::QSIDE_CASTLING: {
+        const uint8_t rook_cell = (us == WHITE) ? a1 : a8;
+        delta.remove(us, ROOK, rook_cell);
+        delta.add(us, ROOK, rook_cell + 3);
+        break;
+      }
+      case Move::KSIDE_CASTLING: {
+        const uint8_t rook_cell = (us == WHITE) ? h1 : h8;
+        delta.remove(us, ROOK, rook_cell);
+        delta.add(us, ROOK, rook_cell - 2);
+        break;
+      }
+      case Move::CAPTURE_PROMOTION:
+        delta.remove(them, move.get_captured_piece(), to);
+        [[fallthrough]];
+
+      case Move::PROMOTION: delta.add(us, move.get_promotion_piece(), to); return delta;
+
+      default: // Move::QUIET and Move::LONG_PAWN_MOVE
+        break;
+    }
+
+    delta.add(us, piece, to);
+    return delta;
+  }
+
   bool path_is_clear(const Board &board, Color side, const CastlePath &path) {
     if ((board.get_free_cells() & path.empty) != path.empty)
       return false;
@@ -112,6 +151,11 @@ Board::Board(const std::string &short_fen) {
 
   // m_hash is initialized, after the rest of the Board fields are initialized
   m_hash.set_hash(*this);
+
+#ifdef ATENIKA_DEBUG_NNUE
+  // To first `make()` compares a real incremental step instead of `refresh` call.
+  m_accumulators.top(*this);
+#endif
 }
 
 void Board::update_bitboards() {
@@ -152,6 +196,8 @@ bool Board::curr_player_has_big_pieces() const {
 
 uint8_t Board::get_ply() const { return m_ply; }
 ZobristHash Board::get_zob_hash() const { return m_hash; }
+
+const NNUE::Accumulator &Board::get_accumulator() const { return m_accumulators.top(*this); }
 uint8_t Board::get_en_passant() const { return m_en_passant_cell; }
 
 bool Board::get_white_ks_castle() const { return m_castling_rights & 1; }
@@ -256,6 +302,7 @@ bool Board::has_repetition(uint8_t repetition) const {
 
 void Board::make(const Move &move) {
   m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights};
+  const NNUE::Delta delta = nnue_delta(move, m_player_move, get_opponent_move());
 
   if (m_en_passant_cell) {
     m_hash.xor_en_passant(m_en_passant_cell);
@@ -332,22 +379,43 @@ void Board::make(const Move &move) {
   if (lost & 8)
     m_hash.xor_black_qs_castling();
 
+  m_accumulators.push(delta);
+
 #ifdef ATENIKA_DEBUG_HASH
   verify_hash(static_cast<std::string>(move));
+#endif
+#ifdef ATENIKA_DEBUG_NNUE
+  verify_accumulator(static_cast<std::string>(move));
 #endif
 }
 
 #ifdef ATENIKA_DEBUG_HASH
-// Compares the incrementally maintained key against a full recompute. Enabled by
-// -DATENIKA_DEBUG_HASH so it can run on an optimized build: it needs millions of
-// nodes to reach the odd cases, which a Debug build is far too slow for.
-// Deliberately not assert(), which NDEBUG would strip out of a Release build.
+// Compares the incrementally maintained key against a full recompute.
 void Board::verify_hash(const std::string &context) const {
   ZobristHash recomputed;
   recomputed.set_hash(*this);
 
   if (!(recomputed == m_hash))
     error("Zobrist mismatch after " + context + "\nFEN: " + get_fen() + "\n");
+}
+#endif
+
+#ifdef ATENIKA_DEBUG_NNUE
+// Same reasoning as verify_hash.
+void Board::verify_accumulator(const std::string &context) const {
+  NNUE::Accumulator expected;
+  NNUE::refresh(*this, expected);
+
+  const NNUE::Accumulator &actual = m_accumulators.top(*this);
+
+  for (const Color perspective : {BLACK, WHITE})
+    for (int i = 0; i < NNUE::HIDDEN; ++i)
+      if (actual.values[perspective][i] != expected.values[perspective][i])
+        error(std::format("NNUE accumulator mismatch after {}\n"
+                          "{} perspective, neuron {}: incremental {}, refreshed {}\nFEN: {}\n",
+                          context, perspective == WHITE ? "white" : "black", i,
+                          actual.values[perspective][i], expected.values[perspective][i],
+                          get_fen()));
 }
 #endif
 
@@ -409,11 +477,15 @@ void Board::unmake(const Move &move) {
       reset(m_pieces[m_player_move][move.get_move_piece()], to);
       break;
   }
+
   update_bitboards();
+  m_accumulators.pop();
 }
 
 void Board::make_null_move() {
   m_history[m_moves++] = {m_hash.get_hash(), m_ply, m_en_passant_cell, m_castling_rights};
+
+  // We do not need to make `m_accumulators.push(NNUE::Delta{})` here.
   if (m_en_passant_cell) {
     m_hash.xor_en_passant(m_en_passant_cell);
     m_en_passant_cell = ZERO;

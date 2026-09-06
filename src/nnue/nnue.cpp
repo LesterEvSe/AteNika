@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "bitboard/bitfunc.hpp"
+#include "core/board.hpp"
 
 // Defined by the file CMake generates from ATENIKA_NET.
 extern const unsigned char ATENIKA_NET[];
 
 namespace {
+  using namespace NNUE;
   using namespace NNUE::detail;
 
   // alignas(64) mirrors bullet's `#[repr(C, align(64))]` accumulator.
@@ -38,7 +40,83 @@ namespace {
     return instance;
   }
 
+  // child = parent - removed columns + added columns, one move's worth.
+  void apply(const Accumulator &parent, const Delta &delta, Accumulator &child) {
+    for (const Color perspective : {BLACK, WHITE}) {
+      int16_t *values = child.values[perspective];
+      std::copy_n(parent.values[perspective], HIDDEN, values);
+
+      for (uint8_t f = 0; f < delta.removed_count; ++f) {
+        const Feature &feature = delta.removed[f];
+        const int16_t *column = net().feature_weights[feature_index(perspective, feature.color,
+                                                                    feature.piece, feature.cell)];
+
+        for (int i = 0; i < HIDDEN; ++i)
+          values[i] = static_cast<int16_t>(values[i] - column[i]);
+      }
+
+      for (uint8_t f = 0; f < delta.added_count; ++f) {
+        const Feature &feature = delta.added[f];
+        const int16_t *column = net().feature_weights[feature_index(perspective, feature.color,
+                                                                    feature.piece, feature.cell)];
+
+        for (int i = 0; i < HIDDEN; ++i)
+          values[i] = static_cast<int16_t>(values[i] + column[i]);
+      }
+    }
+  }
 } // namespace
+
+NNUE::AccumulatorStack::AccumulatorStack()
+    : m_entries(std::make_unique_for_overwrite<Entry[]>(MAX_PLIES)), m_top(0) {
+  m_entries[0].computed = false;
+}
+
+NNUE::AccumulatorStack::AccumulatorStack(const AccumulatorStack &other) : AccumulatorStack() {
+  invalidate(other.m_top);
+}
+
+NNUE::AccumulatorStack &NNUE::AccumulatorStack::operator=(const AccumulatorStack &other) {
+  if (this != &other)
+    invalidate(other.m_top);
+  return *this;
+}
+
+void NNUE::AccumulatorStack::invalidate(int32_t top) {
+  m_top = top;
+  for (int32_t i = 0; i <= m_top; ++i)
+    m_entries[i].computed = false;
+}
+
+void NNUE::AccumulatorStack::push(const Delta &delta) {
+  m_entries[++m_top].delta = delta;
+  m_entries[m_top].computed = false;
+}
+
+void NNUE::AccumulatorStack::pop() { --m_top; }
+
+const NNUE::Accumulator &NNUE::AccumulatorStack::top(const Board &board) {
+  if (m_entries[m_top].computed)
+    return m_entries[m_top].acc;
+
+  // The nearest ancestor whose parent is already known.
+  int32_t first = m_top;
+  while (first > 0 && !m_entries[first - 1].computed)
+    --first;
+
+  if (first == 0) {
+    refresh(board, m_entries[m_top].acc);
+    m_entries[m_top].computed = true;
+    return m_entries[m_top].acc;
+  }
+
+  for (int32_t i = first; i <= m_top; ++i) {
+    apply(m_entries[i - 1].acc, m_entries[i].delta, m_entries[i].acc);
+    m_entries[i].computed = true;
+  }
+
+  return m_entries[m_top].acc;
+}
 
 bool NNUE::load(const std::string &path) {
   std::ifstream in(path, std::ios::binary);
@@ -61,7 +139,7 @@ uint16_t NNUE::detail::feature_index(Color perspective, Color color, PieceType p
   return relative_color * 384 + static_cast<uint16_t>(piece) * 64 + relative_cell;
 }
 
-void NNUE::detail::refresh(const Board &board, Accumulator &acc) {
+void NNUE::refresh(const Board &board, Accumulator &acc) {
   for (const Color perspective : {BLACK, WHITE})
     std::copy_n(net().feature_biases, HIDDEN, acc.values[perspective]);
 
@@ -104,7 +182,5 @@ int32_t NNUE::detail::forward(const Accumulator &acc, Color side_to_move) {
 }
 
 int32_t NNUE::evaluate(const Board &board) {
-  detail::Accumulator acc{};
-  detail::refresh(board, acc);
-  return detail::forward(acc, board.get_curr_move());
+  return detail::forward(board.get_accumulator(), board.get_curr_move());
 }
