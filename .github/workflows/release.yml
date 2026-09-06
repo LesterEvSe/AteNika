@@ -30,11 +30,11 @@ jobs:
           - name: linux
             os: ubuntu-24.04
             bin: build/release/AteNika
-            asset: AteNika-linux-x86-64-v3
+            asset: AteNika-linux-x86-64-avx2
           - name: windows
             os: windows-2022
             bin: build/release/Release/AteNika.exe
-            asset: AteNika-windows-x86-64.exe
+            asset: AteNika-windows-x86-64-avx2.exe
           - name: macos
             os: macos-14
             bin: build/release/AteNika

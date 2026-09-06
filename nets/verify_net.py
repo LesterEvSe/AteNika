@@ -6,7 +6,7 @@
 #
 #   cmake --build --preset release
 #   printf 'position fen <FEN>\neval\nquit\n' | ./build/release/AteNika
-#   python3 nets/verify_net.py nets/placeholder.nnue "<FEN>"
+#   python3 nets/verify_net.py nets/atenika.nnue "<FEN>"
 
 import struct
 import sys

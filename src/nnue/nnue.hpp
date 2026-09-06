@@ -85,7 +85,7 @@ namespace NNUE {
   namespace detail {
     constexpr int32_t INPUT = 768;
 
-    // Must match the trainer's quantisation, see nets/gen_placeholder.py.
+    // Must match the trainer's quantisation, see trainer/src/main.rs.
     // Activation is SCReLU (Squared Clipped ReLU), matching the trainer.
 
     // Quantization, scales feature weights and biases,
@@ -98,6 +98,14 @@ namespace NNUE {
 
     [[nodiscard]] uint16_t feature_index(Color perspective, Color color, PieceType piece,
                                          uint8_t cell);
+
+    // Run default `forward_scalar` version or optimized AVX2.
     [[nodiscard]] int32_t forward(const Accumulator &acc, Color side_to_move);
+
+    // Raw calculation of NN without any optimization.
+    [[nodiscard]] int32_t forward_scalar(const Accumulator &acc, Color side_to_move);
+
+    // Whether the active net's output weights keep the SIMD path exact.
+    [[nodiscard]] bool net_fits_simd();
   } // namespace detail
 } // namespace NNUE

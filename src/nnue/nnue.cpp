@@ -4,10 +4,16 @@
 #include "nnue/nnue.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iterator>
 #include <vector>
+
+#ifdef __AVX2__
+#define ATENIKA_AVX2
+#include <immintrin.h>
+#endif
 
 #include "bitboard/bitfunc.hpp"
 #include "core/board.hpp"
@@ -40,7 +46,55 @@ namespace {
     return instance;
   }
 
-  // child = parent - removed columns + added columns, one move's worth.
+  int32_t scale(int64_t dot) {
+    dot /= QA;
+    dot += net().output_bias;
+    return static_cast<int32_t>(dot * SCALE / (QA * QB));
+  }
+
+
+  // Rejects a net whose output weights could overflow the SIMD path.
+  bool weights_fit_simd(const Network &candidate) {
+    int64_t total = 0;
+
+    for (const int16_t weight : candidate.output_weights) {
+      const int64_t magnitude = std::abs(static_cast<int64_t>(weight));
+
+      if (QA * magnitude > INT16_MAX)
+        return false;
+      total += magnitude;
+    }
+
+    return QA * QA * total <= INT32_MAX;
+  }
+
+#ifdef ATENIKA_AVX2
+  // SCReLU against one perspective's weights, added into `lanes`.
+  void screlu_dot(const int16_t *values, const int16_t *weights, __m256i &lanes) {
+    const __m256i floor = _mm256_setzero_si256();
+    const __m256i ceiling = _mm256_set1_epi16(static_cast<int16_t>(QA));
+
+    for (int i = 0; i < HIDDEN; i += 16) {
+      __m256i activation = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(values + i));
+      activation = _mm256_min_epi16(_mm256_max_epi16(activation, floor), ceiling);
+
+      const __m256i weight = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(weights + i));
+
+      // madd pairs the lanes: (a*w)*a summed two at a time into int32.
+      lanes = _mm256_add_epi32(
+          lanes, _mm256_madd_epi16(activation, _mm256_mullo_epi16(activation, weight)));
+    }
+  }
+
+  int32_t horizontal_sum(__m256i lanes) {
+    __m128i half = _mm_add_epi32(_mm256_castsi256_si128(lanes), _mm256_extracti128_si256(lanes, 1));
+    half = _mm_add_epi32(half, _mm_shuffle_epi32(half, _MM_SHUFFLE(1, 0, 3, 2)));
+    half = _mm_add_epi32(half, _mm_shuffle_epi32(half, _MM_SHUFFLE(2, 3, 0, 1)));
+    return _mm_cvtsi128_si32(half);
+  }
+#endif
+
+  // child = parent - removed columns + added columns.
   void apply(const Accumulator &parent, const Delta &delta, Accumulator &child) {
     for (const Color perspective : {BLACK, WHITE}) {
       int16_t *values = child.values[perspective];
@@ -128,9 +182,17 @@ bool NNUE::load(const std::string &path) {
   if (buffer.size() != sizeof(Network))
     return false;
 
-  std::memcpy(&net(), buffer.data(), sizeof(Network));
+  Network candidate;
+  std::memcpy(&candidate, buffer.data(), sizeof(candidate));
+
+  if (!weights_fit_simd(candidate))
+    return false;
+
+  net() = candidate;
   return true;
 }
+
+bool NNUE::detail::net_fits_simd() { return weights_fit_simd(net()); }
 
 uint16_t NNUE::detail::feature_index(Color perspective, Color color, PieceType piece,
                                      uint8_t cell) {
@@ -162,7 +224,7 @@ void NNUE::refresh(const Board &board, Accumulator &acc) {
     }
 }
 
-int32_t NNUE::detail::forward(const Accumulator &acc, Color side_to_move) {
+int32_t NNUE::detail::forward_scalar(const Accumulator &acc, Color side_to_move) {
   const Color them = side_to_move == WHITE ? BLACK : WHITE;
 
   // int64 to prevent overflow.
@@ -176,9 +238,21 @@ int32_t NNUE::detail::forward(const Accumulator &acc, Color side_to_move) {
     sum += opponent * opponent * net().output_weights[HIDDEN + i];
   }
 
-  sum /= QA;
-  sum += net().output_bias;
-  return static_cast<int32_t>(sum * SCALE / (QA * QB));
+  return scale(sum);
+}
+
+int32_t NNUE::detail::forward(const Accumulator &acc, Color side_to_move) {
+#ifdef ATENIKA_AVX2
+  const Color them = side_to_move == WHITE ? BLACK : WHITE;
+
+  __m256i lanes = _mm256_setzero_si256();
+  screlu_dot(acc.values[side_to_move], net().output_weights, lanes);
+  screlu_dot(acc.values[them], net().output_weights + HIDDEN, lanes);
+
+  return scale(horizontal_sum(lanes));
+#else
+  return forward_scalar(acc, side_to_move);
+#endif
 }
 
 int32_t NNUE::evaluate(const Board &board) {

@@ -66,12 +66,6 @@ target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
 
 set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue")
 
-if (NOT EXISTS "${ATENIKA_NET}")
-    message(FATAL_ERROR
-        "ATENIKA_NET does not exist: ${ATENIKA_NET}\n"
-        "Generate the placeholder:  python3 nets/gen_placeholder.py ${ATENIKA_NET}")
-endif()
-
 # Re-run configure when the net changes, or the build silently keeps the old one.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ATENIKA_NET}")
 

@@ -69,6 +69,30 @@ TEST_F(NnueTest, the_embedded_net_is_live_without_any_init_call) {
   ASSERT_NE(0, NNUE::evaluate(Board(FenMirror::POSITIONS.front())));
 }
 
+TEST_F(NnueTest, the_simd_output_layer_matches_the_scalar_one) {
+  uint64_t state = 0x9E3779B97F4A7C15;
+  const auto next_value = [&state] {
+    state = state * 6364136223846793005ULL + 1442695040888963407ULL;
+    return static_cast<int16_t>(static_cast<int32_t>((state >> 33) % 4001) - 2000);
+  };
+
+  NNUE::Accumulator acc{};
+
+  for (int trial = 0; trial < 2000; ++trial) {
+    for (const Color perspective : {BLACK, WHITE})
+      for (int i = 0; i < NNUE::HIDDEN; ++i)
+        acc.values[perspective][i] = next_value();
+
+    for (const Color stm : {BLACK, WHITE})
+      ASSERT_EQ(NNUE::detail::forward_scalar(acc, stm), NNUE::detail::forward(acc, stm))
+          << "trial " << trial;
+  }
+}
+
+TEST_F(NnueTest, the_embedded_net_keeps_the_simd_path_exact) {
+  ASSERT_TRUE(NNUE::detail::net_fits_simd());
+}
+
 TEST_F(NnueTest, load_rejects_a_file_of_the_wrong_size) {
   ASSERT_FALSE(NNUE::load("definitely-not-a-net.nnue"));
   ASSERT_FALSE(NNUE::load("README.md"));
