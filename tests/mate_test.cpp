@@ -194,7 +194,7 @@ TEST_F(MateTest, black_mate_in_seven_5) {
 
 // Positions below from PGNs in matches/results, mate distance verified with Stockfish 18.
 
-TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_1) {
+TEST_F(MateTest, quiet_key_move_white_11_ply_1) {
   Board board = Board("r5kr/p1p1Qp2/2p2P2/q1P4p/6p1/6P1/PP5P/3R1R1K w - - 4 29");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -206,7 +206,7 @@ TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -401,7 +401,7 @@ TEST_F(MateTest, DISABLED_missed_mate_quiet_9) {
 
 // key move: quiet; engine says "cp 352", plays d2h6, reaches depth 16
 // best line: d2h6 h8g8 h6g5 g8h8 f6f7 d4e2 c3e2 b6b2 c1b2 d8g8 g5f6 g8g7 f6g7
-TEST_F(MateTest, DISABLED_missed_mate_quiet_10) {
+TEST_F(MateTest, missed_mate_quiet_10) {
   Board board = Board("3r3k/pp5p/1q1p1R2/2p5/2PnP3/2N5/PP1QB1P1/2K4n w - - 7 27");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM13", Search::get_mate());
@@ -417,10 +417,7 @@ TEST_F(MateTest, DISABLED_missed_mate_quiet_11) {
 
 // key move: quiet; engine says "cp 185", plays g2e4, reaches depth 15
 // best line: e2f3 c7h7 g4g3 h2g1 g3h3 e3e4 h3h1
-// Disabled at the NNUE switch: found by the HCE at depth 16, not by the net.
-// Fixed depth, so this is pruning shape rather than speed - the margins are
-// still calibrated to the old eval's distribution. Re-enable after 5.5.
-TEST_F(MateTest, DISABLED_missed_mate_quiet_12) {
+TEST_F(MateTest, missed_mate_quiet_12) {
   Board board = Board("8/2R5/4p1p1/5p2/2pB1PrP/4P3/1P2k1bK/8 b - - 21 66");
   Search::iter_deep(board, false);
   ASSERT_EQ("BM7", Search::get_mate());
