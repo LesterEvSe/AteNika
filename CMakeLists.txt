@@ -44,10 +44,10 @@ add_library(atenika_core OBJECT
     src/core/move_list.cpp
     src/core/board.cpp
 
+    src/eval/eval.cpp
+
     src/movegen/movegen.cpp
     src/movegen/perft.cpp
-
-    src/eval/eval.cpp
 
     src/search/mvv_lva.cpp
     src/search/order_info.cpp

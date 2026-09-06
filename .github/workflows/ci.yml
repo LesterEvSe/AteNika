@@ -140,3 +140,29 @@ jobs:
           ASAN_OPTIONS: abort_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: ctest --preset sanitize
+
+  # Verify debug Zobrist key and the NNUE accumulator.
+  verify:
+    name: incremental state
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compiler
+        run: sudo apt-get update && sudo apt-get install -y g++-14
+
+      - name: Configure
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: cmake --preset verify
+
+      - name: Build
+        run: cmake --build --preset verify --parallel
+
+      - name: Test
+        run: ctest --preset verify
+
+      # error() exits non-zero, so a mismatch fails it.
+      - name: Bench
+        run: printf 'bench\nquit\n' | ./build/verify/AteNika

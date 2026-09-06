@@ -153,8 +153,8 @@ Board::Board(const std::string &short_fen) {
   m_hash.set_hash(*this);
 
 #ifdef ATENIKA_DEBUG_NNUE
-  // To first `make()` compares a real incremental step instead of `refresh` call.
-  m_accumulators.top(*this);
+  // Need for the first `make()` compares a real incremental step instead of `refresh` call.
+  static_cast<void>(m_accumulators.top(*this));
 #endif
 }
 
