@@ -105,12 +105,9 @@ development.
 
 | tag | Elo | | tag | Elo |
 | --- | --- | --- | --- | --- |
-| `v9` | 1275 | | `v15` | 2140* |
+| `v9` | 1275 | | `v12` | 1886 |
 | `v10` | 1620* | | `v17.0` | 2298 |
 | `v11` | 1690 | | `v19.0` | 2473 |
-| `v12` | 1886 | | `v20.0` | 2512 |
-| `v13` | 1972 | | `v21.0` | 2714 |
-| `v14` | 2060 | | `v25.0` | 2932 |
 
 `*` = estimated, not CCRL-ranked.
 
@@ -120,12 +117,6 @@ Different authors and architectures, used for rating measurement.
 
 | engine | Elo | source |
 | --- | --- | --- |
-| [Reckless 0.3.0](https://github.com/codedeliveryservice/Reckless/tree/v0.3.0) | 2616 | built |
-| [Monolith 1.0.2](https://github.com/cimarronOST/Monolith/tree/v1.02) | 2806 | built |
-| [stash-bot 27.0](https://github.com/mhouppin/stash-bot/tree/v27.0) | 3049 | built |
-| [akimbo 0.5.0](https://github.com/jw1912/akimbo/tree/v0.5.0) | 3051 | built |
-| [FabChess 1.16](https://github.com/fabianvdW/FabChess/tree/v1.16) | 3051 | built |
-| [Gyatso 1.3.0](https://github.com/GyatsoYT/GyatsoChess/tree/v1.3.0) | 3052 | official release |
 | [Igel 2.5.0](https://github.com/vshcherbyna/igel/tree/2.5.0) | 3250 | built |
 
 
@@ -142,26 +133,21 @@ cmake -B build -S . -D_BTYPE=1 -DCMAKE_C_FLAGS="-O3 -march=x86-64-v3 -flto -DNDE
 cmake --build build -j$(nproc)
 ```
 
-**Monolith**
-
-```bash
-sed -i 's/-s -O2/-s -O2 -march=x86-64-v3/' makefile
-make COMP=gcc ARCH=x64-popcnt
-```
-
 **stash-bot**
 
 ```bash
 bash unix_build.sh        # or bash utils/unix_build.sh
 ```
 
-**akimbo, Reckless, FabChess** (Rust)
+**Reckless** (Rust)
 
 ```bash
 RUSTFLAGS="-C target-cpu=x86-64-v3" cargo build --release
 ```
 
-**Gyatso**, no build, use the official `linux-avx2` release binary.
+Check it took: `objdump -d <binary> | grep -c '%ymm'` must not be 0. A Rust
+engine built without that flag targets plain `x86-64` and plays far below its
+rating, which makes it useless as an anchor.
 
 ### Verifying a binary
 

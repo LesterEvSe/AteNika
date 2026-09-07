@@ -64,9 +64,7 @@ cmake --build --preset release
 
 ## Usage
 
-AteNika uses [UCI][uci], so
-any UCI-compatible GUI can run it. The only option is `Hash`, the transposition
-table size in MB.
+In addition to the UCI interface, the engine also has one `Hash` option, the transposition table size in MB.
 
 A few non-UCI commands are available for development:
 
@@ -141,8 +139,7 @@ opponents and opening books are not tracked and must be set up locally.
 **Reference**
 
 - [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page)
-- [UCI protocol][uci]
-- [FICS games database](https://www.ficsgames.org/)
+- [Renegade chess engine training data](https://www.kaggle.com/datasets/pkrisz/renegade-chess-engine-training-data)
 
 ## License
 
