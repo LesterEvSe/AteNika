@@ -10,6 +10,7 @@
 
 #include "core/move.hpp"
 #include "core/zobrist_hash.hpp"
+#include "nnue/nnue.hpp"
 
 struct HistoryNode {
   uint64_t hash;
@@ -82,9 +83,13 @@ private:
   ZobristHash m_hash;
 
   static constexpr uint16_t MAX_MOVES{2048};
+  static_assert(MAX_MOVES <= NNUE::MAX_PLIES, "the accumulator stack is the shorter one");
 
   int16_t m_moves{0};
   std::vector<HistoryNode> m_history{MAX_MOVES};
+
+  // A cache of the evaluation input.
+  mutable NNUE::AccumulatorStack m_accumulators;
 
   void add_piece(Color color, PieceType piece, uint8_t cell);
   void remove_piece(Color color, PieceType piece, uint8_t cell);
@@ -118,6 +123,9 @@ public:
 
   [[nodiscard]] uint8_t get_ply() const;
   [[nodiscard]] ZobristHash get_zob_hash() const;
+
+  // Materializes the input layer for this position, if it is not cached already.
+  [[nodiscard]] const NNUE::Accumulator &get_accumulator() const;
   [[nodiscard]] uint8_t get_en_passant() const;
 
   // ks - king side
@@ -149,6 +157,12 @@ public:
   // unmake restores the key from the history snapshot, so only make can get it
   // wrong; this verifies make against a full recompute.
   void verify_hash(const std::string &context) const;
+#endif
+
+#ifdef ATENIKA_DEBUG_NNUE
+  // Same idea for the accumulator: unmake only pops, so make's delta is the
+  // part that can be wrong. Verified against a full refresh.
+  void verify_accumulator(const std::string &context) const;
 #endif
   void make_null_move();
   void unmake_null_move();

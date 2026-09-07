@@ -9,16 +9,17 @@ class MoveList {
 private:
   uint8_t m_size;
 
-  // This is the position with the max number of moves a player can have
-  Move m_moves[218];
-  int32_t m_scores[218];
+  // The most legal moves any known chess position allows
+  static constexpr uint32_t MAX_NUMBER_OF_MOVES = 218;
+
+  Move m_moves[MAX_NUMBER_OF_MOVES];
+  int32_t m_scores[MAX_NUMBER_OF_MOVES];
 
 public:
   MoveList() : m_size(0) {}
   [[nodiscard]] uint8_t size() const;
 
-  // Only 4 bytes, so can just copy it.
-  // & is need for m_move_list[i].set_score in movepicker constructor.
+  // Returns a reference because both pickers swap in place while selecting.
   Move &operator[](uint8_t ind);
   void emplace_back(const Move &move);
 

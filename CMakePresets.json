@@ -66,6 +66,17 @@
         "ATENIKA_LTO": "OFF",
         "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all"
       }
+    },
+    {
+      "name": "verify",
+      "displayName": "Verify — incremental state harnesses",
+      "description": "The suite with ATENIKA_DEBUG_HASH and ATENIKA_DEBUG_NNUE on, so every make() checks the Zobrist key and the NNUE accumulator against a full recompute. The only place those two flags are named. LTO off: this build is about correctness, and the link is most of its cost.",
+      "inherits": "tests",
+      "cacheVariables": {
+        "ATENIKA_LTO": "OFF",
+        "ATENIKA_DEBUG_HASH": "ON",
+        "ATENIKA_DEBUG_NNUE": "ON"
+      }
     }
   ],
 
@@ -74,7 +85,8 @@
     { "name": "native",  "configurePreset": "native",  "configuration": "Release" },
     { "name": "debug",    "configurePreset": "debug",    "configuration": "Debug"          },
     { "name": "tests",    "configurePreset": "tests",    "configuration": "Release"        },
-    { "name": "sanitize", "configurePreset": "sanitize", "configuration": "RelWithDebInfo" }
+    { "name": "sanitize", "configurePreset": "sanitize", "configuration": "RelWithDebInfo" },
+    { "name": "verify",   "configurePreset": "verify",   "configuration": "Release"        }
   ],
 
   "testPresets": [
@@ -99,6 +111,14 @@
       "configurePreset": "sanitize",
       "configuration": "RelWithDebInfo",
       "description": "The full suite, perft included: millions of make/unmake cycles is what gives the sanitizers something to find.",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "verify",
+      "configurePreset": "verify",
+      "configuration": "Release",
+      "description": "The same suite again, with every make() checked against a full recompute. Perft is what reaches the rare move kinds.",
       "output": { "outputOnFailure": true },
       "execution": { "noTestsAction": "error" }
     }

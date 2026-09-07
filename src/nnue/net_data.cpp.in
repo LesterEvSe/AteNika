@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2023 Yevhenii Sekhin
+
+// Expanded by CMake into the build tree from @ATENIKA_NET@.
+// Edit src/nnue/net_data.cpp.in; the generated copy is overwritten every configure.
+
+extern const unsigned char ATENIKA_NET[];
+
+alignas(64) const unsigned char ATENIKA_NET[] = {@ATENIKA_NET_BYTES@};

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25...4.4)
 
 project(AteNika
-    VERSION     0.5.0
+    VERSION     0.6.0
     DESCRIPTION "A chess engine written in C++23"
     LANGUAGES   CXX
 )
@@ -21,6 +21,7 @@ option(ATENIKA_NATIVE      "Tune for this exact machine (never distribute)"   OF
 option(ATENIKA_WARNINGS    "Enable the warning set"                           ON)
 option(ATENIKA_WERROR      "Promote warnings to errors (dev and CI only)"     OFF)
 option(ATENIKA_DEBUG_HASH  "Verify the incremental Zobrist key on every make" OFF)
+option(ATENIKA_DEBUG_NNUE  "Verify the incremental NNUE accumulator on every make" OFF)
 
 set(ATENIKA_ARCH "x86-64-v3" CACHE STRING "Microarchitecture level for portable builds")
 
@@ -43,10 +44,10 @@ add_library(atenika_core OBJECT
     src/core/move_list.cpp
     src/core/board.cpp
 
+    src/eval/eval.cpp
+
     src/movegen/movegen.cpp
     src/movegen/perft.cpp
-
-    src/eval/eval.cpp
 
     src/search/mvv_lva.cpp
     src/search/order_info.cpp
@@ -59,6 +60,35 @@ add_library(atenika_core OBJECT
 )
 
 target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+# Embedded network
+# Simpler option with #embed, but it is Clang feature, not default C++
+
+set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue")
+
+# Re-run configure when the net changes, or the build silently keeps the old one.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ATENIKA_NET}")
+
+file(SIZE "${ATENIKA_NET}" ATENIKA_NET_BYTE_COUNT)
+file(READ "${ATENIKA_NET}" ATENIKA_NET_HEX HEX)
+string(REGEX REPLACE "(..)" "0x\\1," ATENIKA_NET_BYTES "${ATENIKA_NET_HEX}")
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/nnue/net_data.cpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/net_data.cpp"
+    @ONLY
+)
+unset(ATENIKA_NET_HEX)
+unset(ATENIKA_NET_BYTES)
+
+target_sources(atenika_core PRIVATE
+    src/nnue/nnue.cpp
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/net_data.cpp"
+)
+
+# Lets nnue.cpp static_assert the blob against the struct it is cast to.
+target_compile_definitions(atenika_core PRIVATE ATENIKA_NET_SIZE=${ATENIKA_NET_BYTE_COUNT})
+
 
 # UCI "id name" has to carry the version: fastchess and ordo identify an engine
 # by that string, and a ladder of binaries all calling themselves "AteNika" is
@@ -79,6 +109,9 @@ target_link_libraries(atenika_core PUBLIC Threads::Threads)
 # build, because it needs a deep perft walk to reach the rare cases.
 if (ATENIKA_DEBUG_HASH)
     target_compile_definitions(atenika_core PUBLIC ATENIKA_DEBUG_HASH)
+endif()
+if (ATENIKA_DEBUG_NNUE)
+    target_compile_definitions(atenika_core PUBLIC ATENIKA_DEBUG_NNUE)
 endif()
 
 
@@ -178,19 +211,20 @@ if (ATENIKA_BUILD_TESTS)
         tests/attacks_test.cpp
         tests/bitfunc_test.cpp
         tests/board_test.cpp
-        tests/zob_hash_test.cpp
-        tests/perft_test.cpp
+        tests/eval_test.cpp
         tests/mate_test.cpp
+        tests/nnue_test.cpp
+        tests/fen_mirror.hpp
+        tests/perft_test.cpp
         tests/pv_test.cpp
         tests/see_test.cpp
-        tests/eval_test.cpp
+        tests/zob_hash_test.cpp
     )
     target_include_directories(AteNikaTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     target_link_libraries(AteNikaTest PRIVATE atenika_core GTest::gtest GTest::gtest_main)
 
     # Must match atenika_core. Its objects are LLVM bitcode or GCC IR under LTO,
-    # and a link line without -flto never loads the plugin that can read them —
-    # "file format not recognized" at link time.
+    # and a link line without -flto never loads the plugin that can read them.
     atenika_enable_lto(AteNikaTest)
 
     enable_testing()

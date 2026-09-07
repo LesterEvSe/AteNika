@@ -7,7 +7,6 @@
 #include "bitboard/rays.hpp"
 #include "core/board.hpp"
 #include "core/zobrist_hash.hpp"
-#include "eval/eval.hpp"
 #include "search/mvv_lva.hpp"
 #include "search/search.hpp"
 #include "search/ttable.hpp"
@@ -20,7 +19,6 @@ public:
     Rays::init();
     Attacks::init();
     MvvLva::init();
-    Eval::init();
     Search::init();
   }
 
@@ -196,7 +194,7 @@ TEST_F(MateTest, black_mate_in_seven_5) {
 
 // Positions below from PGNs in matches/results, mate distance verified with Stockfish 18.
 
-TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_1) {
+TEST_F(MateTest, quiet_key_move_white_11_ply_1) {
   Board board = Board("r5kr/p1p1Qp2/2p2P2/q1P4p/6p1/6P1/PP5P/3R1R1K w - - 4 29");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -208,7 +206,7 @@ TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_2) {
   ASSERT_EQ("WM11", Search::get_mate());
 }
 
-TEST_F(MateTest, DISABLED_quiet_key_move_white_11_ply_3) {
+TEST_F(MateTest, quiet_key_move_white_11_ply_3) {
   Board board = Board("4rk2/1q1n1p2/p2p4/2pP1R2/2B1P2Q/1P5P/1P4P1/7K w - - 5 36");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM11", Search::get_mate());
@@ -403,7 +401,7 @@ TEST_F(MateTest, DISABLED_missed_mate_quiet_9) {
 
 // key move: quiet; engine says "cp 352", plays d2h6, reaches depth 16
 // best line: d2h6 h8g8 h6g5 g8h8 f6f7 d4e2 c3e2 b6b2 c1b2 d8g8 g5f6 g8g7 f6g7
-TEST_F(MateTest, DISABLED_missed_mate_quiet_10) {
+TEST_F(MateTest, missed_mate_quiet_10) {
   Board board = Board("3r3k/pp5p/1q1p1R2/2p5/2PnP3/2N5/PP1QB1P1/2K4n w - - 7 27");
   Search::iter_deep(board, false);
   ASSERT_EQ("WM13", Search::get_mate());

@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="240" height="240" alt="AteNika" src="assets/logo-determination.png" />
+  <img width="350" height="350" alt="AteNika" src="assets/logo-determination.png" />
   <h1>AteNika</h1>
   <p><i>A UCI chess engine written in C++23</i></p>
 
@@ -54,7 +54,7 @@ material detection.
 ## Build
 
 Requires a C++23 compiler (GCC 14+, Clang 18+, MSVC 19.39+) and CMake 3.25+.
-Linux and Windows are built and tested on every commit.
+Linux and Windows are built and tested on every PR.
 
 ```bash
 cmake --preset release
@@ -64,9 +64,7 @@ cmake --build --preset release
 
 ## Usage
 
-AteNika uses [UCI][uci], so
-any UCI-compatible GUI can run it. The only option is `Hash`, the transposition
-table size in MB.
+In addition to the UCI interface, the engine also has one `Hash` option, the transposition table size in MB.
 
 A few non-UCI commands are available for development:
 
@@ -97,6 +95,14 @@ ctest --preset fast      # excludes perft
 ```bash
 bash test.sh 'Board*'    # one fixture
 bash test.sh -l          # list tests
+```
+
+The `verify` preset is the same suite with the Zobrist key and the NNUE
+accumulator recomputed after every `make()`:
+```bash
+cmake --preset verify && cmake --build --preset verify --parallel
+ctest --preset verify
+printf 'bench\nquit\n' | ./build/verify/AteNika    # the same, over more positions
 ```
 
 ### Format and lint
@@ -133,8 +139,7 @@ opponents and opening books are not tracked and must be set up locally.
 **Reference**
 
 - [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page)
-- [UCI protocol][uci]
-- [FICS games database](https://www.ficsgames.org/)
+- [Renegade chess engine training data](https://www.kaggle.com/datasets/pkrisz/renegade-chess-engine-training-data)
 
 ## License
 
