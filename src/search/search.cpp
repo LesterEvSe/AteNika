@@ -446,11 +446,9 @@ void Search::iter_deep(Board &board, bool print_info) {
       if (elapsed >= budget)
         break;
 
-      // The prediction only guards the hard limit. Opening an iteration that
-      // gets killed is pure loss, because iter_deep publishes nothing from an
-      // incomplete one, so its whole cost buys zero depth.
+      // Try better time management
       const double ebf = prev_elapsed > 0 ? static_cast<double>(elapsed) / prev_elapsed : EBF_MAX;
-      if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > detail::_ms_allocated)
+      if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > budget)
         break;
 
       prev_elapsed = elapsed;
