@@ -4,6 +4,7 @@
 #include "nnue/nnue.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -25,12 +26,18 @@ namespace {
   using namespace NNUE;
   using namespace NNUE::detail;
 
+  constexpr size_t NET_PAYLOAD = sizeof(int16_t) * (INPUT * HIDDEN + HIDDEN + 2 * HIDDEN + 1);
+  constexpr size_t NET_PADDING = (64 - NET_PAYLOAD % 64) % 64;
+
   // alignas(64) mirrors bullet's `#[repr(C, align(64))]` accumulator.
   struct alignas(64) Network {
     int16_t feature_weights[INPUT][HIDDEN];
     int16_t feature_biases[HIDDEN];
     int16_t output_weights[2 * HIDDEN];
     int16_t output_bias;
+
+    // Must be set up explicity, otherwise MSVC warning C4324 from CI.
+    uint8_t padding[NET_PADDING];
   };
 
   static_assert(ATENIKA_NET_SIZE == sizeof(Network),
