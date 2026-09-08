@@ -55,3 +55,4 @@ search
 | atenika-0.5.1    | 815ff2e  | 16126415   | 2026-09-04 | vs 0.5.0 -1.22 +/- 14.95 (1142 games, stopped early). Change accepted |
 | atenika-0.5.2    | 24f1602  | 9536577    | 2026-09-05 | +211.72 +/- 50.37 H1 \[0; 10] accepted with raw `sprt.sh`. +397.18 +/- 99.25 H1 \[0; 10] accepted with `NODES=100000 sprt.sh` |
 | atenika-0.5.3 | 369bef5 | 9536577 | 2026-09-06 | vs 7e67c6b +80.62 +/- 27.28 H1 \[0; 10] accepted with `NODES=200000`. vs [Igel 2.5.0](https://github.com/vshcherbyna/igel/tree/2.5.0) (current CCRL rate is 3250) +63.09 +/- 25.66 H1 \[0; 10] accepted |
+| atenika-0.6.1    | fa20bf5  | 9275574    | 2026-09-07 |  |

@@ -82,15 +82,22 @@ fn main() {
             start_superbatch: 1,
             end_superbatch: SUPERBATCHES,
         },
-        // 0.75 leans on the search score over the game result: the labels come
-        // from low-depth self-play, so the outcome is the noisier of the two.
-        wdl_scheduler: wdl::ConstantWDL { value: 0.75 },
+        /* Weight on the game *result*, not the score: bullet forms the target as
+           `blend * result + (1 - blend) * score` (value.rs). The outcome is the
+           noisier label, since a position can be sound and still appear in a
+           lost game, so most of the weight belongs on the search score.
+
+           0.75 here trained the first net three quarters on who won, which
+           taught it win probability rather than centipawns: it read Petrov's
+           Classical, a near-equal opening, as +1.9.
+        */
+        wdl_scheduler: wdl::ConstantWDL { value: 0.3 },
         lr_scheduler: lr::StepLR {
             start: 0.001,
             gamma: 0.1,
             step: SUPERBATCHES * 45 / 100,
         },
-        save_rate: 5,
+        save_rate: 10,
     };
 
     let settings = LocalSettings {

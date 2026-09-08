@@ -446,7 +446,8 @@ void Search::iter_deep(Board &board, bool print_info) {
       if (elapsed >= budget)
         break;
 
-      // Try better time management
+      // Budge here is intentional, because hard limit failed in long games.
+      // Incomplete iteration is still pure loss.
       const double ebf = prev_elapsed > 0 ? static_cast<double>(elapsed) / prev_elapsed : EBF_MAX;
       if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > budget)
         break;
