@@ -44,11 +44,22 @@ namespace {
   void search_thread() {
     Search::iter_deep(board, true);
 
+    // A ponder search that ran out of depth still owes the GUI silence until
+    // "ponderhit" or "stop" arrives.
+    while (Search::is_pondering() && !quitting)
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
     if (!quitting) {
       const Move *best = Search::get_best_move();
 
       // "0000" is the conventional null move for a position with no legal reply.
-      reply("bestmove {}", best ? static_cast<std::string>(*best) : std::string("0000"));
+      if (!best)
+        reply("bestmove 0000");
+      else if (Search::get_pv_length() >= 2)
+        reply("bestmove {} ponder {}", static_cast<std::string>(*best),
+              static_cast<std::string>(Search::get_pv()[1]));
+      else
+        reply("bestmove {}", static_cast<std::string>(*best));
     }
     searching = false;
   }
@@ -59,6 +70,7 @@ namespace {
 
     reply("option name Hash type spin default {} min {} max {}", TTable::DEFAULT_HASH_MB,
           TTable::MIN_HASH_MB, TTable::MAX_HASH_MB);
+    reply("option name Ponder type check default false");
     reply("uciok");
   }
 
@@ -153,8 +165,10 @@ namespace {
         args >> limits.nodes;
       else if (token == "infinite")
         limits.infinite = true;
+      else if (token == "ponder")
+        limits.ponder = true;
 
-      // "ponder", "mate" and "searchmoves" fall through and are skipped.
+      // "mate" and "searchmoves" fall through and are skipped.
       // Answering a "go" we only partly understood still beats not answering.
     }
 
@@ -192,6 +206,10 @@ void Uci::start() {
     }
     if (token == "stop") {
       Search::stop();
+      continue;
+    }
+    if (token == "ponderhit") {
+      Search::ponderhit();
       continue;
     }
     if (token == "quit")

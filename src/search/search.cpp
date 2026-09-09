@@ -124,12 +124,21 @@ namespace {
 namespace Search::detail {
   // Limits
   int64_t _nodes;
-  int32_t _ms_allocated; // hard limit, enforced inside the search by _check_limits
-  int32_t _soft_limit;   // consulted only between iterations
-  bool _without_time;
+
+  // Atomic because "ponderhit" rewrites them from the UCI thread while the
+  // search thread is reading them.
+  std::atomic<int32_t> _ms_allocated; // hard limit, enforced inside the search by _check_limits
+  std::atomic<int32_t> _soft_limit;   // consulted only between iterations
+  std::atomic<bool> _without_time;
   int16_t _depth;
   int64_t _max_nodes;
   std::atomic<bool> _stop;
+
+  // What the clock would have been, held back until "ponderhit" starts it.
+  std::atomic<bool> _pondering;
+  int32_t _pending_ms_allocated;
+  int32_t _pending_soft_limit;
+  bool _pending_without_time;
 
   // Split by search for more precise information.
   // *Searched* move, not *Generated* one.
@@ -146,7 +155,7 @@ namespace Search::detail {
 
   int16_t _root_depth;
   bool _debug_info;
-  std::chrono::time_point<std::chrono::steady_clock> _start;
+  std::atomic<std::chrono::time_point<std::chrono::steady_clock>> _start;
 
   std::string _mate; // for mate check
 
@@ -180,6 +189,7 @@ namespace Search::detail {
   void _info(int depth, int elapsed);
   void _restart();
   bool _check_limits();
+  void _resolve_limits(const Limits &limits, Color side_to_move);
 
   // More here: https://chessprogramming.org/Negamax
   int32_t _negamax(Board &board, int16_t depth, int32_t alpha, int32_t beta, bool null_move);
@@ -238,14 +248,17 @@ bool Search::detail::_check_limits() {
     return _stop = true;
 
   auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                          std::chrono::steady_clock::now() - detail::_start)
+                                          std::chrono::steady_clock::now() - detail::_start.load())
                                           .count());
 
   if (_without_time || elapsed < _ms_allocated)
     return false;
   return _stop = true;
 }
-void Search::stop() { detail::_stop = true; }
+void Search::stop() {
+  detail::_pondering = false;
+  detail::_stop = true;
+}
 
 std::string Search::get_mate() { return detail::_mate; }
 Move *Search::get_best_move() {
@@ -283,7 +296,7 @@ void Search::set_depth(int16_t depth) {
 void Search::set_max_nodes(int64_t nodes) { detail::_max_nodes = nodes > 0 ? nodes : 0; }
 void Search::set_debug(bool on) { detail::_debug_info = on; }
 
-void Search::set_limits(const Limits &limits, Color side_to_move) {
+void Search::detail::_resolve_limits(const Limits &limits, Color side_to_move) {
   detail::_max_nodes = limits.nodes > 0 ? limits.nodes : 0;
   detail::_depth = limits.depth > 0 ? limits.depth : MAX_SEARCH_DEPTH;
 
@@ -319,6 +332,33 @@ void Search::set_limits(const Limits &limits, Color side_to_move) {
   detail::_ms_allocated = hard;
   detail::_soft_limit = soft;
 }
+
+void Search::set_limits(const Limits &limits, Color side_to_move) {
+  detail::_resolve_limits(limits, side_to_move);
+  detail::_pondering = limits.ponder;
+
+  if (!limits.ponder)
+    return;
+
+  detail::_pending_ms_allocated = detail::_ms_allocated;
+  detail::_pending_soft_limit = detail::_soft_limit;
+  detail::_pending_without_time = detail::_without_time;
+  detail::_without_time = true;
+}
+
+void Search::ponderhit() {
+  if (!detail::_pondering.exchange(false))
+    return;
+
+  // Order matters: the search thread must never see the clock enabled while
+  // _start still points at when the ponder search began.
+  detail::_start = std::chrono::steady_clock::now();
+  detail::_ms_allocated = detail::_pending_ms_allocated;
+  detail::_soft_limit = detail::_pending_soft_limit;
+  detail::_without_time = detail::_pending_without_time;
+}
+
+bool Search::is_pondering() { return detail::_pondering; }
 
 
 void Search::detail::_info(int depth, int elapsed) {
@@ -404,7 +444,7 @@ void Search::iter_deep(Board &board, bool print_info) {
 
     // static_cast for MSVC W4 warnings
     auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                            std::chrono::steady_clock::now() - detail::_start)
+                                            std::chrono::steady_clock::now() - detail::_start.load())
                                             .count());
 
     // Only a completed iteration gets to publish its line.

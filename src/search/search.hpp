@@ -26,6 +26,7 @@ namespace Search {
     int16_t depth{0};
     int64_t nodes{0};
     bool infinite{false};
+    bool ponder{false};
   };
 
   void init();
@@ -38,6 +39,11 @@ namespace Search {
   void set_limits(const Limits &limits, Color side_to_move);
   void iter_deep(Board &board, bool print_info); // Main function to call search
   void stop();
+
+  // "go ponder" searches without a clock until the GUI says the guessed move was played.
+  void ponderhit();
+  [[nodiscard]] bool is_pondering();
+
   [[nodiscard]] Move *get_best_move();
   void set_debug(bool on); // extra "info string" output, UCI "debug on"
 
