@@ -62,20 +62,26 @@ namespace {
 
   // Rejects a net whose output weights could overflow the SIMD path.
   bool weights_fit_simd(const Network &candidate) {
-    int64_t total = 0;
+    int64_t lane[8] = {};
 
-    for (const int16_t weight : candidate.output_weights) {
-      const int64_t magnitude = std::abs(static_cast<int64_t>(weight));
+    for (size_t i = 0; i < 2 * HIDDEN; ++i) {
+      const int64_t magnitude = std::abs(static_cast<int64_t>(candidate.output_weights[i]));
 
       if (QA * magnitude > INT16_MAX)
         return false;
-      total += magnitude;
+      lane[(i % 16) / 2] += magnitude;
     }
 
-    return QA * QA * total <= INT32_MAX;
+    for (const int64_t total : lane)
+      if (QA * QA * total > INT32_MAX)
+        return false;
+
+    return true;
   }
 
 #ifdef ATENIKA_AVX2
+  static_assert(HIDDEN % 16 == 0, "the AVX2 paths step sixteen lanes at a time");
+
   // SCReLU against one perspective's weights, added into `lanes`.
   void screlu_dot(const int16_t *values, const int16_t *weights, __m256i &lanes) {
     const __m256i floor = _mm256_setzero_si256();
@@ -93,36 +99,84 @@ namespace {
     }
   }
 
-  int32_t horizontal_sum(__m256i lanes) {
-    __m128i half = _mm_add_epi32(_mm256_castsi256_si128(lanes), _mm256_extracti128_si256(lanes, 1));
-    half = _mm_add_epi32(half, _mm_shuffle_epi32(half, _MM_SHUFFLE(1, 0, 3, 2)));
-    half = _mm_add_epi32(half, _mm_shuffle_epi32(half, _MM_SHUFFLE(2, 3, 0, 1)));
-    return _mm_cvtsi128_si32(half);
+  int64_t horizontal_sum(__m256i lanes) {
+    __m256i wide = _mm256_add_epi64(_mm256_cvtepi32_epi64(_mm256_castsi256_si128(lanes)),
+                                    _mm256_cvtepi32_epi64(_mm256_extracti128_si256(lanes, 1)));
+
+    __m128i half =
+        _mm_add_epi64(_mm256_castsi256_si128(wide), _mm256_extracti128_si256(wide, 1));
+    half = _mm_add_epi64(half, _mm_unpackhi_epi64(half, half));
+
+    return static_cast<int64_t>(_mm_cvtsi128_si64(half));
   }
 #endif
+
+  // target = source - removed columns + added columns, in one pass over the
+  // accumulator instead of a copy followed by one pass per column.
+  template <int REMOVED, int ADDED>
+  void fuse(const int16_t *source, const int16_t *const *removed, const int16_t *const *added,
+            int16_t *target) {
+#ifdef ATENIKA_AVX2
+    for (int i = 0; i < HIDDEN; i += 16) {
+      __m256i value = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(source + i));
+
+      for (int f = 0; f < REMOVED; ++f)
+        value = _mm256_sub_epi16(
+            value, _mm256_loadu_si256(reinterpret_cast<const __m256i *>(removed[f] + i)));
+
+      for (int f = 0; f < ADDED; ++f)
+        value = _mm256_add_epi16(
+            value, _mm256_loadu_si256(reinterpret_cast<const __m256i *>(added[f] + i)));
+
+      _mm256_storeu_si256(reinterpret_cast<__m256i *>(target + i), value);
+    }
+#else
+    for (int i = 0; i < HIDDEN; ++i) {
+      int16_t value = source[i];
+
+      for (int f = 0; f < REMOVED; ++f)
+        value = static_cast<int16_t>(value - removed[f][i]);
+
+      for (int f = 0; f < ADDED; ++f)
+        value = static_cast<int16_t>(value + added[f][i]);
+
+      target[i] = value;
+    }
+#endif
+  }
+
+  const int16_t *column(Color perspective, const Feature &feature) {
+    return net().feature_weights[feature_index(perspective, feature.color, feature.piece,
+                                               feature.cell)];
+  }
 
   // child = parent - removed columns + added columns.
   void apply(const Accumulator &parent, const Delta &delta, Accumulator &child) {
     for (const Color perspective : {BLACK, WHITE}) {
-      int16_t *values = child.values[perspective];
-      std::copy_n(parent.values[perspective], HIDDEN, values);
+      const int16_t *removed[2];
+      const int16_t *added[2];
 
-      for (uint8_t f = 0; f < delta.removed_count; ++f) {
-        const Feature &feature = delta.removed[f];
-        const int16_t *column = net().feature_weights[feature_index(perspective, feature.color,
-                                                                    feature.piece, feature.cell)];
+      for (uint8_t f = 0; f < delta.removed_count; ++f)
+        removed[f] = column(perspective, delta.removed[f]);
 
-        for (int i = 0; i < HIDDEN; ++i)
-          values[i] = static_cast<int16_t>(values[i] - column[i]);
-      }
+      for (uint8_t f = 0; f < delta.added_count; ++f)
+        added[f] = column(perspective, delta.added[f]);
 
-      for (uint8_t f = 0; f < delta.added_count; ++f) {
-        const Feature &feature = delta.added[f];
-        const int16_t *column = net().feature_weights[feature_index(perspective, feature.color,
-                                                                    feature.piece, feature.cell)];
+      const int16_t *source = parent.values[perspective];
+      int16_t *target = child.values[perspective];
 
-        for (int i = 0; i < HIDDEN; ++i)
-          values[i] = static_cast<int16_t>(values[i] + column[i]);
+      // A move removes at most two columns and adds at most two, so the counts
+      // are known constants inside each branch and the loops above unroll away.
+      switch (delta.removed_count * 3 + delta.added_count) {
+      case 0: fuse<0, 0>(source, removed, added, target); break;
+      case 1: fuse<0, 1>(source, removed, added, target); break;
+      case 2: fuse<0, 2>(source, removed, added, target); break;
+      case 3: fuse<1, 0>(source, removed, added, target); break;
+      case 4: fuse<1, 1>(source, removed, added, target); break;
+      case 5: fuse<1, 2>(source, removed, added, target); break;
+      case 6: fuse<2, 0>(source, removed, added, target); break;
+      case 7: fuse<2, 1>(source, removed, added, target); break;
+      default: fuse<2, 2>(source, removed, added, target); break;
       }
     }
   }

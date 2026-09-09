@@ -1,4 +1,4 @@
-// Trains AteNika's net: (768 -> 512)x2 -> 1, SCReLU, quantised for in-engine
+// Trains AteNika's net: (768 -> 1024)x2 -> 1, SCReLU, quantised for in-engine
 // integer inference. Adapted from bullet's examples/simple.rs.
 
 use bullet_lib::{
@@ -13,7 +13,7 @@ use bullet_lib::{
 };
 
 // These four and the SCReLU in build() must match src/nnue/nnue.hpp.
-const HIDDEN_SIZE: usize = 512; // engine HIDDEN
+const HIDDEN_SIZE: usize = 1024; // engine HIDDEN
 const SCALE: i32 = 400; // engine SCALE, network output -> centipawns
 const QA: i16 = 255; // engine QA, quantises feature weights and biases
 const QB: i16 = 64; // engine QB, quantises output weights
@@ -30,11 +30,19 @@ const SUPERBATCHES: usize = 120;
 // bulletformat stores one position per 32 bytes.
 const BYTES_PER_POSITION: u64 = 32;
 
+const NET_ID: &str = "atenika-v1";
+const CHECKPOINTS: &str = "checkpoints";
+
 fn main() {
     let data = std::env::args().nth(1).unwrap_or_else(|| {
         eprintln!("usage: cargo run --release -- <dataset.bin>");
         std::process::exit(1);
     });
+
+    // RESUME=<superbatch> picks up from that checkpoint.
+    let resume: Option<usize> = std::env::var("RESUME")
+        .ok()
+        .map(|v| v.parse().unwrap_or_else(|_| panic!("RESUME wants a superbatch number, got {v:?}")));
 
     let bytes = std::fs::metadata(&data)
         .unwrap_or_else(|e| panic!("{data}: {e}"))
@@ -74,23 +82,15 @@ fn main() {
         });
 
     let schedule = TrainingSchedule {
-        net_id: "atenika-v1".to_string(),
+        net_id: NET_ID.to_string(),
         eval_scale: SCALE as f32,
         steps: TrainingSteps {
             batch_size: BATCH_SIZE,
             batches_per_superbatch: BATCHES_PER_SUPERBATCH,
-            start_superbatch: 1,
+            start_superbatch: resume.map_or(1, |n| n + 1),
             end_superbatch: SUPERBATCHES,
         },
-        /* Weight on the game *result*, not the score: bullet forms the target as
-           `blend * result + (1 - blend) * score` (value.rs). The outcome is the
-           noisier label, since a position can be sound and still appear in a
-           lost game, so most of the weight belongs on the search score.
 
-           0.75 here trained the first net three quarters on who won, which
-           taught it win probability rather than centipawns: it read Petrov's
-           Classical, a near-equal opening, as +1.9.
-        */
         wdl_scheduler: wdl::ConstantWDL { value: 0.3 },
         lr_scheduler: lr::StepLR {
             start: 0.001,
@@ -103,11 +103,17 @@ fn main() {
     let settings = LocalSettings {
         threads: 6, // data loading only, the GPU does the arithmetic
         test_set: None,
-        output_directory: "checkpoints",
+        output_directory: CHECKPOINTS,
         batch_queue_size: 64,
     };
 
     let data_loader = loader::DirectSequentialDataLoader::new(&[data.as_str()]);
+
+    if let Some(n) = resume {
+        let from = format!("{CHECKPOINTS}/{NET_ID}-{n}");
+        println!("resuming from {from}, continuing at superbatch {}", n + 1);
+        trainer.load_from_checkpoint(&from);
+    }
 
     trainer.run(&schedule, &settings, &data_loader);
 }

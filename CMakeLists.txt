@@ -66,6 +66,15 @@ target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
 
 set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue")
 
+if (NOT EXISTS "${ATENIKA_NET}")
+    message(FATAL_ERROR
+        "ATENIKA_NET does not exist: ${ATENIKA_NET}\n"
+        "A trained net is written as trainer/checkpoints/<net-id>-<superbatch>/quantised.bin, "
+        "and has to be copied here under that exact name:\n"
+        "    cp trainer/checkpoints/<net-id>-<superbatch>/quantised.bin nets/atenika.nnue\n"
+        "Otherwise this is a partial checkout, since the net is committed.")
+endif()
+
 # Re-run configure when the net changes, or the build silently keeps the old one.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ATENIKA_NET}")
 

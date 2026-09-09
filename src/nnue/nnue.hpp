@@ -12,7 +12,7 @@
 class Board;
 
 namespace NNUE {
-  constexpr int32_t HIDDEN = 512;
+  constexpr int32_t HIDDEN = 1024;
 
   // One slot per ply the board can hold, checked against Board::MAX_MOVES.
   constexpr int32_t MAX_PLIES = 2048;

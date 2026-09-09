@@ -11,7 +11,7 @@
 import struct
 import sys
 
-INPUT, HIDDEN = 768, 512
+INPUT, HIDDEN = 768, 1024
 QA, QB, SCALE = 255, 64, 400
 
 PIECES = "pnbrqk"
