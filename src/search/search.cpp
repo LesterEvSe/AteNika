@@ -60,6 +60,8 @@ namespace {
   constexpr double EBF_MIN = 1.4;
   constexpr double EBF_MAX = 3.5;
 
+  constexpr double PREDICT_SLACK = 2.0;
+
   // Currently skipped because has no gain from it.
   // https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
   // Late move pruning, 3 + depth * depth. Depth 1 is skipped on purpose: measured
@@ -486,10 +488,11 @@ void Search::iter_deep(Board &board, bool print_info) {
       if (elapsed >= budget)
         break;
 
-      // Budge here is intentional, because hard limit failed in long games.
-      // Incomplete iteration is still pure loss.
+      // Predicting against the budget alone stops at budget/ebf, so the engine
+      // never reaches its own allocation. PREDICT_SLACK is what the declined
+      // iteration is allowed to have cost.
       const double ebf = prev_elapsed > 0 ? static_cast<double>(elapsed) / prev_elapsed : EBF_MAX;
-      if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > budget)
+      if (elapsed * std::clamp(ebf, EBF_MIN, EBF_MAX) > budget * PREDICT_SLACK)
         break;
 
       prev_elapsed = elapsed;
