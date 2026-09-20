@@ -445,9 +445,10 @@ void Search::iter_deep(Board &board, bool print_info) {
     prev_score = score;
 
     // static_cast for MSVC W4 warnings
-    auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                            std::chrono::steady_clock::now() - detail::_start.load())
-                                            .count());
+    auto elapsed =
+        static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                 std::chrono::steady_clock::now() - detail::_start.load())
+                                 .count());
 
     // Only a completed iteration gets to publish its line.
     if (detail::_pv_length[0] > 0) {

@@ -9,6 +9,7 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
+#include <memory>
 #include <vector>
 
 #ifdef __AVX2__
@@ -43,11 +44,13 @@ namespace {
   static_assert(ATENIKA_NET_SIZE == sizeof(Network),
                 "the embedded net does not match the layout above");
 
+  // Copied straight into static storage. A Network is over a megabyte, which
+  // overflows the 1 MB stack MSVC gives a thread by default.
   Network &net() {
-    static Network instance = [] {
-      Network fresh;
-      std::memcpy(&fresh, ATENIKA_NET, sizeof(fresh));
-      return fresh;
+    static Network instance;
+    [[maybe_unused]] static const bool loaded = [] {
+      std::memcpy(&instance, ATENIKA_NET, sizeof(instance));
+      return true;
     }();
 
     return instance;
@@ -103,8 +106,7 @@ namespace {
     __m256i wide = _mm256_add_epi64(_mm256_cvtepi32_epi64(_mm256_castsi256_si128(lanes)),
                                     _mm256_cvtepi32_epi64(_mm256_extracti128_si256(lanes, 1)));
 
-    __m128i half =
-        _mm_add_epi64(_mm256_castsi256_si128(wide), _mm256_extracti128_si256(wide, 1));
+    __m128i half = _mm_add_epi64(_mm256_castsi256_si128(wide), _mm256_extracti128_si256(wide, 1));
     half = _mm_add_epi64(half, _mm_unpackhi_epi64(half, half));
 
     return static_cast<int64_t>(_mm_cvtsi128_si64(half));
@@ -146,13 +148,17 @@ namespace {
   }
 
   const int16_t *column(Color perspective, const Feature &feature) {
-    return net().feature_weights[feature_index(perspective, feature.color, feature.piece,
-                                               feature.cell)];
+    return net()
+        .feature_weights[feature_index(perspective, feature.color, feature.piece, feature.cell)];
   }
 
   // child = parent - removed columns + added columns.
   void apply(const Accumulator &parent, const Delta &delta, Accumulator &child) {
-    for (const Color perspective : {BLACK, WHITE}) {
+    // Indexed rather than ranged over {BLACK, WHITE}: Color carries COLOR_SIZE
+    // as an enumerator, so the analyser cannot otherwise rule out values[2].
+    for (uint8_t index = 0; index < COLOR_SIZE; ++index) {
+      const auto perspective = static_cast<Color>(index);
+
       const int16_t *removed[2];
       const int16_t *added[2];
 
@@ -162,21 +168,21 @@ namespace {
       for (uint8_t f = 0; f < delta.added_count; ++f)
         added[f] = column(perspective, delta.added[f]);
 
-      const int16_t *source = parent.values[perspective];
-      int16_t *target = child.values[perspective];
+      const int16_t *source = parent.values[index];
+      int16_t *target = child.values[index];
 
       // A move removes at most two columns and adds at most two, so the counts
       // are known constants inside each branch and the loops above unroll away.
       switch (delta.removed_count * 3 + delta.added_count) {
-      case 0: fuse<0, 0>(source, removed, added, target); break;
-      case 1: fuse<0, 1>(source, removed, added, target); break;
-      case 2: fuse<0, 2>(source, removed, added, target); break;
-      case 3: fuse<1, 0>(source, removed, added, target); break;
-      case 4: fuse<1, 1>(source, removed, added, target); break;
-      case 5: fuse<1, 2>(source, removed, added, target); break;
-      case 6: fuse<2, 0>(source, removed, added, target); break;
-      case 7: fuse<2, 1>(source, removed, added, target); break;
-      default: fuse<2, 2>(source, removed, added, target); break;
+        case 0: fuse<0, 0>(source, removed, added, target); break;
+        case 1: fuse<0, 1>(source, removed, added, target); break;
+        case 2: fuse<0, 2>(source, removed, added, target); break;
+        case 3: fuse<1, 0>(source, removed, added, target); break;
+        case 4: fuse<1, 1>(source, removed, added, target); break;
+        case 5: fuse<1, 2>(source, removed, added, target); break;
+        case 6: fuse<2, 0>(source, removed, added, target); break;
+        case 7: fuse<2, 1>(source, removed, added, target); break;
+        default: fuse<2, 2>(source, removed, added, target); break;
       }
     }
   }
@@ -243,13 +249,13 @@ bool NNUE::load(const std::string &path) {
   if (buffer.size() != sizeof(Network))
     return false;
 
-  Network candidate;
-  std::memcpy(&candidate, buffer.data(), sizeof(candidate));
+  const auto candidate = std::make_unique<Network>();
+  std::memcpy(candidate.get(), buffer.data(), sizeof(Network));
 
-  if (!weights_fit_simd(candidate))
+  if (!weights_fit_simd(*candidate))
     return false;
 
-  net() = candidate;
+  net() = *candidate;
   return true;
 }
 
