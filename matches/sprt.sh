@@ -8,6 +8,7 @@
 #   ./sprt.sh builds/atenika-0.3.0 builds/atenika-0.2.0 nonreg     refactor [-3, 1]
 #
 #   NODES=100000 bash sprt.sh <new> <old> <mode>
+#   TC=60+0.6 bash sprt.sh <new> <old> <mode>
 #
 # Each run saves its state to results/sprt-<stamp>.json every 20 games, so Ctrl-C
 # loses nothing. Continue it later with:

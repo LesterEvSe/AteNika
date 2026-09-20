@@ -9,7 +9,9 @@ matches/*
 !matches/*.py
 !matches/*.md
 
-placeholder.nnue
+nets/calibration*
+nets/*.nnue
+!nets/atenika.nnue
 
 # Rust
 trainer/target/
