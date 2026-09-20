@@ -113,11 +113,24 @@ namespace {
   }
 #endif
 
+  const int16_t *column(Color perspective, const Feature &feature) {
+    return net()
+        .feature_weights[feature_index(perspective, feature.color, feature.piece, feature.cell)];
+  }
+
   // target = source - removed columns + added columns, in one pass over the
   // accumulator instead of a copy followed by one pass per column.
   template <int REMOVED, int ADDED>
-  void fuse(const int16_t *source, const int16_t *const *removed, const int16_t *const *added,
-            int16_t *target) {
+  void fuse(const int16_t *source, Color perspective, const Delta &delta, int16_t *target) {
+    const int16_t *removed[REMOVED + 1];
+    const int16_t *added[ADDED + 1];
+
+    for (int f = 0; f < REMOVED; ++f)
+      removed[f] = column(perspective, delta.removed[f]);
+
+    for (int f = 0; f < ADDED; ++f)
+      added[f] = column(perspective, delta.added[f]);
+
 #ifdef ATENIKA_AVX2
     for (int i = 0; i < HIDDEN; i += 16) {
       __m256i value = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(source + i));
@@ -147,42 +160,26 @@ namespace {
 #endif
   }
 
-  const int16_t *column(Color perspective, const Feature &feature) {
-    return net()
-        .feature_weights[feature_index(perspective, feature.color, feature.piece, feature.cell)];
-  }
-
   // child = parent - removed columns + added columns.
   void apply(const Accumulator &parent, const Delta &delta, Accumulator &child) {
-    // Indexed rather than ranged over {BLACK, WHITE}: Color carries COLOR_SIZE
-    // as an enumerator, so the analyser cannot otherwise rule out values[2].
+    const uint8_t removed_count = std::min<uint8_t>(delta.removed_count, 2);
+    const uint8_t added_count = std::min<uint8_t>(delta.added_count, 2);
+
     for (uint8_t index = 0; index < COLOR_SIZE; ++index) {
       const auto perspective = static_cast<Color>(index);
-
-      const int16_t *removed[2];
-      const int16_t *added[2];
-
-      for (uint8_t f = 0; f < delta.removed_count; ++f)
-        removed[f] = column(perspective, delta.removed[f]);
-
-      for (uint8_t f = 0; f < delta.added_count; ++f)
-        added[f] = column(perspective, delta.added[f]);
-
       const int16_t *source = parent.values[index];
       int16_t *target = child.values[index];
 
-      // A move removes at most two columns and adds at most two, so the counts
-      // are known constants inside each branch and the loops above unroll away.
-      switch (delta.removed_count * 3 + delta.added_count) {
-        case 0: fuse<0, 0>(source, removed, added, target); break;
-        case 1: fuse<0, 1>(source, removed, added, target); break;
-        case 2: fuse<0, 2>(source, removed, added, target); break;
-        case 3: fuse<1, 0>(source, removed, added, target); break;
-        case 4: fuse<1, 1>(source, removed, added, target); break;
-        case 5: fuse<1, 2>(source, removed, added, target); break;
-        case 6: fuse<2, 0>(source, removed, added, target); break;
-        case 7: fuse<2, 1>(source, removed, added, target); break;
-        default: fuse<2, 2>(source, removed, added, target); break;
+      switch (removed_count * 3 + added_count) {
+        case 0: fuse<0, 0>(source, perspective, delta, target); break;
+        case 1: fuse<0, 1>(source, perspective, delta, target); break;
+        case 2: fuse<0, 2>(source, perspective, delta, target); break;
+        case 3: fuse<1, 0>(source, perspective, delta, target); break;
+        case 4: fuse<1, 1>(source, perspective, delta, target); break;
+        case 5: fuse<1, 2>(source, perspective, delta, target); break;
+        case 6: fuse<2, 0>(source, perspective, delta, target); break;
+        case 7: fuse<2, 1>(source, perspective, delta, target); break;
+        default: fuse<2, 2>(source, perspective, delta, target); break;
       }
     }
   }
