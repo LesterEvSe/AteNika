@@ -7,7 +7,7 @@
 [![CI](https://github.com/LesterEvSe/AteNika/actions/workflows/ci.yml/badge.svg)](https://github.com/LesterEvSe/AteNika/actions/workflows/ci.yml)
 [![Release](https://github.com/LesterEvSe/AteNika/actions/workflows/release.yml/badge.svg)](https://github.com/LesterEvSe/AteNika/actions/workflows/release.yml)
 [![GitHub Release](https://img.shields.io/github/v/release/LesterEvSe/AteNika?logo=github&color=097BBC)](https://github.com/LesterEvSe/AteNika/releases/latest)
-[![Elo](https://img.shields.io/badge/Elo-2512-brightgreen)](matches/LADDER.md)
+[![Elo](https://img.shields.io/badge/Elo-3139-brightgreen)](matches/LADDER.md)
 </div>
 
 AteNika plays chess over [UCI][uci] with no graphical interface of its own, and
@@ -22,15 +22,14 @@ she was the ancient Greek goddess of victory and triumph.
 
 ## Strength
 
-Measured by gauntlet against externally rated opponents, 10+0.1, rated with
-`ordo`. Full history in [matches/LADDER.md](matches/LADDER.md).
+More detailed in [CCI AteNika Rate](https://github.com/computer-chess-index/cci/blob/main/engines/AteNika.md).
+Full history in [matches/LADDER.md](matches/LADDER.md).
 
-| version | opponent | games | rating |
-| ------- | -------- | ----- | ------ |
-| 0.5.0 | stash-2473 | 1000 | **2511.8 +/- 19.7** |
-| 0.5.0 | stash-2298 | 1000 | 2457.8 +/- 21.4 |
-| 0.4.0 | stash-2298 | 2000 | 2295.1 +/- 14.1 |
-| 0.3.0 | stash-1690 | 1000 | 1816.7 +/- 21.6 |
+| Version | Published | STC <sub>8.0+0.08s  | LTC <sub>60.0+0.60s | VLTC <sub>2m24s+1.12s |
+| --- | --- | --- | --- | --- |
+| 0.7.0 | 2026-09-20 | 2728 | 3090 | 3139 |
+| 0.6.0 | 2026-09-13 | 2674 | 3005 | 3078 |
+| 0.5.0 | 2026-09-02 | 2040 | 2317 | 2350 |
 
 ## Features
 
@@ -140,6 +139,7 @@ opponents and opening books are not tracked and must be set up locally.
 
 - [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page)
 - [Renegade chess engine training data](https://www.kaggle.com/datasets/pkrisz/renegade-chess-engine-training-data)
+- [The Computer Chess Index (CCI)](https://github.com/computer-chess-index/cci)
 
 ## License
 
