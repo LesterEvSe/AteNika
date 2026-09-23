@@ -8,6 +8,20 @@ Appended to by `archive.sh`. Ratings are filled in by hand after a gauntlet.
 
 ## Gauntlets
 
+### CCI Rate
+
+| Version | Time Control | Elo  | Range +/- | Matches | Score | Average Opponent Elo | Draws |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.7.0 | VLTC <sub>(2m24s+1.12s)</sub> | 3139 | 60 | 78 | 46% | 3174 | 54% |
+| 0.7.0 | LTC <sub>(60.0+0.60s)</sub> | 3090 | 57 | 88 | 56% | 3040 | 51% |
+| 0.7.0 | STC <sub>(8.0+0.08s)</sub> | 2728 | 69 | 64 | 53% | 2700 | 38% |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.6.0 | VLTC <sub>(2m24s+1.12s)</sub> | 3078 | 36 | 230 | 55% | 3029 | 48% |
+| 0.6.0 | LTC <sub>(60.0+0.60s)</sub> | 3005 | 36 | 222 | 53% | 2974 | 52% |
+| 0.6.0 | STC <sub>(8.0+0.08s)</sub> | 2674 | 45 | 158 | 53% | 2639 | 37% |
+
+### Custom Test with Ordo
+
 | version | opponent | tc | games | rating |
 | ------- | -------- | -- | ----- | ------ |
 | atenika-0.2.0 | stash-1690 | 10+0.1 | 2000 | 1555 +/- 15     |
