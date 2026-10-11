@@ -16,3 +16,10 @@ nets/*.nnue
 # Rust
 trainer/target/
 trainer/checkpoints/
+
+# Research artefacts
+__pycache__/
+research/tools/
+research/data/
+research/builds/
+research/results/

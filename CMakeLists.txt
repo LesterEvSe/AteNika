@@ -44,6 +44,8 @@ add_library(atenika_core OBJECT
     src/core/move_list.cpp
     src/core/board.cpp
 
+    src/datagen/datagen.cpp
+
     src/eval/eval.cpp
 
     src/movegen/movegen.cpp
@@ -64,7 +66,8 @@ target_include_directories(atenika_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # Embedded network
 # Simpler option with #embed, but it is Clang feature, not default C++
 
-set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue")
+set(ATENIKA_NET "${CMAKE_CURRENT_SOURCE_DIR}/nets/atenika.nnue" CACHE FILEPATH "Network embedded into the binary")
+set(ATENIKA_HIDDEN 1024 CACHE STRING "Hidden layer width of the embedded network")
 
 if (NOT EXISTS "${ATENIKA_NET}")
     message(FATAL_ERROR
@@ -97,6 +100,7 @@ target_sources(atenika_core PRIVATE
 
 # Lets nnue.cpp static_assert the blob against the struct it is cast to.
 target_compile_definitions(atenika_core PRIVATE ATENIKA_NET_SIZE=${ATENIKA_NET_BYTE_COUNT})
+target_compile_definitions(atenika_core PUBLIC ATENIKA_HIDDEN=${ATENIKA_HIDDEN})
 
 
 # UCI "id name" has to carry the version: fastchess and ordo identify an engine

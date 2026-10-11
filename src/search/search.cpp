@@ -156,6 +156,7 @@ namespace Search::detail {
   int16_t _seldepth;
 
   int16_t _root_depth;
+  int16_t _completed_depth;
   bool _debug_info;
   std::atomic<std::chrono::time_point<std::chrono::steady_clock>> _start;
 
@@ -211,6 +212,7 @@ void Search::detail::_restart() {
   _mate = "";
   _seldepth = 0;
   _root_depth = 0;
+  _completed_depth = 0;
   _best_score = 0;
   _best_pv_length = 0;
 
@@ -239,15 +241,16 @@ void Search::init() {
 bool Search::detail::_check_limits() {
   if (_stop)
     return true;
+
+  // Checked on every node, so "go nodes N" stops at N exactly: datagen budgets
+  // are a few thousand nodes. Zero disables it, which is what keeps bench
+  // independent of whatever the last "go" asked for.
+  if (_max_nodes > 0 && _nodes >= _max_nodes)
+    return _stop = true;
+
   // check each 2048 node
   if (_nodes & 2047)
     return false;
-
-  // Shares the clock's 2048-node cadence, so "go nodes N" lands within a couple
-  // of thousand nodes of N rather than exactly on it. Zero disables it, which
-  // is what keeps bench independent of whatever the last "go" asked for.
-  if (_max_nodes > 0 && _nodes >= _max_nodes)
-    return _stop = true;
 
   auto elapsed = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                           std::chrono::steady_clock::now() - detail::_start.load())
@@ -272,6 +275,9 @@ std::string Search::get_allocated_sec() {
 int16_t Search::get_search_depth() { return detail::_depth; }
 
 int64_t Search::get_nodes() { return detail::_nodes; }
+int32_t Search::get_best_score() { return detail::_best_score; }
+int16_t Search::get_completed_depth() { return detail::_completed_depth; }
+bool Search::is_mate_score(int32_t score) { return std::abs(score) > MATE_BOUND; }
 int32_t Search::get_allocated_ms() { return detail::_ms_allocated; }
 bool Search::is_without_time() { return detail::_without_time; }
 int64_t Search::get_max_nodes() { return detail::_max_nodes; }
@@ -442,6 +448,7 @@ void Search::iter_deep(Board &board, bool print_info) {
         i > 1 ? static_cast<int32_t>(std::clamp<int64_t>(int64_t{prev_score} - score, -INF, INF))
               : 0;
     detail::_best_score = score;
+    detail::_completed_depth = i;
     prev_score = score;
 
     // static_cast for MSVC W4 warnings

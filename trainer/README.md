@@ -1,7 +1,8 @@
 # trainer
 
-Trains AteNika's network: `(768 -> 512)x2 -> 1`, SCReLU, quantised for integer
-inference in the engine. Built on [bullet](https://github.com/jw1912/bullet).
+Trains AteNika's network: `(768 -> HIDDEN)x2 -> 1`, SCReLU, quantised for integer
+inference in the engine. HIDDEN is 1024 by default and must match the engine's
+`ATENIKA_HIDDEN`. Built on [bullet](https://github.com/jw1912/bullet).
 
 ## Requirements
 
@@ -15,20 +16,24 @@ Currently works with `g++-15`, so it need to be installed.
 ```bash
 cargo run --release -- <path-to-dataset.bin>
 
+# Every training setting can be overridden from the environment:
+HIDDEN=512 WDL=0.0 SUPERBATCHES=40 BATCHES_PER_SUPERBATCH=1000 SAVE_RATE=5 NET_ID=e2-n5000 \
+  cargo run --release -- <path-to-dataset.bin>
+
 # Lint with
 cargo fmt
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-Checkpoints appear every 10 superbatches in `checkpoints/atenika-v1-N/`.
+Checkpoints appear every SAVE_RATE (default 10) superbatches in `checkpoints/<NET_ID>-N/`.
 The engine reads `quantised.bin`; `raw.bin` is the unquantised f32 weights and
 `optimiser_state/` exists to resume training.
 
 ## Using a net in the engine
 
 ```bash
-stat -c%s checkpoints/atenika-v1-N/quantised.bin   # must equal sizeof(Network)
-cp checkpoints/atenika-v1-N/quantised.bin ../nets/atenika.nnue
+stat -c%s checkpoints/<NET_ID>-N/quantised.bin   # must equal sizeof(Network)
+cp checkpoints/<NET_ID>-N/quantised.bin ../nets/atenika.nnue
 cd .. && cmake --preset release && cmake --build --preset release
 ```
 

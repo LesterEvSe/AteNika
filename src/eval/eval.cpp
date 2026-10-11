@@ -20,11 +20,11 @@ namespace {
     const uint8_t knights = count_bits(board.get_pieces(color, KNIGHT));
     return (bishops && knights) || knights > 2;
   }
-
-  bool material_draw(const Board &board) {
-    return !can_force_mate(board, WHITE) && !can_force_mate(board, BLACK);
-  }
 } // namespace
+
+bool Eval::material_draw(const Board &board) {
+  return !can_force_mate(board, WHITE) && !can_force_mate(board, BLACK);
+}
 
 int32_t Eval::evaluate(const Board &board) {
   if (material_draw(board))

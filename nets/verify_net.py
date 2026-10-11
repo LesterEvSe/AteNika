@@ -11,7 +11,8 @@
 import struct
 import sys
 
-INPUT, HIDDEN = 768, 1024
+INPUT = 768
+HIDDEN = 0  # read off the file size in load()
 QA, QB, SCALE = 255, 64, 400
 
 PIECES = "pnbrqk"
@@ -34,7 +35,10 @@ def load(path):
     bullet pads the file to a multiple of 64 with the repeated ASCII string
     "bullet" rather than zeros, so a trailing remainder is expected.
     """
+    global HIDDEN
     blob = open(path, "rb").read()
+    # The padding is under 64 bytes, far less than one more hidden unit.
+    HIDDEN = (len(blob) // 2 - 1) // (INPUT + 3)
     expected = INPUT * HIDDEN * 2 + HIDDEN * 2 + 2 * HIDDEN * 2 + 2
     if len(blob) < expected:
         raise SystemExit(f"{path}: {len(blob)} bytes, need at least {expected}")

@@ -8,4 +8,5 @@
 namespace Eval {
   void init();
   [[nodiscard]] int32_t evaluate(const Board &board);
+  [[nodiscard]] bool material_draw(const Board &board);
 } // namespace Eval

@@ -11,6 +11,7 @@
 #include "cli/output.hpp"
 #include "core/board.hpp"
 #include "core/move.hpp"
+#include "datagen/datagen.hpp"
 #include "eval/eval.hpp"
 #include "movegen/perft.hpp"
 #include "search/bench.hpp"
@@ -73,6 +74,30 @@ namespace {
     reply("Time: {} ms  ({} knps)", ms, nodes / (ms + 1));
   }
 
+  // "datagen <nodes> <positions> <seed> <out>" and "relabel <nodes> <in> <out>".
+  void run_datagen(const std::string &token, std::istringstream &args) {
+    constexpr const char *USAGE =
+        "Usage: datagen <nodes> <positions> <seed> <out> | relabel <nodes> <in> <out>";
+
+    std::string nodes;
+    std::string first;
+    std::string second;
+    std::string third;
+    args >> nodes >> first >> second >> third;
+
+    try {
+      if (token == "relabel" && !second.empty() && third.empty())
+        Datagen::relabel(std::stoll(nodes), first, second);
+      else if (token == "datagen" && !third.empty())
+        Datagen::generate(std::stoll(nodes), std::stoll(first), std::stoull(second), third);
+      else
+        std::println(stderr, "{}", USAGE);
+
+    } catch (const std::exception &) {
+      std::println(stderr, "{}", USAGE);
+    }
+  }
+
   // Bare coordinate notation typed at the prompt: "e2e4", or a whole line of
   // them.
   void play_moves(Board &board, const std::string &first, std::istringstream &args) {
@@ -124,6 +149,9 @@ bool Extras::dispatch(Board &board, const std::string &token, std::istringstream
   } else if (token == "perft") {
     run_perft(board, args);
 
+  } else if (token == "datagen" || token == "relabel") {
+    run_datagen(token, args);
+
   } else if (token == "help") {
     help();
 
@@ -162,6 +190,9 @@ void Extras::help() {
   reply("  perft n                   count legal move paths of depth n");
   reply("  perft divide n            same, per root move (diff against Stockfish's");
   reply("                            \"go perft n\")");
+  reply("  datagen <nodes> <positions> <seed> <out>");
+  reply("                            self-play training data, \"fen | score | result\"");
+  reply("  relabel <nodes> <in> <out> re-search every position of a datagen file");
   reply("  help                      this text\n");
 
   reply("Coordinate notation on its own line plays the move(s) on the current");

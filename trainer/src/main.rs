@@ -1,5 +1,8 @@
-// Trains AteNika's net: (768 -> 1024)x2 -> 1, SCReLU, quantised for in-engine
+// Trains AteNika's net: (768 -> HIDDEN)x2 -> 1, SCReLU, quantised for in-engine
 // integer inference. Adapted from bullet's examples/simple.rs.
+//
+// Every setting below the quantisation constants can be overridden from the
+// environment, e.g. HIDDEN=512 WDL=0.0 NET_ID=b5k cargo run --release -- data.bin
 
 use bullet_lib::{
     game::inputs::Chess768,
@@ -12,26 +15,27 @@ use bullet_lib::{
     value::{ValueTrainerBuilder, loader},
 };
 
-// These four and the SCReLU in build() must match src/nnue/nnue.hpp.
-const HIDDEN_SIZE: usize = 1024; // engine HIDDEN
+// These three and the SCReLU in build() must match src/nnue/nnue.hpp, and
+// HIDDEN must match the engine's ATENIKA_HIDDEN.
 const SCALE: i32 = 400; // engine SCALE, network output -> centipawns
 const QA: i16 = 255; // engine QA, quantises feature weights and biases
 const QB: i16 = 64; // engine QB, quantises output weights
 
-// Training choices, free to tune.
 const BATCH_SIZE: usize = 16_384;
-
-// 6104 * 16384 ~ 100M positions per superbatch.
-const BATCHES_PER_SUPERBATCH: usize = 6104;
-
-// LR step is 45% from it.
-const SUPERBATCHES: usize = 120;
 
 // bulletformat stores one position per 32 bytes.
 const BYTES_PER_POSITION: u64 = 32;
 
-const NET_ID: &str = "atenika-v1";
 const CHECKPOINTS: &str = "checkpoints";
+
+fn setting<T: std::str::FromStr>(name: &str, default: T) -> T {
+    match std::env::var(name) {
+        Ok(value) => value
+            .parse()
+            .unwrap_or_else(|_| panic!("{name} has an unusable value {value:?}")),
+        Err(_) => default,
+    }
+}
 
 fn main() {
     let data = std::env::args().nth(1).unwrap_or_else(|| {
@@ -39,10 +43,24 @@ fn main() {
         std::process::exit(1);
     });
 
+    let hidden: usize = setting("HIDDEN", 1024);
+
+    // 6104 * 16384 ~ 100M positions per superbatch.
+    let batches_per_superbatch: usize = setting("BATCHES_PER_SUPERBATCH", 6104);
+
+    // LR step is 45% from it.
+    let superbatches: usize = setting("SUPERBATCHES", 120);
+
+    // target = wdl * game_result + (1 - wdl) * sigmoid(score / SCALE)
+    let wdl: f32 = setting("WDL", 0.3);
+    let save_rate: usize = setting("SAVE_RATE", 10);
+    let net_id: String = setting("NET_ID", "atenika-v1".to_string());
+
     // RESUME=<superbatch> picks up from that checkpoint.
-    let resume: Option<usize> = std::env::var("RESUME")
-        .ok()
-        .map(|v| v.parse().unwrap_or_else(|_| panic!("RESUME wants a superbatch number, got {v:?}")));
+    let resume: Option<usize> = std::env::var("RESUME").ok().map(|v| {
+        v.parse()
+            .unwrap_or_else(|_| panic!("RESUME wants a superbatch number, got {v:?}"))
+    });
 
     let bytes = std::fs::metadata(&data)
         .unwrap_or_else(|e| panic!("{data}: {e}"))
@@ -54,10 +72,13 @@ fn main() {
 
     // How often the data gets re-read.
     let positions = bytes / BYTES_PER_POSITION;
-    let fed = (SUPERBATCHES * BATCHES_PER_SUPERBATCH * BATCH_SIZE) as f64;
+    let fed = (superbatches * batches_per_superbatch * BATCH_SIZE) as f64;
     println!(
-        "{data}: {positions} positions, read {:.1} times across {SUPERBATCHES} superbatches",
+        "{data}: {positions} positions, read {:.1} times across {superbatches} superbatches",
         fed / positions as f64
+    );
+    println!(
+        "{net_id}: hidden {hidden}, wdl {wdl}, {batches_per_superbatch} batches per superbatch"
     );
 
     let mut trainer = ValueTrainerBuilder::default()
@@ -70,11 +91,10 @@ fn main() {
             SavedFormat::id("l1w").round().quantise::<i16>(QB),
             SavedFormat::id("l1b").round().quantise::<i16>(QA * QB),
         ])
-        // target = wdl * game_result + (1 - wdl) * sigmoid(score / SCALE)
         .loss_fn(|output, target| output.sigmoid().squared_error(target))
         .build(|builder, stm_inputs, ntm_inputs| {
-            let l0 = builder.new_affine("l0", 768, HIDDEN_SIZE);
-            let l1 = builder.new_affine("l1", 2 * HIDDEN_SIZE, 1);
+            let l0 = builder.new_affine("l0", 768, hidden);
+            let l1 = builder.new_affine("l1", 2 * hidden, 1);
 
             let stm_hidden = l0.forward(stm_inputs).screlu();
             let ntm_hidden = l0.forward(ntm_inputs).screlu();
@@ -82,22 +102,22 @@ fn main() {
         });
 
     let schedule = TrainingSchedule {
-        net_id: NET_ID.to_string(),
+        net_id: net_id.clone(),
         eval_scale: SCALE as f32,
         steps: TrainingSteps {
             batch_size: BATCH_SIZE,
-            batches_per_superbatch: BATCHES_PER_SUPERBATCH,
+            batches_per_superbatch,
             start_superbatch: resume.map_or(1, |n| n + 1),
-            end_superbatch: SUPERBATCHES,
+            end_superbatch: superbatches,
         },
 
-        wdl_scheduler: wdl::ConstantWDL { value: 0.3 },
+        wdl_scheduler: wdl::ConstantWDL { value: wdl },
         lr_scheduler: lr::StepLR {
             start: 0.001,
             gamma: 0.1,
-            step: SUPERBATCHES * 45 / 100,
+            step: (superbatches * 45 / 100).max(1),
         },
-        save_rate: 10,
+        save_rate,
     };
 
     let settings = LocalSettings {
@@ -110,7 +130,7 @@ fn main() {
     let data_loader = loader::DirectSequentialDataLoader::new(&[data.as_str()]);
 
     if let Some(n) = resume {
-        let from = format!("{CHECKPOINTS}/{NET_ID}-{n}");
+        let from = format!("{CHECKPOINTS}/{net_id}-{n}");
         println!("resuming from {from}, continuing at superbatch {}", n + 1);
         trainer.load_from_checkpoint(&from);
     }

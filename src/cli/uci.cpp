@@ -7,6 +7,7 @@
 #include <charconv>
 #include <chrono>
 #include <exception>
+#include <format>
 #include <iostream>
 #include <print>
 #include <sstream>
@@ -17,6 +18,7 @@
 #include "cli/output.hpp"
 #include "core/board.hpp"
 #include "core/move.hpp"
+#include "nnue/nnue.hpp"
 #include "search/search.hpp"
 #include "search/ttable.hpp"
 
@@ -49,19 +51,28 @@ namespace {
     while (Search::is_pondering() && !quitting)
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    if (!quitting) {
-      const Move *best = Search::get_best_move();
-
-      // "0000" is the conventional null move for a position with no legal reply.
-      if (!best)
-        reply("bestmove 0000");
-      else if (Search::get_pv_length() >= 2)
-        reply("bestmove {} ponder {}", static_cast<std::string>(*best),
-              static_cast<std::string>(Search::get_pv()[1]));
-      else
-        reply("bestmove {}", static_cast<std::string>(*best));
+    if (quitting) {
+      searching = false;
+      return;
     }
+
+    const Move *best = Search::get_best_move();
+    std::string answer;
+
+    // "0000" is the conventional null move for a position with no legal reply.
+    if (!best)
+      answer = "0000";
+    else if (Search::get_pv_length() >= 2)
+      answer = std::format("{} ponder {}", static_cast<std::string>(*best),
+                           static_cast<std::string>(Search::get_pv()[1]));
+    else
+      answer = static_cast<std::string>(*best);
+
+    // Cleared before the reply, not after: the GUI answers "bestmove" with its
+    // next commands at once, and any that land while the flag is still set are
+    // dropped as "Busy searching", leaving both sides waiting on each other.
     searching = false;
+    reply("bestmove {}", answer);
   }
 
   void handle_uci() {
@@ -71,6 +82,7 @@ namespace {
     reply("option name Hash type spin default {} min {} max {}", TTable::DEFAULT_HASH_MB,
           TTable::MIN_HASH_MB, TTable::MAX_HASH_MB);
     reply("option name Ponder type check default false");
+    reply("option name EvalFile type string default <embedded>");
     reply("uciok");
   }
 
@@ -100,6 +112,18 @@ namespace {
       // not a number at all is rejected here.
       if (const auto [ptr, ec] = std::from_chars(first, last, mb); ec == std::errc{} && ptr == last)
         TTable::resize(mb);
+
+    } else if (name == "EvalFile") {
+      // Unlike the other options this one is reported: a match silently played
+      // with the embedded net instead of the one asked for measures nothing.
+      if (!NNUE::load(value)) {
+        reply("info string EvalFile {} not loaded, the net is unchanged", value);
+        std::println(stderr, "EvalFile {} not loaded", value);
+        return;
+      }
+
+      // The cached accumulators were built from the previous weights.
+      board = Board(board.get_fen());
     }
   }
 

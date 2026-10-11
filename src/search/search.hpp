@@ -48,6 +48,11 @@ namespace Search {
   void set_debug(bool on); // extra "info string" output, UCI "debug on"
 
   [[nodiscard]] int64_t get_nodes();
+
+  // From the side to move's point of view, of the last completed iteration.
+  [[nodiscard]] int32_t get_best_score();
+  [[nodiscard]] int16_t get_completed_depth();
+  [[nodiscard]] bool is_mate_score(int32_t score);
   [[nodiscard]] int16_t get_seldepth();
   [[nodiscard]] std::string get_mate(); // mate tests only
 
