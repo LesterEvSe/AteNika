@@ -16,7 +16,7 @@
 # limit compares evaluation quality alone and does not depend on machine load.
 # The PGN goes to results/; rate.sh turns any set of them into one rating list.
 #
-# Overridable: ENGINE NODES TC CONCURRENCY BOOK FASTCHESS
+# Overridable: ENGINE NODES CONCURRENCY BOOK FASTCHESS
 #
 set -euo pipefail
 
@@ -58,23 +58,11 @@ engine_args "$OLD_TARGET" OLD_ARGS
 FASTCHESS=${FASTCHESS:-../matches/tools/fastchess}
 BOOK=${BOOK:-../matches/books/UHO_4060_v4.epd}
 
-# TC=... replaces the node limit, for the activation comparison only.
-if [ -n "${TC:-}" ]; then
-    LIMIT="tc=$TC"
-else
-    LIMIT="nodes=${NODES:-20000}"
-fi
+LIMIT="nodes=${NODES:-20000}"
 
 # Under a node limit a slower core only makes a game take longer, so every
-# thread can play. Under a clock it would bias the result, so physical cores only.
-if [ -n "${TC:-}" ]; then
-    CORES=$(lscpu -p=Core,Socket 2>/dev/null | grep -v '^#' | sort -u | wc -l) || CORES=0
-    [ "$CORES" -gt 0 ] || CORES=$(nproc)
-    CONCURRENCY=${CONCURRENCY:-$(( CORES * 8 / 10 ))}
-else
-    CONCURRENCY=${CONCURRENCY:-$(nproc)}
-fi
-[ "$CONCURRENCY" -ge 1 ] || CONCURRENCY=1
+# thread can play.
+CONCURRENCY=${CONCURRENCY:-$(nproc)}
 
 ROUNDS=$(( (GAMES + 1) / 2 ))
 NEW=${NEW_ARGS[1]#name=}
@@ -95,6 +83,7 @@ echo "$NEW vs $OLD, $((ROUNDS * 2)) games, $LIMIT, concurrency=$CONCURRENCY"
     -concurrency "$CONCURRENCY" \
     -resign movecount=3 score=400 \
     -draw movenumber=40 movecount=8 score=10 \
+    -config outname="${PGN%.pgn}.json" \
     -pgnout file="$PGN" | tee "${PGN%.pgn}.log"
 
 echo

@@ -6,7 +6,10 @@
 # NET_ID as "-n<nodes>": e2-n5000-40 is experiment 2, 5000 nodes, superbatch 40.
 #
 #   python3 plots.py --ratings ../results/rate-X.csv --loss ref-loss.csv [--own own-loss.csv]
-#                    [--exp e2] [--out figs]
+#                    [--exp e2] [--final ../results/picked.txt] [--out figs]
+#
+# --final names the checkpoint that stands for each budget (pick.sh writes it);
+# without it the last superbatch does.
 #
 # Prints the fitted optimum and Spearman correlations; writes PNGs when
 # matplotlib is installed.
@@ -85,6 +88,7 @@ def main():
     parser.add_argument("--loss", required=True, help="eval_loss.py on the reference set")
     parser.add_argument("--own", help="eval_loss.py on each net's own training labels")
     parser.add_argument("--exp", help="experiment prefix for the Elo(nodes) curve")
+    parser.add_argument("--final", help="checkpoint names standing for each budget, one per line")
     parser.add_argument("--out", default="figs")
     args = parser.parse_args()
 
@@ -105,14 +109,20 @@ def main():
     Path(args.out).mkdir(exist_ok=True)
 
     if args.exp:
-        # The last superbatch of each budget is that budget's final net.
+        picked = None
+        if args.final:
+            with open(args.final) as file:
+                picked = {line.strip() for line in file if line.strip()}
+
+        # Each budget is represented by its picked checkpoint, else its last one.
         final = {}
         for name in ratings:
             match = NAME.match(name)
-            if match and match["exp"] == args.exp:
-                nodes, superbatch = int(match["nodes"]), int(match["superbatch"])
-                if superbatch >= final.get(nodes, ("", -1))[1]:
-                    final[nodes] = (name, superbatch)
+            if not match or match["exp"] != args.exp or (picked is not None and name not in picked):
+                continue
+            nodes, superbatch = int(match["nodes"]), int(match["superbatch"])
+            if superbatch >= final.get(nodes, ("", -1))[1]:
+                final[nodes] = (name, superbatch)
 
         nodes = np.array(sorted(final), dtype=float)
         elo = np.array([ratings[final[n][0]][0] for n in nodes])
@@ -120,7 +130,7 @@ def main():
 
         print(f"{args.exp}: Elo by nodes per position")
         for n, e, err in zip(nodes, elo, error):
-            print(f"  {int(n):>8}  {e:+7.1f} +/- {err:.1f}")
+            print(f"  {int(n):>8}  {e:+7.1f} +/- {err:.1f}  {final[n][0]}")
 
         if len(nodes) >= 3:
             best, interval = optimum(np.log2(nodes), elo, error, rng)
