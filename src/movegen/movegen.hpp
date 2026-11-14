@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
-#ifndef ATENIKA_MOVEGEN_HPP
-#define ATENIKA_MOVEGEN_HPP
+#pragma once
 
 #include "core/board.hpp"
 #include "core/move_list.hpp"
@@ -87,5 +86,3 @@ public:
   // Free to the caller: init_masks has to find the checkers anyway.
   [[nodiscard]] bool in_check() const;
 };
-
-#endif // ATENIKA_MOVEGEN_HPP

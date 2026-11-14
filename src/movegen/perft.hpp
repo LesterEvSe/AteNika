@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
-#ifndef ATENIKA_PERFT_HPP
-#define ATENIKA_PERFT_HPP
+#pragma once
 
 #include "core/board.hpp"
 
@@ -16,5 +15,3 @@ namespace Perft {
   int64_t divide(Board &board, int depth);
 
 } // namespace Perft
-
-#endif // ATENIKA_PERFT_HPP

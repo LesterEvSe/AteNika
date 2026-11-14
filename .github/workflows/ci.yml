@@ -90,7 +90,7 @@ jobs:
           # release.yml ships a macOS binary. Without this the first macOS build
           # in the project's life would happen during a release, where a failure
           # blocks it. arm64, so -march=x86-64-v3 is probed and skipped.
-          - { name: macOS AppleClang, os: macos-14, cc: "", cxx: "", pkg: "" }
+          - { name: macOS AppleClang, os: macos-15, cc: "", cxx: "", pkg: "" }
 
     steps:
       - uses: actions/checkout@v4

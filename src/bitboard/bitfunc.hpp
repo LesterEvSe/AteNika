@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
-#ifndef ATENIKA_BITFUNC_HPP
-#define ATENIKA_BITFUNC_HPP
+#pragma once
 
 #include <bit>
 #include <iostream> // for std::cerr
@@ -56,11 +55,11 @@ inline void printbb(bitboard bb) {
 
   for (int8_t i = 7; i >= 0; --i) {
     std::cout << i + 1 << " |";
+
     for (uint8_t j = 0; j < 8; ++j)
       std::cout << ' ' << bool(bb & (ONE << (i * 8 + j)));
     std::cout << '\n';
   }
+
   std::cout << "\n--------------------\n\n";
 }
-
-#endif // ATENIKA_BITFUNC_HPP

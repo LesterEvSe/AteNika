@@ -36,7 +36,7 @@ jobs:
             bin: build/release/Release/AteNika.exe
             asset: AteNika-windows-x86-64-avx2.exe
           - name: macos
-            os: macos-14
+            os: macos-15
             bin: build/release/AteNika
             asset: AteNika-macos-arm64
 
