@@ -46,14 +46,15 @@ gravity aging. Quiescence generates captures only, plus check evasions, filtered
 by SEE and delta pruning. Time management runs separate soft and hard limits with
 best-move stability and score-drop detection.
 
-**Evaluation**: material and piece-square tables, passed and isolated pawns,
-rooks and queens on open and semi-open files, bishop pair, and insufficient
-material detection.
+**Evaluation**: NNUE a `(768 -> 1024)x2 -> 1` network with SCReLU activation. Evaluation runs through an AVX2 path with a scalar fallback. The network is trained with [bullet](https://github.com/jw1912/bullet), see [trainer/](trainer/README.md).
 
 ## Build
 
+Prebuilt binaries for Linux and Windows (x86-64 with AVX2) and macOS (arm64) are attached to every [release](https://github.com/LesterEvSe/AteNika/releases/latest).
+
 Requires a C++23 compiler (GCC 14+, Clang 18+, MSVC 19.39+) and CMake 3.25+.
-Linux and Windows are built and tested on every PR.
+Linux, Windows and macOS are built and tested on every PR, plus a run under
+AddressSanitizer and UndefinedBehaviorSanitizer.
 
 ```bash
 cmake --preset release
@@ -61,19 +62,35 @@ cmake --build --preset release
 ./build/release/AteNika
 ```
 
+The `release` preset targets x86-64-v3 (AVX2). To embed a different network,
+point `ATENIKA_NET` at it and set `ATENIKA_HIDDEN` to its hidden layer width:
+
+```bash
+cmake --preset release -DATENIKA_NET=/path/to/net.nnue -DATENIKA_HIDDEN=512
+```
+
 ## Usage
 
-In addition to the UCI interface, the engine also has one `Hash` option, the transposition table size in MB.
+UCI options:
 
-A few non-UCI commands are available for development:
+| option | default | what it does |
+| ------ | ------- | ------------ |
+| `Hash` | 16 | transposition table size in MB, 1 to 1024 |
+| `Ponder` | false | think on the opponent's time |
+| `EvalFile` | `<embedded>` | load a network of the same architecture from a file; on failure an `info string` is printed and the current net stays |
+
+Non-UCI commands for development:
 
 | command | what it does |
 | ------- | ------------ |
 | `d` | print the current position |
+| `state` | verbose board dump plus the current search limits |
 | `eval` | static evaluation of the current position |
-| `bench` | fixed position set at fixed depth, reported as one node count |
+| `bench [n]` | fixed position set at fixed depth `n`, reported as one node count |
 | `perft [divide] <n>` | node counts, `divide` matching Stockfish's `go perft` format |
-| `state` | internal state of the current position |
+| `datagen <nodes> <positions> <seed> <out>` | self-play training data, `fen \| score \| result` per line |
+| `relabel <nodes> <in> <out>` | re-search every position of a datagen file, keeping its result |
+| `e2e4 e7e5 ...` | play moves in coordinate notation on the current position |
 | `help` | list every command |
 
 `bench` is the behaviour fingerprint: any change meant to preserve behaviour must
@@ -127,6 +144,12 @@ Every change that alters what the engine plays is accepted or rejected by SPRT,
 never by intuition. The tooling lives in [matches/](matches/README.md); binaries,
 opponents and opening books are not tracked and must be set up locally.
 
+### Training a network
+
+Data comes from `datagen` (or `relabel` on an existing set), the trainer in
+[trainer/](trainer/README.md) turns it into `quantised.bin`, and the result is
+copied to `nets/atenika.nnue`, where the build embeds it.
+
 ## Credits
 
 **Code and ideas**
@@ -134,6 +157,7 @@ opponents and opening books are not tracked and must be set up locally.
 - [Shallow Blue](https://github.com/GunshipPenguin/shallow-blue) — heavily, in the early stages
 - [Stockfish](https://github.com/official-stockfish/Stockfish)
 - [Stash-bot](https://github.com/mhouppin/stash-bot) — the reference ladder for testing
+- [bullet](https://github.com/jw1912/bullet) — the NNUE trainer
 
 **Reference**
 
