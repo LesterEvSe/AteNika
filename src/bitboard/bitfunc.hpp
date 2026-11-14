@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2023 Yevhenii Sekhin
 
-#ifndef ATENIKA_BITFUNC_HPP
-#define ATENIKA_BITFUNC_HPP
+#pragma once
 
 #include <bit>
 #include <iostream> // for std::cerr
@@ -62,5 +61,3 @@ inline void printbb(bitboard bb) {
   }
   std::cout << "\n--------------------\n\n";
 }
-
-#endif // ATENIKA_BITFUNC_HPP
