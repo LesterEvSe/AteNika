@@ -6,6 +6,5 @@
 #include "core/board.hpp"
 
 namespace Eval {
-  void init();
   [[nodiscard]] int32_t evaluate(const Board &board);
 } // namespace Eval

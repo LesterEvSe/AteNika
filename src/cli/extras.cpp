@@ -149,8 +149,9 @@ void Extras::help() {
   reply("  go [wtime ms] [btime ms] [winc ms] [binc ms] [movestogo n]");
   reply("  stop                      end the search now and print the best move so far");
   reply("  setoption name <id> value <x>");
-  reply("                            \"Hash\" is the only option: {}-{} MB, default {}",
-        TTable::MIN_HASH_MB, TTable::MAX_HASH_MB, TTable::DEFAULT_HASH_MB);
+  reply("                            Hash: {}-{} MB, default {}", TTable::MIN_HASH_MB,
+        TTable::MAX_HASH_MB, TTable::DEFAULT_HASH_MB);
+  reply("                            Ponder: true or false, default false");
   reply("  quit\n");
 
   reply("Non-standard commands:");
