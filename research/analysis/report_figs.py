@@ -62,7 +62,7 @@ def elo_by_depth(rate, picked):
 
     for prefix, budgets, colour, marker, label in (
         ("e2", BUDGETS, BLUE, "o", "fixed budget, N·B = const"),
-        ("e1", (2500, 10000, 40000), ORANGE, "s", "same 1M positions, relabelled"),
+        ("e1", (2500, 10000, 40000), ORANGE, "s", "same 1M positions, relabeled"),
     ):
         names = [next(p for p in picked if p.startswith(f"{prefix}-n{b}-")) for b in budgets]
         depth = [mean_depth(f"{prefix}-n{b}") for b in budgets]
